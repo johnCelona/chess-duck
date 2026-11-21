@@ -22,6 +22,10 @@ assets/
 - Duck states are named after what they mean (`idle`, `thinking`, `victory`, `sulk`), and clients map semantic events to states (`MatchFinished` won → `victory`). The domain never names an animation.
 - A duck's avatar is a set of ids (`species`, `skin`, `accessories`), never a file path. Clients resolve ids through `manifest.json`.
 
+## Skins
+
+`manifest.json` → `skins` lists the skin ids a player can pick when hatching (a duck's `avatar.skin`). Entries marked `"placeholder": true` have no art file yet: each client draws a stand-in (web: `apps/web/src/components/DuckSprite.tsx`). Names and look are placeholders until the real duck art arrives (design 03 §6). An unknown skin id is drawn as `classic`.
+
 ## Adding an asset
 
 1. Put the file in the right folder.

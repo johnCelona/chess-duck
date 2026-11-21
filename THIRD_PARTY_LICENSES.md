@@ -41,6 +41,7 @@ Transitive runtime packages (anyio, h11, httpcore, idna, certifi (MPL-2.0), clic
 | --- | --- | --- | --- |
 | @lichess-org/chessground | GPL-3.0-or-later | https://github.com/lichess-org/chessground | Board UI, including its bundled cburnett piece images (GPLv2+). **Copyleft: makes the web app GPL** |
 | react, react-dom | MIT | https://github.com/facebook/react | UI |
+| react-router | MIT | https://github.com/remix-run/react-router | Screen routing (hash mode) |
 | openapi-fetch | MIT | https://github.com/openapi-ts/openapi-typescript | Typed HTTP client over the generated schema |
 
 ## Web and contract development tools

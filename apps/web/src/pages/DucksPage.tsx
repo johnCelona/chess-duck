@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { api, duckFileUrl, messageOf, unwrap } from '../api/client'
 import { useResource } from '../api/useResource'
-import { DuckAvatar } from '../components/DuckAvatar'
+import { DuckSprite } from '../components/DuckSprite'
 import { ratingLabel } from '../ducks/format'
 
 const STAT_NAMES = [
@@ -71,7 +71,7 @@ export function DucksPage() {
         <ul className="duck-list">
           {ducks.map((duck) => (
             <li className="panel duck-card" key={duck.id}>
-              <DuckAvatar name={duck.name} />
+              <DuckSprite skin={duck.avatar.skin} />
               <div className="duck-main">
                 <h2>{duck.name}</h2>
                 <p>

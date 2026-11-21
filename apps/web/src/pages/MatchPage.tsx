@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
+import { Link, useNavigate } from 'react-router'
 import { api, messageOf, pgnUrl, unwrap, type Arena, type Match } from '../api/client'
 import { subscribe, type Unsubscribe } from '../api/events'
 import { useResource } from '../api/useResource'
 import { Board } from '../components/Board'
-import { DuckAvatar } from '../components/DuckAvatar'
+import { DuckSprite } from '../components/DuckSprite'
 import { ratingLabel } from '../ducks/format'
 import { MoveList } from '../match/MoveList'
 import { ThinkingPanel } from '../match/ThinkingPanel'
@@ -56,7 +57,22 @@ async function loadSetup() {
   return { ducks, engines: engines.filter((engine) => engine.status === 'installed'), recent }
 }
 
-export function MatchPage({ matchId }: { matchId: string | null }) {
+type MatchPageProps = {
+  matchId: string | null
+  /** Where this page lives: matches open at `${basePath}/${id}` (Arena or Lab). */
+  basePath?: string
+  title?: string
+  /** Preselected White duck, e.g. the Pond's active duck. */
+  initialWhiteId?: string | null
+}
+
+export function MatchPage({
+  matchId,
+  basePath = '/lab/match',
+  title = 'Match',
+  initialWhiteId = null,
+}: MatchPageProps) {
+  const navigate = useNavigate()
   const setup = useResource(loadSetup)
   const ducks = setup.data?.ducks ?? []
   const engines = setup.data?.engines ?? []
@@ -65,8 +81,9 @@ export function MatchPage({ matchId }: { matchId: string | null }) {
   const [chosenWhite, setWhiteId] = useState('')
   const [chosenBlack, setBlackId] = useState('')
   const [chosenEngine, setEngineId] = useState('')
-  const whiteId = chosenWhite || ducks[0]?.id || ''
-  const blackId = chosenBlack || ducks[1]?.id || ''
+  const preselected = ducks.find((duck) => duck.id === initialWhiteId)?.id
+  const whiteId = chosenWhite || preselected || ducks[0]?.id || ''
+  const blackId = chosenBlack || ducks.find((duck) => duck.id !== whiteId)?.id || ''
   const engineId = chosenEngine || engines[0]?.id || ''
 
   const [preset, setPreset] = useState<PresetKey>('bullet')
@@ -196,7 +213,7 @@ export function MatchPage({ matchId }: { matchId: string | null }) {
           },
         }),
       )
-      window.location.hash = `#/match/${created.id}`
+      navigate(`${basePath}/${created.id}`)
     } catch (requestError) {
       setError(messageOf(requestError))
     } finally {
@@ -230,6 +247,8 @@ export function MatchPage({ matchId }: { matchId: string | null }) {
 
   const duckName = (id: string | null | undefined) =>
     ducks.find((duck) => duck.id === id)?.name ?? 'Unknown duck'
+  const duckSkin = (id: string | null | undefined) =>
+    ducks.find((duck) => duck.id === id)?.avatar.skin
   const position = positionAt(view, cursor)
   const current = position?.game
   const atStart = !position || (position.gameIndex === 0 && position.ply === 0)
@@ -240,7 +259,7 @@ export function MatchPage({ matchId }: { matchId: string | null }) {
 
   return (
     <section aria-labelledby="match-title">
-      <h1 id="match-title">Match</h1>
+      <h1 id="match-title">{title}</h1>
       {error && (
         <div className="alert" role="alert">
           {error}
@@ -250,8 +269,8 @@ export function MatchPage({ matchId }: { matchId: string | null }) {
       <form className="panel match-form" onSubmit={start}>
         {!ready && (
           <p className="hint">
-            A match needs two ducks and an installed engine. Hatch ducks on the Ducks page and
-            install Stockfish on the Engines page.
+            A match needs two ducks and an installed engine. Hatch another egg from the Pond, and
+            install Stockfish in the Lab (Engines).
           </p>
         )}
         <div className="field-grid">
@@ -337,6 +356,7 @@ export function MatchPage({ matchId }: { matchId: string | null }) {
           <div className="watch-board">
             <PlayerBar
               name={duckName(current?.blackDuckId)}
+              skin={duckSkin(current?.blackDuckId)}
               clockMs={position?.blackClockMs ?? null}
               active={clockActive('black')}
             />
@@ -347,6 +367,7 @@ export function MatchPage({ matchId }: { matchId: string | null }) {
             />
             <PlayerBar
               name={duckName(current?.whiteDuckId)}
+              skin={duckSkin(current?.whiteDuckId)}
               clockMs={position?.whiteClockMs ?? null}
               active={clockActive('white')}
             />
@@ -486,7 +507,9 @@ export function MatchPage({ matchId }: { matchId: string | null }) {
             {recent.map((item) => (
               <li key={item.id}>
                 {item.duckIds.map(duckName).join(' – ')} · {item.state}{' '}
-                <a href={`#/match/${item.id}`}>{item.state === 'finished' ? 'Replay' : 'Watch'}</a>
+                <Link to={`${basePath}/${item.id}`}>
+                  {item.state === 'finished' ? 'Replay' : 'Watch'}
+                </Link>
               </li>
             ))}
           </ul>
@@ -505,16 +528,18 @@ function positionLabel(position: ReturnType<typeof positionAt>, games: number): 
 
 function PlayerBar({
   name,
+  skin,
   clockMs,
   active,
 }: {
   name: string
+  skin: string | undefined
   clockMs: number | null
   active: boolean
 }) {
   return (
     <div className={`player-bar ${active ? 'active' : ''}`}>
-      <DuckAvatar name={name} size={32} />
+      <DuckSprite skin={skin} size={32} />
       <span className="player-name">{name}</span>
       <span className="clock">{formatClock(clockMs)}</span>
     </div>

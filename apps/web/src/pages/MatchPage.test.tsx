@@ -1,7 +1,9 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import type { EventEnvelope } from '../api/client'
+import { aDuck } from '../test/api'
 import { AFTER_D4, AFTER_E4, AFTER_E5, START, twoGameEvents } from '../test/matchEvents'
 import { MatchPage } from './MatchPage'
 
@@ -39,12 +41,10 @@ const match = {
   stream: 'match:mat_1',
 }
 
-const duck = (id: string, name: string) => ({
-  id,
-  name,
-  rating: { value: 1500, deviation: 350, games: 0, provisional: true, contextId: null },
-})
-const ducks = [duck('duck_a', 'Sir Quackalot'), duck('duck_b', 'Bill the Solid')]
+const ducks = [
+  aDuck({ id: 'duck_a', name: 'Sir Quackalot' }),
+  aDuck({ id: 'duck_b', name: 'Bill the Solid' }),
+]
 
 beforeEach(() => {
   vi.stubGlobal('EventSource', FakeEventSource)
@@ -67,7 +67,11 @@ const boardFen = () => screen.getByTestId('board').getAttribute('data-fen')
 
 async function watchTwoGames() {
   const user = userEvent.setup()
-  render(<MatchPage matchId="mat_1" />)
+  render(
+    <MemoryRouter>
+      <MatchPage matchId="mat_1" />
+    </MemoryRouter>,
+  )
   await screen.findByRole('group', { name: 'Move through the game' })
   // Show events as they arrive instead of pacing them by think time.
   await user.click(screen.getByRole('button', { name: 'Instant' }))

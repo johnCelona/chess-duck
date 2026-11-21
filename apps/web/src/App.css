@@ -474,3 +474,473 @@ select {
     grid-template-columns: 1fr;
   }
 }
+
+/* ----- Game screens (design 03). Layout only; look and motion are John's to replace. ----- */
+
+.game-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.game-header .brand {
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #475569;
+  text-decoration: none;
+}
+
+.game-header .back {
+  color: #334155;
+}
+
+.gear {
+  margin-left: auto;
+  font-size: 20px;
+  text-decoration: none;
+  color: #475569;
+}
+
+.app-header .brand a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Title */
+.title-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-top: 48px;
+  position: relative;
+  min-height: 70vh;
+}
+
+.logo {
+  font-size: 56px;
+  letter-spacing: 0.04em;
+  margin: 8px 0;
+}
+
+.tagline {
+  color: #475569;
+  margin: 0 0 32px;
+}
+
+.title-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(320px, 100%);
+}
+
+.big {
+  font-size: 18px;
+  padding: 14px 20px;
+  text-align: center;
+}
+
+.title-gear {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 16px;
+}
+
+/* Hatching */
+.hatch {
+  text-align: center;
+}
+
+.egg-button {
+  border: none;
+  background: none;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.egg-button:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.egg-button:focus-visible {
+  outline: 3px solid #1d4ed8;
+  border-radius: 16px;
+}
+
+.egg-button > span {
+  display: inline-block;
+}
+
+.wobble {
+  animation: egg-wobble 320ms ease-in-out;
+  transform-origin: 50% 90%;
+}
+
+@keyframes egg-wobble {
+  25% {
+    transform: rotate(-8deg);
+  }
+  75% {
+    transform: rotate(8deg);
+  }
+}
+
+.egg .egg-top,
+.egg .egg-bottom {
+  transition: transform 600ms ease-in;
+  transform-box: fill-box;
+}
+
+.egg-open .egg-top {
+  transform: translate(-6px, -18px) rotate(-24deg);
+  transform-origin: 0% 100%;
+}
+
+.egg-open .egg-crack {
+  opacity: 0;
+}
+
+.reveal {
+  display: flex;
+  justify-content: center;
+  margin: 8px 0 16px;
+}
+
+.name-form {
+  max-width: 520px;
+  margin: 0 auto;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skins {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.skins legend {
+  font-size: 14px;
+  color: #334155;
+  margin-bottom: 4px;
+}
+
+.skin {
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.skin.selected {
+  border-color: #1d4ed8;
+  background: #e0e7ff;
+}
+
+.skin input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.skin:focus-within {
+  outline: 2px solid #1d4ed8;
+}
+
+/* The duck sprite's poses */
+.duck-sprite .duck-body {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+.pose-idle .duck-body {
+  animation: duck-bob 2.4s ease-in-out infinite;
+}
+
+.pose-emerge .duck-body {
+  animation:
+    duck-emerge 600ms cubic-bezier(0.2, 1.6, 0.4, 1) both,
+    duck-hop 500ms ease-out 700ms 2;
+}
+
+.pose-celebrate .duck-body {
+  animation: duck-hop 500ms ease-out infinite;
+}
+
+@keyframes duck-bob {
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes duck-emerge {
+  from {
+    transform: translateY(40%) scale(0.4);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@keyframes duck-hop {
+  40% {
+    transform: translateY(-10%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wobble,
+  .duck-sprite .duck-body {
+    animation: none !important;
+  }
+  .egg .egg-top {
+    transition: none;
+  }
+}
+
+/* The Pond */
+.attributes {
+  display: grid;
+  grid-template-columns: auto minmax(200px, 1fr) auto;
+  grid-template-areas:
+    'sprite main rating'
+    'stats stats stats';
+  gap: 8px 16px;
+  align-items: center;
+  border: 1px solid #dbe3ea;
+  border-radius: 12px;
+  background: white;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.attributes > .duck-sprite {
+  grid-area: sprite;
+}
+
+.attributes-main {
+  grid-area: main;
+  min-width: 0;
+}
+
+.attributes .rating {
+  grid-area: rating;
+  margin: 0;
+  text-align: right;
+}
+
+.attributes .rating dt {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.attributes .rating dd {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.attributes .rating small {
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
+  color: #92400e;
+}
+
+.attributes .rating .rating-games {
+  font-size: 12px;
+  font-weight: 400;
+  color: #64748b;
+}
+
+.growth {
+  margin: 0 0 4px;
+  color: #334155;
+}
+
+.stage {
+  text-transform: capitalize;
+  color: #64748b;
+}
+
+.xp {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.xp progress {
+  flex: 1;
+  max-width: 280px;
+  height: 10px;
+}
+
+.xp-label {
+  font-size: 12px;
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-list {
+  grid-area: stats;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  margin: 0;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 8px;
+}
+
+.stat-list div {
+  display: flex;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.stat-list dt {
+  color: #64748b;
+}
+
+.stat-list dd {
+  margin: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.switcher {
+  position: relative;
+  display: inline-block;
+}
+
+.switcher-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  padding: 2px 4px;
+  margin-left: -4px;
+  background: none;
+}
+
+.switcher-button h1 {
+  margin: 0;
+  font-size: 26px;
+}
+
+.switcher-button:hover {
+  background: #f1f5f9;
+}
+
+.switcher-menu {
+  position: absolute;
+  z-index: 10;
+  top: 100%;
+  left: 0;
+  min-width: 260px;
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 4px;
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+}
+
+.switcher-menu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  border: none;
+  text-align: left;
+}
+
+.switcher-menu button:hover,
+.switcher-menu button[aria-checked='true'] {
+  background: #eef2ff;
+}
+
+.switcher-name {
+  flex: 1;
+}
+
+.switcher-level {
+  font-size: 12px;
+  color: #64748b;
+}
+
+nav.tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.tile {
+  display: block;
+  min-height: 160px;
+  padding: 20px;
+  border: 1px solid #dbe3ea;
+  border-radius: 14px;
+  background: white;
+  color: #172033;
+  text-decoration: none;
+  position: relative;
+}
+
+.tile:hover {
+  border-color: #1d4ed8;
+  box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.15);
+}
+
+.tile p {
+  color: #475569;
+  margin: 0;
+}
+
+.tile-soon {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-size: 11px;
+  border-radius: 999px;
+  padding: 3px 8px;
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.not-found {
+  text-align: center;
+  padding-top: 48px;
+}
+
+@media (max-width: 640px) {
+  nav.tiles {
+    grid-template-columns: 1fr;
+  }
+  .attributes {
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+      'sprite main'
+      'rating rating'
+      'stats stats';
+  }
+  .attributes .rating {
+    text-align: left;
+  }
+}
