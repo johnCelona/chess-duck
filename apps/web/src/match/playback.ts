@@ -87,7 +87,8 @@ export function applyEvent(view: MatchView, event: EventEnvelope): MatchView {
       return { ...next, status: 'running', thinking: null, games: [...view.games, game] }
     }
     case 'MoveChosen':
-      return { ...next, thinking: event.data }
+      // Moves after a stop mean the match was resumed: it is running again.
+      return { ...next, thinking: event.data, jobState: null }
     case 'MoveMade': {
       const data = event.data
       return {

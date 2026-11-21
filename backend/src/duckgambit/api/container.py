@@ -38,6 +38,7 @@ class Container:
         await self.jobs.recover()
 
     async def shutdown(self) -> None:
+        self.events.close()
         await self.jobs.shutdown()
         await self.pool.close()
         self.store.close()

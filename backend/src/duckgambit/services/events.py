@@ -27,6 +27,7 @@ class EventLog:
         self._clock = clock
         self._waiters: set[asyncio.Event] = set()
         self.version = 0  # bumped on every notify, so a reader can tell it missed one
+        self.closed = False
 
     def append(self, stream: str, events: Sequence[Event]) -> list[Envelope]:
         """Blocking append. Call inside `store.atomic()` to commit with other writes,
@@ -38,6 +39,11 @@ class EventLog:
         self.version += 1
         for waiter in self._waiters:
             waiter.set()
+
+    def close(self) -> None:
+        """Shutting down: wake every waiting reader so open streams can end."""
+        self.closed = True
+        self.notify()
 
     async def publish(self, stream: str, events: Sequence[Event]) -> list[Envelope]:
         envelopes = await asyncio.to_thread(self.append, stream, events)

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import Annotated
@@ -16,13 +17,17 @@ from duckgambit.api.errors import PROBLEM_RESPONSES, install_error_handlers
 from duckgambit.api.routers import ducks, engines, events, matches
 from duckgambit.api.schemas.matches import HealthOut
 from duckgambit.api.security import LOOPBACK_HOSTS, BoundaryMiddleware
+from duckgambit.logging_setup import configure_logging
 from duckgambit.settings import Settings
 
 API_PREFIX = "/api/v1"
+log = logging.getLogger(__name__)
 
 
 def create_app(settings: Settings | None = None, container: Container | None = None) -> FastAPI:
     settings = settings or (container.settings if container else Settings())
+    # The server may run in a child process (reload), so logging is set up here too.
+    configure_logging(settings.log_level, settings.log_format)
     if settings.host not in LOOPBACK_HOSTS and settings.host != "::1" and not settings.api_token:
         raise RuntimeError(
             "Refusing to listen on a non-loopback address without DG_API_TOKEN (ADR-0011)"
@@ -33,10 +38,12 @@ def create_app(settings: Settings | None = None, container: Container | None = N
         built = container or build_container(settings)
         app.state.container = built
         await built.startup()
+        log.info("Duck Gambit %s ready; data in %s", __version__, built.paths.root)
         try:
             yield
         finally:
             await built.shutdown()
+            log.info("Duck Gambit stopped")
 
     app = FastAPI(
         title="Duck Gambit API",

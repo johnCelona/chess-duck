@@ -27,6 +27,8 @@ def _serve(args: argparse.Namespace, settings: Settings) -> int:
         reload=reload,
         reload_dirs=[str(PACKAGE_DIR)] if reload else None,
         log_config=None,
+        # Event streams stay open for as long as a client listens; do not wait for them.
+        timeout_graceful_shutdown=3,
     )
     return 0
 

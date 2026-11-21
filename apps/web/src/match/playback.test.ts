@@ -158,6 +158,17 @@ describe('applyEvent', () => {
 
     expect(view.jobState).toBe('cancelled')
   })
+
+  test('moves after a stop mean the match was resumed, so it shows as running again', () => {
+    let view = applyEvent(emptyMatchView, gameStarted())
+    view = applyEvent(
+      view,
+      envelope('JobFinished', { jobId: 'job_1', state: 'cancelled', errorCode: null }),
+    )
+    view = applyEvent(view, moveChosen())
+
+    expect(view.jobState).toBeNull()
+  })
 })
 
 describe('pacing and formatting', () => {

@@ -79,7 +79,7 @@ async def stream_events(
                 cursor = envelope.cursor
             if batch:
                 continue
-            if not follow or await request.is_disconnected():
+            if not follow or events.closed or await request.is_disconnected():
                 return
             if not await events.wait(seen, KEEPALIVE_SECONDS):
                 yield b": keepalive\n\n"
