@@ -5,9 +5,15 @@ import {
   createPlayer,
   delayFor,
   emptyMatchView,
+  first,
   formatClock,
+  formatEval,
   formatScore,
+  positionAt,
+  step,
+  type MatchView,
 } from './playback'
+import { AFTER_D4, twoGameEvents } from '../test/matchEvents'
 
 const START = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 const AFTER_E4 = 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1'
@@ -98,8 +104,19 @@ describe('applyEvent', () => {
     expect(game.turn).toBe('black')
     expect(game.whiteClockMs).toBe(58480)
     expect(game.moves).toEqual([
-      { ply: 1, color: 'white', san: 'e4', uci: 'e2e4', source: 'book', thinkMs: 1500 },
+      expect.objectContaining({
+        ply: 1,
+        color: 'white',
+        san: 'e4',
+        uci: 'e2e4',
+        source: 'book',
+        thinkMs: 1500,
+        fenAfter: AFTER_E4,
+        lastMove: ['e2', 'e4'],
+        whiteClockMs: 58480,
+      }),
     ])
+    expect(game.moves[0].decision?.reasons[0].text).toBe('e4 scored best')
     expect(view.thinking?.reasons[0].text).toBe('e4 scored best')
   })
 
@@ -239,5 +256,76 @@ describe('createPlayer', () => {
 
     expect(shown).toHaveLength(1)
     vi.useRealTimers()
+  })
+})
+
+describe('moving through a match', () => {
+  const twoGames = (): MatchView => twoGameEvents().reduce(applyEvent, emptyMatchView)
+
+  test('following live shows the newest position and the decision behind it', () => {
+    const position = positionAt(twoGames(), null)!
+
+    expect(position).toMatchObject({ gameIndex: 1, ply: 1, totalPlies: 1, live: true })
+    expect(position.fen).toBe(AFTER_D4)
+    expect(position.lastMove).toEqual(['d2', 'd4'])
+    expect(position.decision?.san).toBe('d4')
+  })
+
+  test('a past position shows its own board, clocks and decision', () => {
+    const position = positionAt(twoGames(), { gameIndex: 0, ply: 1 })!
+
+    expect(position.fen).toBe(AFTER_E4)
+    expect(position.whiteClockMs).toBe(59000)
+    expect(position.blackClockMs).toBe(60000)
+    expect(position.turn).toBe('black')
+    expect(position.decision?.reasons[0].text).toBe('e4 scored best')
+    expect(position.live).toBe(false)
+  })
+
+  test('the start position has no move and no decision', () => {
+    const position = positionAt(twoGames(), { gameIndex: 0, ply: 0 })!
+
+    expect(position.fen).toBe(START)
+    expect(position.lastMove).toBeNull()
+    expect(position.decision).toBeNull()
+    expect(position.whiteClockMs).toBe(60000)
+  })
+
+  test('stepping back from live walks through every position, across games', () => {
+    const view = twoGames()
+    const visited = []
+    let cursor = step(view, null, -1)
+    while (cursor !== null) {
+      visited.push(`${cursor.gameIndex}:${cursor.ply}`)
+      const next = step(view, cursor, -1)
+      if (next !== null && next.gameIndex === cursor.gameIndex && next.ply === cursor.ply) break
+      cursor = next
+    }
+
+    expect(visited).toEqual(['1:0', '0:2', '0:1', '0:0'])
+  })
+
+  test('stepping forward onto the newest position returns to live', () => {
+    const view = twoGames()
+
+    expect(step(view, { gameIndex: 1, ply: 0 }, 1)).toBeNull()
+    expect(step(view, { gameIndex: 0, ply: 2 }, 1)).toEqual({ gameIndex: 1, ply: 0 })
+    expect(step(view, null, 1)).toBeNull()
+  })
+
+  test('the first position is game 1 at the start; an empty match has none', () => {
+    expect(first(twoGames())).toEqual({ gameIndex: 0, ply: 0 })
+    expect(first(emptyMatchView)).toBeNull()
+    expect(positionAt(emptyMatchView, null)).toBeNull()
+  })
+
+  test('a cursor past the end of a game is clamped to its last move', () => {
+    expect(positionAt(twoGames(), { gameIndex: 0, ply: 99 })?.ply).toBe(2)
+  })
+
+  test('mates are spelled out in the thinking panel', () => {
+    expect(formatEval({ cp: null, mate: 3 })).toBe('Mate in 3')
+    expect(formatEval({ cp: null, mate: -2 })).toBe('Mated in 2')
+    expect(formatEval({ cp: 27, mate: null })).toBe('+0.27')
   })
 })

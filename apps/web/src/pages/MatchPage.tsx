@@ -5,13 +5,17 @@ import { useResource } from '../api/useResource'
 import { Board } from '../components/Board'
 import { DuckAvatar } from '../components/DuckAvatar'
 import { ratingLabel } from '../ducks/format'
+import { MoveList } from '../match/MoveList'
+import { ThinkingPanel } from '../match/ThinkingPanel'
 import {
   applyEvent,
   createPlayer,
   emptyMatchView,
+  first,
   formatClock,
-  formatScore,
-  type GameView,
+  positionAt,
+  step,
+  type Cursor,
   type MatchView,
   type Player,
 } from '../match/playback'
@@ -70,6 +74,12 @@ export function MatchPage({ matchId }: { matchId: string | null }) {
   const [seed, setSeed] = useState(randomSeed)
   const [match, setMatch] = useState<Match | null>(null)
   const [view, setView] = useState<MatchView>(emptyMatchView)
+  // Which position is on screen; null follows the game live.
+  const [cursor, setCursor] = useState<Cursor>(null)
+  const viewRef = useRef(view)
+  useEffect(() => {
+    viewRef.current = view
+  }, [view])
   const [speed, setSpeed] = useState(1)
   const [busy, setBusy] = useState(false)
   const [actionError, setError] = useState('')
@@ -96,6 +106,7 @@ export function MatchPage({ matchId }: { matchId: string | null }) {
       stopWatching()
       setMatch(target)
       setView(emptyMatchView)
+      setCursor(null)
       const playback = createPlayer((event) => {
         setView((current) => applyEvent(current, event))
         if (event.type === 'MatchFinished') reloadSetup() // ratings changed
@@ -129,6 +140,31 @@ export function MatchPage({ matchId }: { matchId: string | null }) {
       cancelled = true
     }
   }, [matchId, watch])
+
+  // Arrow keys step through the moves; Home and End jump to the start and to live.
+  useEffect(() => {
+    if (!match) return
+    const onKey = (event: KeyboardEvent) => {
+      const target = event.target
+      const typing =
+        target instanceof Element &&
+        target.closest('input, select, textarea, [contenteditable="true"]') !== null
+      if (typing) return
+      if (event.altKey || event.ctrlKey || event.metaKey) return
+      const moves: Record<string, (current: Cursor) => Cursor> = {
+        ArrowLeft: (current) => step(viewRef.current, current, -1),
+        ArrowRight: (current) => step(viewRef.current, current, 1),
+        Home: () => first(viewRef.current),
+        End: () => null,
+      }
+      const move = moves[event.key]
+      if (!move) return
+      event.preventDefault()
+      setCursor(move)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [match])
 
   const changeSpeed = (next: number) => {
     setSpeed(next)
@@ -194,7 +230,11 @@ export function MatchPage({ matchId }: { matchId: string | null }) {
 
   const duckName = (id: string | null | undefined) =>
     ducks.find((duck) => duck.id === id)?.name ?? 'Unknown duck'
-  const current: GameView | undefined = view.games[view.games.length - 1]
+  const position = positionAt(view, cursor)
+  const current = position?.game
+  const atStart = !position || (position.gameIndex === 0 && position.ply === 0)
+  const clockActive = (side: 'white' | 'black') =>
+    !!position && !(position.live && current?.result) && position.turn === side
   const ready = ducks.length >= 2 && engines.length >= 1
   const stopped = view.jobState === 'cancelled' || view.jobState === 'interrupted'
 
@@ -297,19 +337,60 @@ export function MatchPage({ matchId }: { matchId: string | null }) {
           <div className="watch-board">
             <PlayerBar
               name={duckName(current?.blackDuckId)}
-              clockMs={current?.blackClockMs ?? null}
-              active={!current?.result && current?.turn === 'black'}
+              clockMs={position?.blackClockMs ?? null}
+              active={clockActive('black')}
             />
             <Board
-              fen={current?.fen ?? 'start'}
-              lastMove={current?.lastMove}
-              check={current?.check}
+              fen={position?.fen ?? 'start'}
+              lastMove={position?.lastMove}
+              check={position?.check}
             />
             <PlayerBar
               name={duckName(current?.whiteDuckId)}
-              clockMs={current?.whiteClockMs ?? null}
-              active={!current?.result && current?.turn === 'white'}
+              clockMs={position?.whiteClockMs ?? null}
+              active={clockActive('white')}
             />
+            <div className="navigation" role="group" aria-label="Move through the game">
+              <button
+                type="button"
+                aria-label="First move"
+                title="Start (Home)"
+                disabled={atStart}
+                onClick={() => setCursor(first(view))}
+              >
+                ⏮
+              </button>
+              <button
+                type="button"
+                aria-label="Previous move"
+                title="Previous move (←)"
+                disabled={atStart}
+                onClick={() => setCursor((c) => step(view, c, -1))}
+              >
+                ◀
+              </button>
+              <span className="position-label" aria-live="polite">
+                {positionLabel(position, view.games.length)}
+              </span>
+              <button
+                type="button"
+                aria-label="Next move"
+                title="Next move (→)"
+                disabled={!position || position.live}
+                onClick={() => setCursor((c) => step(view, c, 1))}
+              >
+                ▶
+              </button>
+              <button
+                type="button"
+                aria-label="Latest move"
+                title="Latest move, follow live (End)"
+                disabled={!position || position.live}
+                onClick={() => setCursor(null)}
+              >
+                ⏭
+              </button>
+            </div>
             <div className="actions">
               <span className="speed" role="group" aria-label="Playback speed">
                 {SPEEDS.map((option) => (
@@ -324,7 +405,7 @@ export function MatchPage({ matchId }: { matchId: string | null }) {
                   </button>
                 ))}
               </span>
-              {view.status !== 'finished' && !stopped && (
+              {match.state !== 'finished' && view.status !== 'finished' && !stopped && (
                 <button type="button" onClick={() => void jobAction('cancel')}>
                   Stop
                 </button>
@@ -338,7 +419,7 @@ export function MatchPage({ matchId }: { matchId: string | null }) {
           </div>
 
           <div className="watch-side">
-            <div className="panel" aria-live="polite">
+            <div className="panel match-status" aria-live="polite">
               <h2>
                 {view.status === 'finished'
                   ? view.winnerDuckId
@@ -370,78 +451,30 @@ export function MatchPage({ matchId }: { matchId: string | null }) {
               </ul>
             </div>
 
-            {current && (
-              <div className="panel">
-                <h3>Moves</h3>
-                <ol className="moves">
-                  {current.moves.map((move) => (
-                    <li key={move.ply} className={move.color}>
-                      {move.color === 'white' && (
-                        <span className="number">{(move.ply + 1) / 2}.</span>
-                      )}
-                      <span title={move.source === 'engine' ? undefined : move.source}>
-                        {move.san}
-                        {move.source !== 'engine' && <sup>{move.source[0]}</sup>}
-                      </span>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            )}
+            <div className="panel">
+              <h3>Moves</h3>
+              {position ? (
+                <MoveList
+                  moves={position.game.moves}
+                  selectedPly={position.ply}
+                  onSelect={(ply) => setCursor({ gameIndex: position.gameIndex, ply })}
+                />
+              ) : (
+                <p className="hint moves">No moves yet.</p>
+              )}
+            </div>
 
-            {view.thinking && (
-              <div className="panel thinking">
-                <h3>
-                  Why {duckName(view.thinking.duckId)} played {view.thinking.san}
-                </h3>
-                <ul className="reasons">
-                  {view.thinking.reasons.map((reason, index) => (
-                    <li key={`${reason.code}-${index}`}>{reason.text}</li>
-                  ))}
-                </ul>
-                {view.thinking.candidates.length > 0 && (
-                  <table>
-                    <thead>
-                      <tr>
-                        <th scope="col">Move</th>
-                        <th scope="col">Engine</th>
-                        <th scope="col">Style</th>
-                        <th scope="col">Chance</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {view.thinking.candidates.map((candidate) => (
-                        <tr
-                          key={candidate.move}
-                          className={[
-                            candidate.move === view.thinking?.move ? 'chosen' : '',
-                            candidate.filtered ? 'filtered' : '',
-                          ].join(' ')}
-                        >
-                          <th scope="row">{candidate.san}</th>
-                          <td>{formatScore(candidate)}</td>
-                          <td>
-                            {candidate.adjustments.length === 0
-                              ? '–'
-                              : candidate.adjustments
-                                  .map(
-                                    (a) =>
-                                      `${a.ruleId} ${a.deltaCp >= 0 ? '+' : ''}${(a.deltaCp / 100).toFixed(2)}`,
-                                  )
-                                  .join(', ')}
-                          </td>
-                          <td>
-                            {candidate.filtered
-                              ? 'ruled out'
-                              : `${(candidate.probabilityPpm / 10000).toFixed(1)}%`}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </div>
-            )}
+            <ThinkingPanel
+              decision={position?.decision ?? null}
+              duckName={duckName}
+              emptyText={
+                !position
+                  ? 'Waiting for the first move…'
+                  : position.ply === 0
+                    ? 'Start position: no move has been played yet.'
+                    : 'No explanation was recorded for this move.'
+              }
+            />
           </div>
         </div>
       )}
@@ -461,6 +494,13 @@ export function MatchPage({ matchId }: { matchId: string | null }) {
       )}
     </section>
   )
+}
+
+function positionLabel(position: ReturnType<typeof positionAt>, games: number): string {
+  if (!position) return 'Waiting…'
+  const game = games > 1 ? `Game ${position.gameIndex + 1} · ` : ''
+  const ply = position.ply === 0 ? 'Start' : `Move ${position.ply} of ${position.totalPlies}`
+  return `${game}${ply}${position.live ? ' · Live' : ''}`
 }
 
 function PlayerBar({
