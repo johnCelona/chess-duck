@@ -20,6 +20,14 @@ __pycache__/
 dist-ssr
 *.local
 
+# Local-only notes (never committed). See "Tracked vs local notes" in CLAUDE.md.
+# Investigation and working notes: audits, research dumps, scratch.
+docs/architecture/
+# Personal Claude context, at the root or in any folder.
+CLAUDE.local.md
+*.local.md
+.claude/settings.local.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
