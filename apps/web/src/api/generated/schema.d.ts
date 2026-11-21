@@ -676,6 +676,42 @@ export interface components {
              */
             type: "DuckHatched";
         };
+        /** DuckLeveledUpData */
+        DuckLeveledUpData: {
+            /** Duckid */
+            duckId: string;
+            /** Level */
+            level: number;
+            /** Stage */
+            stage: string;
+            /** Stageadvanced */
+            stageAdvanced: boolean;
+            /** Statbudget */
+            statBudget: number;
+        };
+        /** DuckLeveledUpEvent */
+        DuckLeveledUpEvent: {
+            /**
+             * Cursor
+             * @description Global position; pass as `after` (or Last-Event-ID) to resume
+             */
+            cursor: number;
+            data: components["schemas"]["DuckLeveledUpData"];
+            /** Recordedat */
+            recordedAt: string;
+            /**
+             * Seq
+             * @description Position within the stream, starting at 1
+             */
+            seq: number;
+            /** Stream */
+            stream: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "DuckLeveledUp";
+        };
         /** DuckOut */
         DuckOut: {
             avatar: components["schemas"]["AvatarModel"];
@@ -779,7 +815,7 @@ export interface components {
         /** EventPage */
         EventPage: {
             /** Events */
-            events: (components["schemas"]["DuckHatchedEvent"] | components["schemas"]["MatchCreatedEvent"] | components["schemas"]["MatchStartedEvent"] | components["schemas"]["GameStartedEvent"] | components["schemas"]["MoveChosenEvent"] | components["schemas"]["MoveMadeEvent"] | components["schemas"]["GameFinishedEvent"] | components["schemas"]["MatchFinishedEvent"] | components["schemas"]["RatingUpdatedEvent"] | components["schemas"]["JobProgressedEvent"] | components["schemas"]["JobFinishedEvent"])[];
+            events: (components["schemas"]["DuckHatchedEvent"] | components["schemas"]["MatchCreatedEvent"] | components["schemas"]["MatchStartedEvent"] | components["schemas"]["GameStartedEvent"] | components["schemas"]["MoveChosenEvent"] | components["schemas"]["MoveMadeEvent"] | components["schemas"]["GameFinishedEvent"] | components["schemas"]["MatchFinishedEvent"] | components["schemas"]["RatingUpdatedEvent"] | components["schemas"]["JobProgressedEvent"] | components["schemas"]["JobFinishedEvent"] | components["schemas"]["LessonCompletedEvent"] | components["schemas"]["KnowledgeAddedEvent"] | components["schemas"]["DuckLeveledUpEvent"])[];
             /**
              * Nextcursor
              * @description Pass as `after` to continue
@@ -1067,6 +1103,43 @@ export interface components {
              */
             type: "JobProgressed";
         };
+        /** KnowledgeAddedData */
+        KnowledgeAddedData: {
+            /** Duckid */
+            duckId: string;
+            /** Entries */
+            entries: number;
+            /** Lessonid */
+            lessonId: string;
+            /**
+             * Target
+             * @enum {string}
+             */
+            target: "repertoire" | "puzzle_memory";
+        };
+        /** KnowledgeAddedEvent */
+        KnowledgeAddedEvent: {
+            /**
+             * Cursor
+             * @description Global position; pass as `after` (or Last-Event-ID) to resume
+             */
+            cursor: number;
+            data: components["schemas"]["KnowledgeAddedData"];
+            /** Recordedat */
+            recordedAt: string;
+            /**
+             * Seq
+             * @description Position within the stream, starting at 1
+             */
+            seq: number;
+            /** Stream */
+            stream: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "KnowledgeAdded";
+        };
         /** KnowledgeSummaryOut */
         KnowledgeSummaryOut: {
             /** Motifs */
@@ -1079,6 +1152,40 @@ export interface components {
             puzzleMemorySize: number;
             /** Repertoiresize */
             repertoireSize: number;
+        };
+        /** LessonCompletedData */
+        LessonCompletedData: {
+            /** Duckid */
+            duckId: string;
+            /** Kind */
+            kind: string;
+            /** Lessonid */
+            lessonId: string;
+            /** Xp */
+            xp: number;
+        };
+        /** LessonCompletedEvent */
+        LessonCompletedEvent: {
+            /**
+             * Cursor
+             * @description Global position; pass as `after` (or Last-Event-ID) to resume
+             */
+            cursor: number;
+            data: components["schemas"]["LessonCompletedData"];
+            /** Recordedat */
+            recordedAt: string;
+            /**
+             * Seq
+             * @description Position within the stream, starting at 1
+             */
+            seq: number;
+            /** Stream */
+            stream: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "LessonCompleted";
         };
         /** MatchCreatedData */
         MatchCreatedData: {

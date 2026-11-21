@@ -158,3 +158,34 @@ class JobFinished(Event):
     job_id: str
     state: str
     error_code: str | None
+
+
+# ----- Training (emitted by domain.lessons; services arrive in M2 and M5) -------------
+
+
+@dataclass(frozen=True)
+class LessonCompleted(Event):
+    type: ClassVar[str] = "LessonCompleted"
+    duck_id: str
+    lesson_id: str
+    kind: str
+    xp: int
+
+
+@dataclass(frozen=True)
+class KnowledgeAdded(Event):
+    type: ClassVar[str] = "KnowledgeAdded"
+    duck_id: str
+    lesson_id: str
+    target: str  # "repertoire" | "puzzle_memory"
+    entries: int
+
+
+@dataclass(frozen=True)
+class DuckLeveledUp(Event):
+    type: ClassVar[str] = "DuckLeveledUp"
+    duck_id: str
+    level: int
+    stage: str
+    stat_budget: int
+    stage_advanced: bool

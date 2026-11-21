@@ -158,6 +158,28 @@ class JobFinishedData(Wire):
     error_code: str | None
 
 
+class LessonCompletedData(Wire):
+    duck_id: str
+    lesson_id: str
+    kind: str
+    xp: int
+
+
+class KnowledgeAddedData(Wire):
+    duck_id: str
+    lesson_id: str
+    target: Literal["repertoire", "puzzle_memory"]
+    entries: int
+
+
+class DuckLeveledUpData(Wire):
+    duck_id: str
+    level: int
+    stage: str
+    stat_budget: int
+    stage_advanced: bool
+
+
 class _Envelope(Wire):
     cursor: int = Field(description="Global position; pass as `after` (or Last-Event-ID) to resume")
     stream: str
@@ -220,6 +242,21 @@ class JobFinishedEvent(_Envelope):
     data: JobFinishedData
 
 
+class LessonCompletedEvent(_Envelope):
+    type: Literal["LessonCompleted"]
+    data: LessonCompletedData
+
+
+class KnowledgeAddedEvent(_Envelope):
+    type: Literal["KnowledgeAdded"]
+    data: KnowledgeAddedData
+
+
+class DuckLeveledUpEvent(_Envelope):
+    type: Literal["DuckLeveledUp"]
+    data: DuckLeveledUpData
+
+
 EventEnvelope = Annotated[
     DuckHatchedEvent
     | MatchCreatedEvent
@@ -231,7 +268,10 @@ EventEnvelope = Annotated[
     | MatchFinishedEvent
     | RatingUpdatedEvent
     | JobProgressedEvent
-    | JobFinishedEvent,
+    | JobFinishedEvent
+    | LessonCompletedEvent
+    | KnowledgeAddedEvent
+    | DuckLeveledUpEvent,
     Field(discriminator="type"),
 ]
 

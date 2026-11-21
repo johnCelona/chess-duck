@@ -101,6 +101,35 @@ def _seed(args: argparse.Namespace, settings: Settings) -> int:
     return 0
 
 
+def _answer_keys(args: argparse.Namespace, settings: Settings) -> int:
+    """Score every legal move of every puzzle in a pack with a fixed Judge (ADR-0009).
+
+    Skeleton for M4: sequential, no resume. It already works against an installed engine.
+    """
+    from duckgambit.api.container import build_container
+    from duckgambit.domain.puzzles import load_pack
+    from duckgambit.services.answer_keys import JudgeConfig, build_answer_keys
+
+    source = Path(args.pack)
+    pack = json.loads(source.read_text(encoding="utf-8"))
+    load_pack(pack)  # validate before spending engine time
+
+    async def run() -> dict[str, object]:
+        container = build_container(settings)
+        try:
+            judge = JudgeConfig(args.engine, nodes=args.nodes, hash_mb=args.hash_mb)
+            return await build_answer_keys(pack, container.pool, judge)
+        finally:
+            await container.shutdown()
+
+    keyed = asyncio.run(run())
+    load_pack(keyed)  # the result must be a valid, fully keyed pack
+    target = Path(args.out) if args.out else source
+    target.write_text(json.dumps(keyed, indent=2) + "\n", encoding="utf-8", newline="\n")
+    print(f"Wrote answer keys for {len(pack['puzzles'])} puzzles to {target}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="duckgambit", description="Duck Gambit backend")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -118,6 +147,16 @@ def build_parser() -> argparse.ArgumentParser:
 
     seed = commands.add_parser("seed", help="hatch two default ducks (idempotent)")
     seed.set_defaults(handler=_seed)
+
+    keys = commands.add_parser(
+        "answer-keys", help="add Judge answer keys to a puzzle pack (skeleton, see ADR-0009)"
+    )
+    keys.add_argument("pack", help="path to a pack.json")
+    keys.add_argument("--out", help="write here instead of updating the pack in place")
+    keys.add_argument("--engine", default="stockfish")
+    keys.add_argument("--nodes", type=int, default=2_000_000, help="Judge nodes per legal move")
+    keys.add_argument("--hash-mb", type=int, default=64)
+    keys.set_defaults(handler=_answer_keys)
 
     return parser
 

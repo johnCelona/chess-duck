@@ -11,6 +11,9 @@ from .conftest import BULLET_ARENA, V1, hatch, wait_for_job
 
 CONTRACTS = Path(__file__).resolve().parents[3] / "contracts"
 
+# Events with a schema and domain code whose services are built in later milestones.
+NOT_EMITTED_YET = {"LessonCompleted", "KnowledgeAdded", "DuckLeveledUp"}
+
 
 def all_domain_event_types() -> set[str]:
     return {
@@ -76,7 +79,7 @@ def test_real_event_streams_validate_against_the_published_event_schema(client):
     events = client.get(f"{V1}/events", params={"stream": streams, "limit": 500}).json()["events"]
 
     seen = {event["type"] for event in events}
-    assert seen == all_domain_event_types()
+    assert seen == all_domain_event_types() - NOT_EMITTED_YET
     for event in events:
         # Round trip through the same schema clients are generated from.
         parsed = EVENT_ADAPTER.validate_python(event)

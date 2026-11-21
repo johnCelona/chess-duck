@@ -213,6 +213,79 @@
       "title": "DuckHatchedEvent",
       "type": "object"
     },
+    "DuckLeveledUpData": {
+      "properties": {
+        "duckId": {
+          "title": "Duckid",
+          "type": "string"
+        },
+        "level": {
+          "title": "Level",
+          "type": "integer"
+        },
+        "stage": {
+          "title": "Stage",
+          "type": "string"
+        },
+        "stageAdvanced": {
+          "title": "Stageadvanced",
+          "type": "boolean"
+        },
+        "statBudget": {
+          "title": "Statbudget",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "duckId",
+        "level",
+        "stage",
+        "statBudget",
+        "stageAdvanced"
+      ],
+      "title": "DuckLeveledUpData",
+      "type": "object"
+    },
+    "DuckLeveledUpEvent": {
+      "properties": {
+        "cursor": {
+          "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+          "title": "Cursor",
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/$defs/DuckLeveledUpData"
+        },
+        "recordedAt": {
+          "title": "Recordedat",
+          "type": "string"
+        },
+        "seq": {
+          "description": "Position within the stream, starting at 1",
+          "title": "Seq",
+          "type": "integer"
+        },
+        "stream": {
+          "title": "Stream",
+          "type": "string"
+        },
+        "type": {
+          "const": "DuckLeveledUp",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cursor",
+        "stream",
+        "seq",
+        "recordedAt",
+        "type",
+        "data"
+      ],
+      "title": "DuckLeveledUpEvent",
+      "type": "object"
+    },
     "DuckScoreData": {
       "properties": {
         "duckId": {
@@ -559,6 +632,146 @@
         "data"
       ],
       "title": "JobProgressedEvent",
+      "type": "object"
+    },
+    "KnowledgeAddedData": {
+      "properties": {
+        "duckId": {
+          "title": "Duckid",
+          "type": "string"
+        },
+        "entries": {
+          "title": "Entries",
+          "type": "integer"
+        },
+        "lessonId": {
+          "title": "Lessonid",
+          "type": "string"
+        },
+        "target": {
+          "enum": [
+            "repertoire",
+            "puzzle_memory"
+          ],
+          "title": "Target",
+          "type": "string"
+        }
+      },
+      "required": [
+        "duckId",
+        "lessonId",
+        "target",
+        "entries"
+      ],
+      "title": "KnowledgeAddedData",
+      "type": "object"
+    },
+    "KnowledgeAddedEvent": {
+      "properties": {
+        "cursor": {
+          "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+          "title": "Cursor",
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/$defs/KnowledgeAddedData"
+        },
+        "recordedAt": {
+          "title": "Recordedat",
+          "type": "string"
+        },
+        "seq": {
+          "description": "Position within the stream, starting at 1",
+          "title": "Seq",
+          "type": "integer"
+        },
+        "stream": {
+          "title": "Stream",
+          "type": "string"
+        },
+        "type": {
+          "const": "KnowledgeAdded",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cursor",
+        "stream",
+        "seq",
+        "recordedAt",
+        "type",
+        "data"
+      ],
+      "title": "KnowledgeAddedEvent",
+      "type": "object"
+    },
+    "LessonCompletedData": {
+      "properties": {
+        "duckId": {
+          "title": "Duckid",
+          "type": "string"
+        },
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        },
+        "lessonId": {
+          "title": "Lessonid",
+          "type": "string"
+        },
+        "xp": {
+          "title": "Xp",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "duckId",
+        "lessonId",
+        "kind",
+        "xp"
+      ],
+      "title": "LessonCompletedData",
+      "type": "object"
+    },
+    "LessonCompletedEvent": {
+      "properties": {
+        "cursor": {
+          "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+          "title": "Cursor",
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/$defs/LessonCompletedData"
+        },
+        "recordedAt": {
+          "title": "Recordedat",
+          "type": "string"
+        },
+        "seq": {
+          "description": "Position within the stream, starting at 1",
+          "title": "Seq",
+          "type": "integer"
+        },
+        "stream": {
+          "title": "Stream",
+          "type": "string"
+        },
+        "type": {
+          "const": "LessonCompleted",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cursor",
+        "stream",
+        "seq",
+        "recordedAt",
+        "type",
+        "data"
+      ],
+      "title": "LessonCompletedEvent",
       "type": "object"
     },
     "MatchCreatedData": {
@@ -1242,10 +1455,13 @@
   "discriminator": {
     "mapping": {
       "DuckHatched": "#/$defs/DuckHatchedEvent",
+      "DuckLeveledUp": "#/$defs/DuckLeveledUpEvent",
       "GameFinished": "#/$defs/GameFinishedEvent",
       "GameStarted": "#/$defs/GameStartedEvent",
       "JobFinished": "#/$defs/JobFinishedEvent",
       "JobProgressed": "#/$defs/JobProgressedEvent",
+      "KnowledgeAdded": "#/$defs/KnowledgeAddedEvent",
+      "LessonCompleted": "#/$defs/LessonCompletedEvent",
       "MatchCreated": "#/$defs/MatchCreatedEvent",
       "MatchFinished": "#/$defs/MatchFinishedEvent",
       "MatchStarted": "#/$defs/MatchStartedEvent",
@@ -1288,6 +1504,15 @@
     },
     {
       "$ref": "#/$defs/JobFinishedEvent"
+    },
+    {
+      "$ref": "#/$defs/LessonCompletedEvent"
+    },
+    {
+      "$ref": "#/$defs/KnowledgeAddedEvent"
+    },
+    {
+      "$ref": "#/$defs/DuckLeveledUpEvent"
     }
   ],
   "title": "Duck Gambit event envelope"
