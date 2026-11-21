@@ -4,10 +4,10 @@ from typing import Any
 
 from pydantic import Field
 
-from duckgambit.api.schemas.base import Wire, WireIn
+from duckgambit.api.schemas.base import ID_PATTERN, Wire, WireIn
 from duckgambit.domain.balance import Balance
-from duckgambit.domain.duck import Avatar, Duck
-from duckgambit.services.ducks import HeadlineRating
+from duckgambit.domain.duck import EGG_SEED_MAX, Avatar, Duck
+from duckgambit.services.ducks import HeadlineRating, Profile
 
 
 class StatsModel(WireIn):
@@ -34,12 +34,22 @@ class HatchRequest(WireIn):
     stats: StatsModel | None = Field(
         default=None, description="Omit for the default spread. Must fit the level-1 stat budget."
     )
+    egg_seed: int | None = Field(
+        default=None,
+        ge=0,
+        le=EGG_SEED_MAX,
+        description="The egg this duck hatches from. Its starting stats are derived from it, "
+        "so the same egg always hatches the same stats. Cannot be combined with `stats`.",
+    )
 
 
 class GrowthOut(Wire):
     stage: str
     level: int
     xp: int
+    xp_for_next_level: int | None = Field(
+        description="Cumulative XP at which the next level starts; null at the maximum level"
+    )
     stat_budget: int
     stat_cap: int
 
@@ -81,6 +91,7 @@ class DuckOut(Wire):
     rating: HeadlineRatingOut
     created_at: str
     origin: str | None
+    egg_seed: int | None = Field(description="The egg it hatched from; null if hatched without one")
     stream: str = Field(description="Event stream for this duck")
 
     @classmethod
@@ -97,6 +108,7 @@ class DuckOut(Wire):
                 stage=duck.growth.stage,
                 level=duck.growth.level,
                 xp=duck.growth.xp,
+                xp_for_next_level=balance.xp_for_next_level(duck.growth.level),
                 stat_budget=balance.stat_budget(duck.growth.level),
                 stat_cap=balance.stage_for(duck.growth.level).stat_cap,
             ),
@@ -117,8 +129,28 @@ class DuckOut(Wire):
             ),
             created_at=duck.created_at,
             origin=duck.origin,
+            egg_seed=duck.egg_seed,
             stream=f"duck:{duck.id}",
         )
+
+
+class ProfileOut(Wire):
+    """The local player. The hub shows the active duck."""
+
+    id: str
+    name: str
+    active_duck_id: str | None = Field(
+        description="The duck the hub shows: the last one chosen, else the oldest; "
+        "null with no ducks"
+    )
+
+    @classmethod
+    def of(cls, profile: Profile) -> ProfileOut:
+        return cls(id=profile.id, name=profile.name, active_duck_id=profile.active_duck_id)
+
+
+class ActiveDuckIn(WireIn):
+    duck_id: str = Field(pattern=ID_PATTERN)
 
 
 class DuckFile(Wire):

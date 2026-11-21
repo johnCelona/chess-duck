@@ -84,3 +84,11 @@ def test_stat_budget_and_stage_grow_with_level():
     assert DEFAULT_BALANCE.stage_for(15).name == "duck"
     assert DEFAULT_BALANCE.level_for_xp(0) == 1
     assert DEFAULT_BALANCE.level_for_xp(DEFAULT_BALANCE.xp_needed(3)) == 3
+
+
+def test_the_xp_bar_ends_where_the_next_level_starts_and_is_open_at_the_top():
+    balance = DEFAULT_BALANCE
+
+    assert balance.xp_for_next_level(1) == balance.xp_needed(2)
+    assert balance.level_for_xp(balance.xp_for_next_level(3)) == 4
+    assert balance.xp_for_next_level(balance.max_level) is None

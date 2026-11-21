@@ -17,6 +17,8 @@ export interface paths {
         /**
          * Hatch Duck
          * @description Hatch a level-1 duck. Emits DuckHatched on the duck's stream.
+         *
+         *     With `eggSeed`, the starting stats are derived from the egg. Hatching never replaces a duck.
          */
         post: operations["hatchDuck"];
         delete?: never;
@@ -407,10 +409,55 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Profile
+         * @description The local player and the duck the hub shows.
+         */
+        get: operations["getProfile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/profile/active-duck": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Active Duck
+         * @description Choose the duck the hub shows. Saved, so it survives a restart and is shared by clients.
+         */
+        put: operations["setActiveDuck"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ActiveDuckIn */
+        ActiveDuckIn: {
+            /** Duckid */
+            duckId: string;
+        };
         /** AdjustmentModel */
         AdjustmentModel: {
             /** Deltacp */
@@ -640,6 +687,8 @@ export interface components {
         DuckHatchedData: {
             /** Duckid */
             duckId: string;
+            /** Eggseed */
+            eggSeed?: number | null;
             /** Level */
             level: number;
             /** Name */
@@ -718,6 +767,11 @@ export interface components {
             care: components["schemas"]["CareOut"];
             /** Createdat */
             createdAt: string;
+            /**
+             * Eggseed
+             * @description The egg it hatched from; null if hatched without one
+             */
+            eggSeed: number | null;
             growth: components["schemas"]["GrowthOut"];
             /** Id */
             id: string;
@@ -958,10 +1012,20 @@ export interface components {
             statCap: number;
             /** Xp */
             xp: number;
+            /**
+             * Xpfornextlevel
+             * @description Cumulative XP at which the next level starts; null at the maximum level
+             */
+            xpForNextLevel: number | null;
         };
         /** HatchRequest */
         HatchRequest: {
             avatar?: components["schemas"]["AvatarModel"] | null;
+            /**
+             * Eggseed
+             * @description The egg this duck hatches from. Its starting stats are derived from it, so the same egg always hatches the same stats. Cannot be combined with `stats`.
+             */
+            eggSeed?: number | null;
             /** Name */
             name: string;
             /** @description Omit for the default spread. Must fit the level-1 stat budget. */
@@ -1510,6 +1574,21 @@ export interface components {
              * @default about:blank
              */
             type?: string;
+        };
+        /**
+         * ProfileOut
+         * @description The local player. The hub shows the active duck.
+         */
+        ProfileOut: {
+            /**
+             * Activeduckid
+             * @description The duck the hub shows: the last one chosen, else the oldest; null with no ducks
+             */
+            activeDuckId: string | null;
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
         };
         /** RatingUpdatedData */
         RatingUpdatedData: {
@@ -2423,6 +2502,68 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MatchOut"];
+                };
+            };
+            /** @description Any error, as an RFC 9457 problem document */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    getProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileOut"];
+                };
+            };
+            /** @description Any error, as an RFC 9457 problem document */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    setActiveDuck: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActiveDuckIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileOut"];
                 };
             };
             /** @description Any error, as an RFC 9457 problem document */

@@ -29,6 +29,7 @@ class DuckHatched(Event):
     stage: str
     level: int
     stats: dict[str, int]
+    egg_seed: int | None = None
 
 
 @dataclass(frozen=True)

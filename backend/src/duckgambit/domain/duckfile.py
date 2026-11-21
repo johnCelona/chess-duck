@@ -11,6 +11,7 @@ from typing import Any
 from duckgambit.domain.balance import DEFAULT_BALANCE, Balance
 from duckgambit.domain.chessutil import UCI_MOVE
 from duckgambit.domain.duck import (
+    EGG_SEED_MAX,
     Avatar,
     Care,
     Duck,
@@ -60,6 +61,7 @@ def export_duck(
                 "xp": duck.growth.xp,
             },
             "stats": dict(duck.stats),
+            "eggSeed": duck.egg_seed,
             "knowledge": {
                 "repertoire": {"white": side("white"), "black": side("black")},
                 "principles": list(duck.knowledge.principles),
@@ -193,6 +195,17 @@ def import_duck(
         "Invalid motifs",
     )
 
+    # Optional and additive (files written before it simply lack it). It is provenance only:
+    # the stats above are validated on their own and are not re-derived from the seed.
+    egg_seed = body.get("eggSeed")
+    if egg_seed is not None:
+        _require(
+            isinstance(egg_seed, int)
+            and not isinstance(egg_seed, bool)
+            and 0 <= egg_seed <= EGG_SEED_MAX,
+            "Invalid egg seed",
+        )
+
     name = body.get("name")
     _require(isinstance(name, str), "The duck has no name")
     origin = body.get("id")
@@ -212,4 +225,5 @@ def import_duck(
         ),
         created_at=now,
         origin=origin if isinstance(origin, str) and len(origin) <= 64 else None,
+        egg_seed=egg_seed,
     )

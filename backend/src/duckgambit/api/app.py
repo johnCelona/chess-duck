@@ -77,6 +77,7 @@ def create_app(settings: Settings | None = None, container: Container | None = N
 
     v1.include_router(engines.router)
     v1.include_router(ducks.router)
+    v1.include_router(ducks.profile)
     v1.include_router(matches.matches)
     v1.include_router(matches.games)
     v1.include_router(matches.jobs)

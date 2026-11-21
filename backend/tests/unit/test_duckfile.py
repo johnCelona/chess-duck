@@ -108,3 +108,22 @@ def test_a_file_from_a_newer_version_is_refused_clearly(exported):
         load(future)
 
     assert error.value.code == "duckfile.too_new"
+
+
+def test_the_egg_seed_travels_with_the_duck_and_older_files_have_none(exported):
+    duck, _ = hatch(duck_id="duck_egg", profile_id="prof_a", name="Eggy", now=NOW, egg_seed=99)
+    data = export_duck(duck, [], NOW, "0.1.0")
+    assert data["duck"]["eggSeed"] == 99
+    assert load(data).egg_seed == 99
+
+    _, older = exported
+    del older["duck"]["eggSeed"]
+    assert load(older).egg_seed is None
+
+
+def test_an_invalid_egg_seed_in_a_file_is_refused(exported):
+    _, data = exported
+    data["duck"]["eggSeed"] = -5
+
+    with pytest.raises(DomainError, match="egg seed"):
+        load(data)

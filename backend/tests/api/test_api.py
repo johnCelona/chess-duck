@@ -46,8 +46,10 @@ def test_hatching_returns_a_duck_with_budget_and_a_provisional_rating(client):
 
     assert duck["name"] == "Sir Quackalot"
     assert duck["growth"] == {
-        "stage": "hatchling", "level": 1, "xp": 0, "statBudget": 240, "statCap": 60
+        "stage": "hatchling", "level": 1, "xp": 0, "xpForNextLevel": 100,
+        "statBudget": 240, "statCap": 60,
     }  # fmt: skip
+    assert duck["eggSeed"] is None
     assert duck["stats"]["calculation"] == 40
     assert duck["rating"] == {
         "value": 1500.0, "deviation": 350.0, "games": 0, "provisional": True, "contextId": None
@@ -57,6 +59,45 @@ def test_hatching_returns_a_duck_with_budget_and_a_provisional_rating(client):
     events = client.get(f"{V1}/events", params={"stream": duck["stream"]}).json()["events"]
     assert [e["type"] for e in events] == ["DuckHatched"]
     assert events[0]["data"]["duckId"] == duck["id"]
+
+
+def test_an_egg_seed_decides_the_starting_stats_and_is_kept(client):
+    first = client.post(f"{V1}/ducks", json={"name": "Egg One", "eggSeed": 42}).json()
+    twin = client.post(f"{V1}/ducks", json={"name": "Egg Two", "eggSeed": 42}).json()
+
+    assert first["eggSeed"] == 42
+    assert first["stats"] == twin["stats"]
+    assert first["stats"] != hatch(client, "No egg")["stats"]
+    events = client.get(f"{V1}/events", params={"stream": first["stream"]}).json()["events"]
+    assert events[0]["data"]["eggSeed"] == 42
+
+
+def test_an_egg_cannot_be_combined_with_chosen_stats(client):
+    stats = dict.fromkeys(
+        ("calculation", "memory", "aggression", "solidity", "creativity", "speed"), 40)  # fmt: skip
+    body = {"name": "Both", "eggSeed": 1, "stats": stats}
+
+    assert_problem(client.post(f"{V1}/ducks", json=body), 422, "duck.egg_and_stats")
+    too_big = {"name": "Big egg", "eggSeed": 2**53}
+    assert_problem(client.post(f"{V1}/ducks", json=too_big), 422, "request.invalid")
+
+
+def test_the_active_duck_defaults_to_the_oldest_and_can_be_chosen(client):
+    assert client.get(f"{V1}/profile").json()["activeDuckId"] is None
+    first, second = hatch(client, "First"), hatch(client, "Second")
+
+    profile = client.get(f"{V1}/profile").json()
+    assert profile["activeDuckId"] == first["id"]
+    assert profile["name"]
+
+    chosen = client.put(f"{V1}/profile/active-duck", json={"duckId": second["id"]})
+    assert chosen.status_code == 200, chosen.text
+    assert chosen.json()["activeDuckId"] == second["id"]
+    assert client.get(f"{V1}/profile").json()["activeDuckId"] == second["id"]
+
+    missing = client.put(f"{V1}/profile/active-duck", json={"duckId": "duck_missing"})
+    assert_problem(missing, 404, "duck.not_found")
+    assert client.get(f"{V1}/profile").json()["activeDuckId"] == second["id"]
 
 
 def test_domain_rules_come_back_as_problems_with_stable_codes(client):

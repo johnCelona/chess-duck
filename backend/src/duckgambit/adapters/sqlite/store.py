@@ -41,7 +41,8 @@ def upcast_duck_doc(doc: dict[str, Any], version: int) -> dict[str, Any]:
     """Bring a stored duck document up to the current shape. Add a step per new version."""
     if version > DUCK_SCHEMA_VERSION:
         raise ValueError(f"Duck document version {version} is newer than this build supports")
-    # version 1 is current; future steps go here: `if version < 2: doc = _v1_to_v2(doc)`
+    if version < 2:
+        doc = {**doc, "egg_seed": None}  # ducks hatched before eggs had seeds
     return doc
 
 
@@ -59,6 +60,25 @@ class SqliteProfiles(_Repository):
             )
         return DEFAULT_PROFILE_ID
 
+    def name(self, profile_id: str) -> str | None:
+        with self._db.tx() as tx:
+            row = tx.execute("SELECT name FROM profiles WHERE id = ?", (profile_id,)).fetchone()
+        return row["name"] if row else None
+
+    def active_duck(self, profile_id: str) -> str | None:
+        """The saved active duck, if it still belongs to this profile."""
+        with self._db.tx() as tx:
+            row = tx.execute(
+                "SELECT d.id FROM profiles p JOIN ducks d"
+                " ON d.id = p.active_duck_id AND d.profile_id = p.id WHERE p.id = ?",
+                (profile_id,),
+            ).fetchone()
+        return row["id"] if row else None
+
+    def set_active_duck(self, profile_id: str, duck_id: str) -> None:
+        with self._db.tx() as tx:
+            tx.execute("UPDATE profiles SET active_duck_id = ? WHERE id = ?", (duck_id, profile_id))
+
 
 class SqliteDucks(_Repository):
     def add(self, duck: Duck) -> None:
@@ -69,6 +89,7 @@ class SqliteDucks(_Repository):
             "care": asdict(duck.care),
             "principles": list(duck.knowledge.principles),
             "motifs": duck.knowledge.motifs,
+            "egg_seed": duck.egg_seed,
         }
         with self._db.tx() as tx:
             tx.execute(
@@ -152,6 +173,7 @@ class SqliteDucks(_Repository):
             ),
             created_at=row["created_at"],
             origin=row["origin"],
+            egg_seed=doc["egg_seed"],
         )
 
 

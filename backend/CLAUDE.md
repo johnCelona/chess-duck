@@ -22,6 +22,7 @@ The domain never reads a clock, an environment variable, a file, or global rando
 ## Data
 
 - SQLite through `adapters/sqlite/`. Schema changes are new numbered files in `adapters/sqlite/migrations/`, forward-only; never edit a shipped migration. Nested values live in versioned JSON `doc` columns with upcasters.
+- One local profile (`prof_local`) owns every duck and remembers the active duck (`GET /profile`, `PUT /profile/active-duck`). A duck's `egg_seed` sets its starting stats only (`domain/duck.stats_from_egg`).
 - All mutable files go under the data directory (`adapters/system.DataPaths`), never the source tree. Paths built from input go through `safe_child`.
 
 ## API

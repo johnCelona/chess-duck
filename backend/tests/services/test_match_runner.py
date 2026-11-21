@@ -137,6 +137,21 @@ async def test_the_same_seed_replays_the_same_games_and_another_seed_does_not(ha
     assert await other.pgns(different.id) != await harness.pgns(match.id)
 
 
+async def test_ducks_from_the_same_eggs_play_the_same_games_on_another_install(harness, tmp_path):
+    async def hatch_and_play(h):
+        first = await h.ducks.hatch("Speckles", egg_seed=1234)
+        second = await h.ducks.hatch("Dotty", egg_seed=98765)
+        match = await h.matches.create((first.id, second.id), NODES, True)
+        await h.jobs.wait(match.job_id)
+        return first, await h.pgns(match.id)
+
+    duck, games = await hatch_and_play(harness)
+    twin, twin_games = await hatch_and_play(fresh_harness(tmp_path, "twin"))
+
+    assert duck.stats == twin.stats != default_stats()
+    assert games == twin_games
+
+
 class CancellingPool(FakeEnginePool):
     """Requests a cancel from inside the Nth search, the way a user would mid-game."""
 

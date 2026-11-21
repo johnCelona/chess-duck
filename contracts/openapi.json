@@ -1,6 +1,21 @@
 {
   "components": {
     "schemas": {
+      "ActiveDuckIn": {
+        "additionalProperties": false,
+        "properties": {
+          "duckId": {
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+            "title": "Duckid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "duckId"
+        ],
+        "title": "ActiveDuckIn",
+        "type": "object"
+      },
       "AdjustmentModel": {
         "properties": {
           "deltaCp": {
@@ -514,6 +529,17 @@
             "title": "Duckid",
             "type": "string"
           },
+          "eggSeed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Eggseed"
+          },
           "level": {
             "title": "Level",
             "type": "integer"
@@ -674,6 +700,18 @@
             "title": "Createdat",
             "type": "string"
           },
+          "eggSeed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The egg it hatched from; null if hatched without one",
+            "title": "Eggseed"
+          },
           "growth": {
             "$ref": "#/components/schemas/GrowthOut"
           },
@@ -722,6 +760,7 @@
           "rating",
           "createdAt",
           "origin",
+          "eggSeed",
           "stream"
         ],
         "title": "DuckOut",
@@ -1395,12 +1434,25 @@
           "xp": {
             "title": "Xp",
             "type": "integer"
+          },
+          "xpForNextLevel": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Cumulative XP at which the next level starts; null at the maximum level",
+            "title": "Xpfornextlevel"
           }
         },
         "required": [
           "stage",
           "level",
           "xp",
+          "xpForNextLevel",
           "statBudget",
           "statCap"
         ],
@@ -1419,6 +1471,20 @@
                 "type": "null"
               }
             ]
+          },
+          "eggSeed": {
+            "anyOf": [
+              {
+                "maximum": 9007199254740991.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The egg this duck hatches from. Its starting stats are derived from it, so the same egg always hatches the same stats. Cannot be combined with `stats`.",
+            "title": "Eggseed"
           },
           "name": {
             "maxLength": 60,
@@ -2717,6 +2783,38 @@
         "title": "Problem",
         "type": "object"
       },
+      "ProfileOut": {
+        "description": "The local player. The hub shows the active duck.",
+        "properties": {
+          "activeDuckId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The duck the hub shows: the last one chosen, else the oldest; null with no ducks",
+            "title": "Activeduckid"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "activeDuckId"
+        ],
+        "title": "ProfileOut",
+        "type": "object"
+      },
       "RatingUpdatedData": {
         "properties": {
           "after": {
@@ -3013,7 +3111,7 @@
         ]
       },
       "post": {
-        "description": "Hatch a level-1 duck. Emits DuckHatched on the duck's stream.",
+        "description": "Hatch a level-1 duck. Emits DuckHatched on the duck's stream.\n\nWith `eggSeed`, the starting stats are derived from the egg. Hatching never replaces a duck.",
         "operationId": "hatchDuck",
         "requestBody": {
           "content": {
@@ -4159,6 +4257,80 @@
         "summary": "Resume Match",
         "tags": [
           "matches"
+        ]
+      }
+    },
+    "/api/v1/profile": {
+      "get": {
+        "description": "The local player and the duck the hub shows.",
+        "operationId": "getProfile",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Get Profile",
+        "tags": [
+          "profile"
+        ]
+      }
+    },
+    "/api/v1/profile/active-duck": {
+      "put": {
+        "description": "Choose the duck the hub shows. Saved, so it survives a restart and is shared by clients.",
+        "operationId": "setActiveDuck",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActiveDuckIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Set Active Duck",
+        "tags": [
+          "profile"
         ]
       }
     }

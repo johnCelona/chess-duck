@@ -43,7 +43,7 @@ DEFAULT_CLOCK_POLICY = ClockPolicy()
 
 @dataclass(frozen=True)
 class Balance:
-    version: str = "balance-0.2-placeholder"
+    version: str = "balance-0.3-placeholder"
     clock: ClockPolicy = DEFAULT_CLOCK_POLICY
 
     # Growth
@@ -58,6 +58,11 @@ class Balance:
     base_stat_budget: int = 240
     stat_budget_per_level: int = 6
     default_stat: int = 40
+
+    # The egg seed tilts a new duck's starting stats off the even spread (design 03 §1):
+    # this many transfers of this many points from one stat to another.
+    egg_stat_shifts: int = 3
+    egg_shift_size: int = 5
 
     # Calculation -> node multiplier: every 10 "tenths" doubles the nodes.
     calculation_tenths_span: int = 30  # stat 0 is 1/8x, stat 100 is 8x
@@ -98,6 +103,10 @@ class Balance:
     def xp_needed(self, level: int) -> int:
         """Cumulative XP required to reach `level`."""
         return self.xp_per_level_step * (level - 1) * level
+
+    def xp_for_next_level(self, level: int) -> int | None:
+        """Cumulative XP at which the next level starts; None at the maximum level."""
+        return None if level >= self.max_level else self.xp_needed(level + 1)
 
     def level_for_xp(self, xp: int) -> int:
         level = 1

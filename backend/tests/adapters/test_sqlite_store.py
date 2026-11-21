@@ -1,3 +1,4 @@
+import json
 import sqlite3
 from dataclasses import replace
 
@@ -86,6 +87,61 @@ def test_duck_round_trips_with_its_knowledge(store):
 def test_a_duck_document_from_a_newer_build_is_refused():
     with pytest.raises(ValueError, match="newer"):
         upcast_duck_doc({}, version=99)
+
+
+def test_a_duck_keeps_the_egg_seed_it_hatched_from(store):
+    duck, _ = hatch(
+        duck_id="duck_1", profile_id=DEFAULT_PROFILE_ID, name="Eggbert", now=NOW, egg_seed=42
+    )
+
+    store.ducks.add(duck)
+
+    assert store.ducks.get("duck_1") == duck
+    assert store.ducks.get("duck_1").egg_seed == 42
+
+
+def test_a_version_1_duck_document_reads_as_a_duck_without_an_egg(store):
+    duck = a_duck()
+    store.ducks.add(duck)
+    with store.database.tx() as tx:
+        doc = json.loads(tx.execute("SELECT doc FROM ducks WHERE id = 'duck_1'").fetchone()[0])
+        del doc["egg_seed"]
+        tx.execute(
+            "UPDATE ducks SET doc = ?, doc_version = 1 WHERE id = 'duck_1'", (json.dumps(doc),)
+        )
+
+    loaded = store.ducks.get("duck_1")
+
+    assert loaded == duck
+    assert loaded.egg_seed is None
+
+
+def test_the_active_duck_is_saved_on_the_profile(store):
+    store.ducks.add(a_duck("duck_1"))
+    store.ducks.add(a_duck("duck_2", "Bill"))
+    assert store.profiles.active_duck(DEFAULT_PROFILE_ID) is None
+
+    store.profiles.set_active_duck(DEFAULT_PROFILE_ID, "duck_2")
+
+    assert store.profiles.active_duck(DEFAULT_PROFILE_ID) == "duck_2"
+    assert store.profiles.name(DEFAULT_PROFILE_ID) == "Local player"
+
+
+def test_a_version_2_database_upgrades_with_no_active_duck_and_keeps_its_ducks(tmp_path):
+    path = tmp_path / "v2.db"
+    assert Database(path).migrate(NOW, target=2) == [1, 2]
+    old = SqliteStore(path)
+    old.profiles.ensure_default(NOW)
+    old.ducks.add(a_duck())
+    old.close()
+
+    store = SqliteStore(path)
+    assert store.migrate(NOW) == [3]
+
+    assert (tmp_path / "v2.db.bak-v2").exists()
+    assert store.ducks.get("duck_1") == a_duck()
+    assert store.profiles.active_duck(DEFAULT_PROFILE_ID) is None
+    store.close()
 
 
 def test_events_get_a_sequence_per_stream_and_a_global_cursor(store):
@@ -203,7 +259,7 @@ def test_a_version_1_database_upgrades_keeps_its_data_and_backfills_position_key
     old.close()
 
     store = SqliteStore(path)
-    assert store.migrate(NOW) == [2]
+    assert store.migrate(NOW)[0] == 2  # later migrations follow in the same run
 
     assert (tmp_path / "old.db.bak-v1").exists()
     moves = store.matches.list_moves("game_1")

@@ -24,6 +24,7 @@ class DuckHatchedData(Wire):
     stage: str
     level: int
     stats: dict[str, int]
+    egg_seed: int | None = None
 
 
 class MatchCreatedData(Wire):

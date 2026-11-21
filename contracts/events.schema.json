@@ -138,6 +138,18 @@
           "title": "Duckid",
           "type": "string"
         },
+        "eggSeed": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Eggseed"
+        },
         "level": {
           "title": "Level",
           "type": "integer"

@@ -1,4 +1,4 @@
-"""Duck use cases: hatch, list, export and import."""
+"""Duck use cases: hatch, list, export, import, and the profile's active duck."""
 
 from __future__ import annotations
 
@@ -20,6 +20,13 @@ from duckgambit.services.records import RatingRecord
 
 def duck_stream(duck_id: str) -> str:
     return f"duck:{duck_id}"
+
+
+@dataclass(frozen=True)
+class Profile:
+    id: str
+    name: str
+    active_duck_id: str | None
 
 
 @dataclass(frozen=True)
@@ -67,7 +74,11 @@ class DuckService:
         self.balance = balance
 
     async def hatch(
-        self, name: str, avatar: Avatar | None = None, stats: dict[str, int] | None = None
+        self,
+        name: str,
+        avatar: Avatar | None = None,
+        stats: dict[str, int] | None = None,
+        egg_seed: int | None = None,
     ) -> Duck:
         duck, events = hatch(
             duck_id=self._ids.new("duck"),
@@ -76,6 +87,7 @@ class DuckService:
             now=iso(self._clock),
             avatar=avatar,
             stats=stats,
+            egg_seed=egg_seed,
             balance=self.balance,
         )
 
@@ -87,6 +99,30 @@ class DuckService:
         await asyncio.to_thread(write)
         self._events.notify()
         return duck
+
+    async def profile(self) -> Profile:
+        """The local player, with the duck the hub should show.
+
+        Falls back to the oldest duck when none was chosen yet (or the choice is gone),
+        and to None when there are no ducks.
+        """
+
+        def read() -> Profile:
+            active = self._store.profiles.active_duck(self._profile_id)
+            if active is None:
+                ducks = self._store.ducks.list_for(self._profile_id)
+                active = ducks[0].id if ducks else None
+            name = self._store.profiles.name(self._profile_id) or ""
+            return Profile(self._profile_id, name, active)
+
+        return await asyncio.to_thread(read)
+
+    async def set_active(self, duck_id: str) -> Profile:
+        duck = await self.get(duck_id)
+        if duck.profile_id != self._profile_id:
+            raise not_found("duck")
+        await asyncio.to_thread(self._store.profiles.set_active_duck, self._profile_id, duck_id)
+        return await self.profile()
 
     async def all(self) -> list[Duck]:
         return await asyncio.to_thread(self._store.ducks.list_for, self._profile_id)
@@ -134,6 +170,7 @@ class DuckService:
             stage=duck.growth.stage,
             level=duck.growth.level,
             stats=dict(duck.stats),
+            egg_seed=duck.egg_seed,
         )
 
         def write() -> None:
