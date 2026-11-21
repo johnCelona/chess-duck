@@ -161,3 +161,11 @@ class DuckFile(Wire):
     exported_at: str | None = None
     exported_by: dict[str, Any] | None = None
     duck: dict[str, Any]
+
+
+class ChallengerOut(Wire):
+    """A house duck to challenge in Super Bullet Arena."""
+
+    duck: DuckOut
+    blurb: str
+    difficulty: int = Field(description="1 is the easiest")

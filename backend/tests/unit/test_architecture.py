@@ -13,8 +13,8 @@ DOMAIN_FORBIDDEN_STDLIB = {
     "subprocess", "threading", "time", "urllib", "uuid",
 }  # fmt: skip
 STDLIB_ALLOWED = {
-    "__future__", "collections", "collections.abc", "dataclasses", "enum", "hashlib", "json",
-    "math", "random", "re", "typing",
+    "__future__", "collections", "collections.abc", "dataclasses", "enum", "fractions",
+    "hashlib", "json", "math", "random", "re", "typing",
 }  # fmt: skip
 
 LAYER_MAY_IMPORT = {

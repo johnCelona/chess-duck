@@ -9,6 +9,7 @@ from duckgambit.api.deps import Services
 from duckgambit.api.schemas.base import ID_PATTERN
 from duckgambit.api.schemas.ducks import (
     ActiveDuckIn,
+    ChallengerOut,
     DuckFile,
     DuckOut,
     HatchRequest,
@@ -18,6 +19,7 @@ from duckgambit.domain.duck import Duck
 
 router = APIRouter(prefix="/ducks", tags=["ducks"])
 profile = APIRouter(prefix="/profile", tags=["profile"])
+challengers = APIRouter(prefix="/challengers", tags=["ducks"])
 
 DuckId = Annotated[str, Path(pattern=ID_PATTERN)]
 Deps = Annotated[Services, Depends()]
@@ -77,3 +79,12 @@ async def import_duck(body: DuckFile, services: Deps) -> DuckOut:
     """Add a duck from a duck file. The file is validated; stats must fit the level's budget."""
     duck = await services.ducks.import_file(body.model_dump(by_alias=True))
     return await _out(services, duck)
+
+
+@challengers.get("", operation_id="listChallengers")
+async def list_challengers(services: Deps) -> list[ChallengerOut]:
+    """House ducks your duck can challenge, easiest first. They are not your ducks."""
+    return [
+        ChallengerOut(duck=await _out(services, duck), blurb=c.blurb, difficulty=c.difficulty)
+        for c, duck in await services.ducks.challengers()
+    ]

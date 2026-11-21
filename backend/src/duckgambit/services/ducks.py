@@ -8,6 +8,13 @@ from typing import Any
 
 from duckgambit import __version__
 from duckgambit.domain.balance import DEFAULT_BALANCE, Balance
+from duckgambit.domain.challengers import (
+    HOUSE_PROFILE_ID,
+    ROSTER,
+    Challenger,
+    challenger_duck,
+    challenger_for,
+)
 from duckgambit.domain.duck import Avatar, Duck, hatch
 from duckgambit.domain.duckfile import export_duck, import_duck
 from duckgambit.domain.events import DuckHatched
@@ -20,6 +27,21 @@ from duckgambit.services.records import RatingRecord
 
 def duck_stream(duck_id: str) -> str:
     return f"duck:{duck_id}"
+
+
+def ensure_challengers(store: Store, now: str, balance: Balance = DEFAULT_BALANCE) -> None:
+    """Create the house ducks, or bring them in line with the roster. Runs at startup.
+
+    Only the roster's own fields are rewritten; a challenger's ratings and games stay.
+    """
+    store.profiles.ensure(HOUSE_PROFILE_ID, "The house", now)
+    for challenger in ROSTER:
+        stored = store.ducks.get(challenger.duck_id)
+        wanted = challenger_duck(challenger, stored.created_at if stored else now, balance)
+        if stored is None:
+            store.ducks.add(wanted)
+        elif stored != wanted:
+            store.ducks.update(wanted)
 
 
 @dataclass(frozen=True)
@@ -123,6 +145,13 @@ class DuckService:
             raise not_found("duck")
         await asyncio.to_thread(self._store.profiles.set_active_duck, self._profile_id, duck_id)
         return await self.profile()
+
+    async def challengers(self) -> list[tuple[Challenger, Duck]]:
+        """The house ducks to challenge, easiest first."""
+        ducks = await asyncio.to_thread(self._store.ducks.list_for, HOUSE_PROFILE_ID)
+        found = [(challenger_for(duck.id), duck) for duck in ducks]
+        paired = [(challenger, duck) for challenger, duck in found if challenger is not None]
+        return sorted(paired, key=lambda pair: pair[0].difficulty)
 
     async def all(self) -> list[Duck]:
         return await asyncio.to_thread(self._store.ducks.list_for, self._profile_id)

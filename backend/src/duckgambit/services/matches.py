@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import replace
+from fractions import Fraction
 from functools import partial
 
 from duckgambit.domain.arena import (
@@ -40,11 +41,20 @@ from duckgambit.domain.events import (
     MoveChosen,
     MoveMade,
     RatingUpdated,
+    SeriesUpdated,
 )
 from duckgambit.domain.game import Outcome, outcome_of, points, time_forfeit
 from duckgambit.domain.pgn import PgnGame, PgnMove, export_pgn
 from duckgambit.domain.rating import Rating, update
 from duckgambit.domain.seeds import derive_seed
+from duckgambit.domain.series import (
+    SeriesFormat,
+    SeriesGame,
+    SeriesStatus,
+    armageddon_first_is_white,
+    series_status,
+    validate_format,
+)
 from duckgambit.services.ducks import duck_stream
 from duckgambit.services.errors import ServiceError, not_found
 from duckgambit.services.events import EventLog, iso
@@ -111,8 +121,16 @@ class MatchService:
     # ----- commands ----------------------------------------------------------------
 
     async def create(
-        self, duck_ids: tuple[str, str], arena: Arena, rated: bool = True
+        self,
+        duck_ids: tuple[str, str],
+        arena: Arena,
+        rated: bool = True,
+        series: SeriesFormat | None = None,
     ) -> MatchRecord:
+        """Start a match. With `series`, it is a best-of series that stops once decided
+        (and plays an Armageddon game if tied); `arena.games` is then the series length."""
+        if series is not None:
+            arena = replace(arena, games=validate_format(series).best_of)
         validate_arena(arena, self._caps)
         if len(set(duck_ids)) != 2:
             raise ServiceError("match.same_duck", "A match needs two different ducks")
@@ -140,6 +158,7 @@ class MatchService:
             context_id=context.id,
             job_id=self._jobs.new_id(),
             created_at=iso(self._clock),
+            series=series,
         )
         await self._jobs.create(match.job_id, "match", {"match_id": match.id}, arena.games)
         created = MatchCreated(match.id, duck_ids, arena.games, match.mode, rated)
@@ -192,7 +211,15 @@ class MatchService:
         first_run = match.state == "created"
         await asyncio.to_thread(self._store.matches.set_match_state, match.id, "running")
         if first_run:
-            await self._events.publish(match_stream(match.id), [MatchStarted(match.id)])
+            opening: list[Event] = [MatchStarted(match.id)]
+            if match.series is not None:
+                opening.append(self._series_event(match, series_status(match.series.best_of, [])))
+            await self._events.publish(match_stream(match.id), opening)
+
+        if match.series is not None:
+            await self._play_series(match, match.series, ducks, identity, handle)
+            await self._finish_match(match)
+            return
 
         total = match.arena.games
         existing = {game.index: game for game in await self.games(match.id)}
@@ -204,10 +231,72 @@ class MatchService:
             await handle.progress(index + 1, total)
         await self._finish_match(match)
 
+    async def _play_series(
+        self,
+        match: MatchRecord,
+        series: SeriesFormat,
+        ducks: dict[str, Duck],
+        identity: EngineIdentity,
+        handle: JobHandle,
+    ) -> None:
+        """Play games until the series is decided. Game `best_of` (0-based) is Armageddon."""
+        index = 0
+        while True:
+            handle.check()
+            games = await asyncio.to_thread(self._store.matches.list_games, match.id)
+            status = series_status(series.best_of, self._series_games(match, games))
+            if status.state == "decided":
+                return
+            existing = {game.index: game for game in games}
+            game = existing.get(index) or await self._start_game(match, index)
+            if game.state != "finished":
+                await self._play_game(match, game, ducks, identity, handle)
+            index += 1
+            total = series.best_of + (1 if index > series.best_of else 0)
+            await handle.progress(index, total)
+
+    def _series_games(self, match: MatchRecord, games: list[GameRecord]) -> list[SeriesGame]:
+        assert match.series is not None
+        first = match.duck_ids[0]
+        return [
+            SeriesGame(
+                first_points=Fraction(
+                    points(game.result, "white" if game.white_duck_id == first else "black")
+                ),
+                armageddon=game.index >= match.series.best_of,
+                first_is_black=game.black_duck_id == first,
+            )
+            for game in sorted(games, key=lambda game: game.index)
+            if game.result is not None
+        ]
+
+    def _series_event(self, match: MatchRecord, status: SeriesStatus) -> SeriesUpdated:
+        assert match.series is not None
+        first, second = match.duck_ids
+        armageddon_white = None
+        if status.state == "armageddon" or status.decided_by == "armageddon":
+            armageddon_white = first if armageddon_first_is_white(match.arena.seed) else second
+        return SeriesUpdated(
+            match_id=match.id,
+            best_of=match.series.best_of,
+            scores=(
+                DuckScore(first, float(status.first_points)),
+                DuckScore(second, float(status.second_points)),
+            ),
+            games_played=status.games_played,
+            state=status.state,
+            winner_duck_id=None if status.winner is None else match.duck_ids[status.winner],
+            decided_by=status.decided_by,
+            armageddon_white_duck_id=armageddon_white,
+        )
+
     async def _start_game(self, match: MatchRecord, index: int) -> GameRecord:
         arena = match.arena
         first, second = match.duck_ids
-        swapped = arena.swap_colors and index % 2 == 1
+        if match.series is not None and index >= match.series.best_of:
+            swapped = not armageddon_first_is_white(arena.seed)  # the Armageddon game
+        else:
+            swapped = arena.swap_colors and index % 2 == 1
         base = arena.limit.base_ms if isinstance(arena.limit, VirtualClockLimit) else None
         game = GameRecord(
             id=self._ids.new("game"),
@@ -424,6 +513,12 @@ class MatchService:
             match.id, game.id, outcome.result, outcome.termination, winner, plies
         )
         now = iso(self._clock)
+        after: list[Event] = []
+        if match.series is not None:
+            games = await asyncio.to_thread(self._store.matches.list_games, match.id)
+            done = [replace(g, result=outcome.result) if g.id == game.id else g for g in games]
+            status = series_status(match.series.best_of, self._series_games(match, done))
+            after.append(self._series_event(match, status))
 
         def write() -> list[tuple[str, RatingUpdated]]:
             rating_events: list[tuple[str, RatingUpdated]] = []
@@ -431,7 +526,7 @@ class MatchService:
                 self._store.matches.finish_game(
                     game.id, outcome.result, outcome.termination, pgn, now
                 )
-                self._events.append(match_stream(match.id), [finished])
+                self._events.append(match_stream(match.id), [finished, *after])
                 if match.rated:
                     rating_events = self._rate(match.context_id, game, outcome.result, now)
                     for stream, event in rating_events:
@@ -485,7 +580,10 @@ class MatchService:
             scores[game.black_duck_id] += points(game.result, "black")
         first, second = match.duck_ids
         winner = None
-        if scores[first] != scores[second]:
+        if match.series is not None:
+            status = series_status(match.series.best_of, self._series_games(match, games))
+            winner = None if status.winner is None else match.duck_ids[status.winner]
+        elif scores[first] != scores[second]:
             winner = first if scores[first] > scores[second] else second
         finished = MatchFinished(
             match.id,

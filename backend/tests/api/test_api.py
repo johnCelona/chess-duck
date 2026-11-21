@@ -342,3 +342,45 @@ def test_internal_errors_do_not_leak_details(client, monkeypatch):
     body = assert_problem(quiet.get(f"{V1}/ducks"), 500, "internal")
 
     assert "secret" not in str(body) and "token.txt" not in str(body)
+
+
+# ----- Super Bullet Arena ---------------------------------------------------------------
+
+
+def test_challengers_are_house_ducks_listed_easiest_first_and_not_yours(client):
+    challengers = client.get(f"{V1}/challengers").json()
+
+    assert len(challengers) >= 2
+    assert [c["difficulty"] for c in challengers] == sorted(c["difficulty"] for c in challengers)
+    assert all(c["blurb"] and c["duck"]["rating"]["provisional"] for c in challengers)
+    house = {c["duck"]["id"] for c in challengers}
+    assert house.isdisjoint(d["id"] for d in client.get(f"{V1}/ducks").json())
+    assert client.get(f"{V1}/profile").json()["activeDuckId"] is None
+
+
+def test_your_duck_can_play_a_rated_series_against_a_challenger(client):
+    duck = hatch(client, "Brave")
+    rookie = client.get(f"{V1}/challengers").json()[0]["duck"]
+    arena = {**BULLET_ARENA, "limit": {**BULLET_ARENA["limit"], "timeControl": {"baseSeconds": 30}}}
+
+    response = client.post(
+        f"{V1}/matches",
+        json={"duckIds": [duck["id"], rookie["id"]], "arena": arena, "series": {"bestOf": 3}},
+    )
+
+    assert response.status_code == 201, response.text
+    match = response.json()
+    assert match["series"] == {"type": "best-of", "bestOf": 3}
+    assert match["arena"]["games"] == 3
+    wait_for_job(client, match["jobId"])
+    done = client.get(f"{V1}/matches/{match['id']}").json()
+    assert done["state"] == "finished"
+    assert 2 <= len(client.get(f"{V1}/matches/{match['id']}/games").json()) <= 4
+
+
+@pytest.mark.parametrize("best_of", [2, 4, 101])
+def test_a_series_must_be_one_of_the_offered_lengths(client, best_of):
+    a, b = hatch(client, "A"), hatch(client, "B")
+    body = {"duckIds": [a["id"], b["id"]], "arena": BULLET_ARENA, "series": {"bestOf": best_of}}
+
+    assert_problem(client.post(f"{V1}/matches", json=body), 422, "series.best_of")

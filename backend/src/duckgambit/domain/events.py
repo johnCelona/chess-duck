@@ -132,6 +132,22 @@ class MatchFinished(Event):
 
 
 @dataclass(frozen=True)
+class SeriesUpdated(Event):
+    """Where a best-of series stands. Emitted at the start and after every game of a series
+    (never for a plain match). `state` is "armageddon" when the next game is the tie-break."""
+
+    type: ClassVar[str] = "SeriesUpdated"
+    match_id: str
+    best_of: int
+    scores: tuple[DuckScore, ...]
+    games_played: int
+    state: str  # "playing" | "armageddon" | "decided"
+    winner_duck_id: str | None
+    decided_by: str | None  # "games" | "armageddon"
+    armageddon_white_duck_id: str | None
+
+
+@dataclass(frozen=True)
 class RatingUpdated(Event):
     type: ClassVar[str] = "RatingUpdated"
     duck_id: str

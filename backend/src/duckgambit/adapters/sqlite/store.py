@@ -19,6 +19,7 @@ from duckgambit.domain.arena import RatingContext, arena_from_doc
 from duckgambit.domain.duck import DUCK_SCHEMA_VERSION, Avatar, Care, Duck, Growth
 from duckgambit.domain.knowledge import Knowledge, PuzzleMemoryEntry, RepertoireEntry
 from duckgambit.domain.rating import Rating
+from duckgambit.domain.series import SeriesFormat
 from duckgambit.services.records import (
     EngineProfile,
     Envelope,
@@ -53,12 +54,15 @@ class _Repository:
 
 class SqliteProfiles(_Repository):
     def ensure_default(self, now: str) -> str:
+        return self.ensure(DEFAULT_PROFILE_ID, "Local player", now)
+
+    def ensure(self, profile_id: str, name: str, now: str) -> str:
         with self._db.tx() as tx:
             tx.execute(
                 "INSERT OR IGNORE INTO profiles (id, name, created_at) VALUES (?, ?, ?)",
-                (DEFAULT_PROFILE_ID, "Local player", now),
+                (profile_id, name, now),
             )
-        return DEFAULT_PROFILE_ID
+        return profile_id
 
     def name(self, profile_id: str) -> str | None:
         with self._db.tx() as tx:
@@ -81,8 +85,9 @@ class SqliteProfiles(_Repository):
 
 
 class SqliteDucks(_Repository):
-    def add(self, duck: Duck) -> None:
-        doc = {
+    @staticmethod
+    def _doc(duck: Duck) -> dict[str, Any]:
+        return {
             "avatar": asdict(duck.avatar),
             "growth": asdict(duck.growth),
             "stats": duck.stats,
@@ -91,6 +96,18 @@ class SqliteDucks(_Repository):
             "motifs": duck.knowledge.motifs,
             "egg_seed": duck.egg_seed,
         }
+
+    def update(self, duck: Duck) -> None:
+        """Rewrite a duck's name and document (growth, stats, care...). Knowledge rows are
+        not touched: they change only through lessons."""
+        with self._db.tx() as tx:
+            tx.execute(
+                "UPDATE ducks SET name = ?, doc_version = ?, doc = ? WHERE id = ?",
+                (duck.name, duck.schema_version, _dump(self._doc(duck)), duck.id),
+            )
+
+    def add(self, duck: Duck) -> None:
+        doc = self._doc(duck)
         with self._db.tx() as tx:
             tx.execute(
                 "INSERT INTO ducks (id, profile_id, name, created_at, origin, doc_version, doc)"
@@ -225,8 +242,8 @@ class SqliteMatches(_Repository):
         with self._db.tx() as tx:
             tx.execute(
                 "INSERT INTO matches (id, profile_id, mode, rated, state, arena, duck_ids, scores,"
-                " context_id, job_id, created_at, finished_at)"
-                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                " context_id, job_id, created_at, finished_at, series)"
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     match.id,
                     match.profile_id,
@@ -240,11 +257,13 @@ class SqliteMatches(_Repository):
                     match.job_id,
                     match.created_at,
                     match.finished_at,
+                    _dump(asdict(match.series)) if match.series else None,
                 ),
             )
 
     @staticmethod
     def _match(row: sqlite3.Row) -> MatchRecord:
+        series = json.loads(row["series"]) if row["series"] else None
         return MatchRecord(
             id=row["id"],
             profile_id=row["profile_id"],
@@ -258,6 +277,7 @@ class SqliteMatches(_Repository):
             created_at=row["created_at"],
             finished_at=row["finished_at"],
             scores=json.loads(row["scores"]),
+            series=SeriesFormat(**series) if series else None,
         )
 
     def get_match(self, match_id: str) -> MatchRecord | None:

@@ -4,6 +4,26 @@
  */
 
 export interface paths {
+    "/api/v1/challengers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Challengers
+         * @description House ducks your duck can challenge, easiest first. They are not your ducks.
+         */
+        get: operations["listChallengers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/ducks": {
         parameters: {
             query?: never;
@@ -649,6 +669,20 @@ export interface components {
             /** Mood */
             mood: number;
         };
+        /**
+         * ChallengerOut
+         * @description A house duck to challenge in Super Bullet Arena.
+         */
+        ChallengerOut: {
+            /** Blurb */
+            blurb: string;
+            /**
+             * Difficulty
+             * @description 1 is the easiest
+             */
+            difficulty: number;
+            duck: components["schemas"]["DuckOut"];
+        };
         /** CreateMatchRequest */
         CreateMatchRequest: {
             arena: components["schemas"]["ArenaModel"];
@@ -662,6 +696,8 @@ export interface components {
              * @default true
              */
             rated?: boolean;
+            /** @description Play a best-of series instead of `arena.games` games */
+            series?: components["schemas"]["SeriesModel"] | null;
         };
         /**
          * DuckFile
@@ -869,7 +905,7 @@ export interface components {
         /** EventPage */
         EventPage: {
             /** Events */
-            events: (components["schemas"]["DuckHatchedEvent"] | components["schemas"]["MatchCreatedEvent"] | components["schemas"]["MatchStartedEvent"] | components["schemas"]["GameStartedEvent"] | components["schemas"]["MoveChosenEvent"] | components["schemas"]["MoveMadeEvent"] | components["schemas"]["GameFinishedEvent"] | components["schemas"]["MatchFinishedEvent"] | components["schemas"]["RatingUpdatedEvent"] | components["schemas"]["JobProgressedEvent"] | components["schemas"]["JobFinishedEvent"] | components["schemas"]["LessonCompletedEvent"] | components["schemas"]["KnowledgeAddedEvent"] | components["schemas"]["DuckLeveledUpEvent"])[];
+            events: (components["schemas"]["DuckHatchedEvent"] | components["schemas"]["MatchCreatedEvent"] | components["schemas"]["MatchStartedEvent"] | components["schemas"]["GameStartedEvent"] | components["schemas"]["MoveChosenEvent"] | components["schemas"]["MoveMadeEvent"] | components["schemas"]["GameFinishedEvent"] | components["schemas"]["MatchFinishedEvent"] | components["schemas"]["SeriesUpdatedEvent"] | components["schemas"]["RatingUpdatedEvent"] | components["schemas"]["JobProgressedEvent"] | components["schemas"]["JobFinishedEvent"] | components["schemas"]["LessonCompletedEvent"] | components["schemas"]["KnowledgeAddedEvent"] | components["schemas"]["DuckLeveledUpEvent"])[];
             /**
              * Nextcursor
              * @description Pass as `after` to continue
@@ -1340,6 +1376,7 @@ export interface components {
             rated: boolean;
             /** Scores */
             scores: components["schemas"]["DuckScoreOut"][];
+            series: components["schemas"]["SeriesModel"] | null;
             /**
              * State
              * @enum {string}
@@ -1652,6 +1689,72 @@ export interface components {
              */
             text: string;
         };
+        /**
+         * SeriesModel
+         * @description A best-of series: it stops once decided; a tie after every game goes to one
+         *     Armageddon game, where a draw counts as a win for Black.
+         */
+        SeriesModel: {
+            /**
+             * Bestof
+             * @description One of 3, 5, 7, 15
+             */
+            bestOf: number;
+            /**
+             * Type
+             * @default best-of
+             * @constant
+             */
+            type?: "best-of";
+        };
+        /** SeriesUpdatedData */
+        SeriesUpdatedData: {
+            /**
+             * Armageddonwhiteduckid
+             * @description Who has White in the Armageddon game (a draw there wins for Black)
+             */
+            armageddonWhiteDuckId: string | null;
+            /** Bestof */
+            bestOf: number;
+            /** Decidedby */
+            decidedBy: ("games" | "armageddon") | null;
+            /** Gamesplayed */
+            gamesPlayed: number;
+            /** Matchid */
+            matchId: string;
+            /** Scores */
+            scores: components["schemas"]["DuckScoreData"][];
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "playing" | "armageddon" | "decided";
+            /** Winnerduckid */
+            winnerDuckId: string | null;
+        };
+        /** SeriesUpdatedEvent */
+        SeriesUpdatedEvent: {
+            /**
+             * Cursor
+             * @description Global position; pass as `after` (or Last-Event-ID) to resume
+             */
+            cursor: number;
+            data: components["schemas"]["SeriesUpdatedData"];
+            /** Recordedat */
+            recordedAt: string;
+            /**
+             * Seq
+             * @description Position within the stream, starting at 1
+             */
+            seq: number;
+            /** Stream */
+            stream: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "SeriesUpdated";
+        };
         /** StatsModel */
         StatsModel: {
             /** Aggression */
@@ -1715,6 +1818,35 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    listChallengers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChallengerOut"][];
+                };
+            };
+            /** @description Any error, as an RFC 9457 problem document */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
     listDucks: {
         parameters: {
             query?: never;

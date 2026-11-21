@@ -7,6 +7,7 @@ from typing import Any
 
 from duckgambit.domain.arena import Arena
 from duckgambit.domain.rating import Rating
+from duckgambit.domain.series import SeriesFormat
 
 
 @dataclass(frozen=True)
@@ -35,6 +36,7 @@ class MatchRecord:
     created_at: str
     finished_at: str | None = None
     scores: dict[str, float] = field(default_factory=dict)
+    series: SeriesFormat | None = None  # None: a plain match of `arena.games` games
 
 
 @dataclass(frozen=True)

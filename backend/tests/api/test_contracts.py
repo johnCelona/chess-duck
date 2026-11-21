@@ -70,9 +70,8 @@ def test_no_schema_offers_raw_uci_or_wall_clock_limits():
 
 def test_real_event_streams_validate_against_the_published_event_schema(client):
     a, b = hatch(client, "A"), hatch(client, "B")
-    match = client.post(
-        f"{V1}/matches", json={"duckIds": [a["id"], b["id"]], "arena": BULLET_ARENA}
-    ).json()
+    body = {"duckIds": [a["id"], b["id"]], "arena": BULLET_ARENA, "series": {"bestOf": 3}}
+    match = client.post(f"{V1}/matches", json=body).json()  # a series emits every match event
     wait_for_job(client, match["jobId"])
     streams = [match["stream"], a["stream"], b["stream"], f"job:{match['jobId']}"]
 

@@ -22,7 +22,10 @@ Deps = Annotated[Services, Depends()]
 async def create_match(body: CreateMatchRequest, services: Deps) -> MatchOut:
     """Start a duck-vs-duck match as a background job. Follow `stream` to watch it."""
     first, second = body.duck_ids
-    match = await services.matches.create((first, second), body.arena.to_domain(), body.rated)
+    series = body.series.to_domain() if body.series else None
+    match = await services.matches.create(
+        (first, second), body.arena.to_domain(), body.rated, series
+    )
     return MatchOut.of(match)
 
 

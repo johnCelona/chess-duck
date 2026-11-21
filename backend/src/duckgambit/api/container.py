@@ -12,7 +12,7 @@ from duckgambit.adapters.engines.pool import ProcessEnginePool, catalog_locator
 from duckgambit.adapters.sqlite.store import SqliteStore
 from duckgambit.adapters.system import DataPaths, SystemClock, UuidIds
 from duckgambit.domain.arena import ArenaCaps
-from duckgambit.services.ducks import DuckService
+from duckgambit.services.ducks import DuckService, ensure_challengers
 from duckgambit.services.engines import EngineAdmin, EngineService
 from duckgambit.services.events import EventLog, iso
 from duckgambit.services.jobs import JobRunner
@@ -61,6 +61,7 @@ def build_container(
     now = iso(clock)
     store.migrate(now)
     profile_id = store.profiles.ensure_default(now)
+    ensure_challengers(store, now)
 
     caps = ArenaCaps()
     if settings.fake_engine:

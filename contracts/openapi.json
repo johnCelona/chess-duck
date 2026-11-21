@@ -445,6 +445,30 @@
         "title": "CareOut",
         "type": "object"
       },
+      "ChallengerOut": {
+        "description": "A house duck to challenge in Super Bullet Arena.",
+        "properties": {
+          "blurb": {
+            "title": "Blurb",
+            "type": "string"
+          },
+          "difficulty": {
+            "description": "1 is the easiest",
+            "title": "Difficulty",
+            "type": "integer"
+          },
+          "duck": {
+            "$ref": "#/components/schemas/DuckOut"
+          }
+        },
+        "required": [
+          "duck",
+          "blurb",
+          "difficulty"
+        ],
+        "title": "ChallengerOut",
+        "type": "object"
+      },
       "CreateMatchRequest": {
         "additionalProperties": false,
         "properties": {
@@ -466,6 +490,17 @@
             "default": true,
             "title": "Rated",
             "type": "boolean"
+          },
+          "series": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SeriesModel"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Play a best-of series instead of `arena.games` games"
           }
         },
         "required": [
@@ -1021,7 +1056,8 @@
                   "MatchStarted": "#/components/schemas/MatchStartedEvent",
                   "MoveChosen": "#/components/schemas/MoveChosenEvent",
                   "MoveMade": "#/components/schemas/MoveMadeEvent",
-                  "RatingUpdated": "#/components/schemas/RatingUpdatedEvent"
+                  "RatingUpdated": "#/components/schemas/RatingUpdatedEvent",
+                  "SeriesUpdated": "#/components/schemas/SeriesUpdatedEvent"
                 },
                 "propertyName": "type"
               },
@@ -1049,6 +1085,9 @@
                 },
                 {
                   "$ref": "#/components/schemas/MatchFinishedEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/SeriesUpdatedEvent"
                 },
                 {
                   "$ref": "#/components/schemas/RatingUpdatedEvent"
@@ -2211,6 +2250,16 @@
             "title": "Scores",
             "type": "array"
           },
+          "series": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SeriesModel"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "state": {
             "enum": [
               "created",
@@ -2240,6 +2289,7 @@
           "scores",
           "createdAt",
           "finishedAt",
+          "series",
           "stream"
         ],
         "title": "MatchOut",
@@ -2942,6 +2992,150 @@
         "title": "ReasonModel",
         "type": "object"
       },
+      "SeriesModel": {
+        "additionalProperties": false,
+        "description": "A best-of series: it stops once decided; a tie after every game goes to one\nArmageddon game, where a draw counts as a win for Black.",
+        "properties": {
+          "bestOf": {
+            "description": "One of 3, 5, 7, 15",
+            "title": "Bestof",
+            "type": "integer"
+          },
+          "type": {
+            "const": "best-of",
+            "default": "best-of",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "bestOf"
+        ],
+        "title": "SeriesModel",
+        "type": "object"
+      },
+      "SeriesUpdatedData": {
+        "properties": {
+          "armageddonWhiteDuckId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Who has White in the Armageddon game (a draw there wins for Black)",
+            "title": "Armageddonwhiteduckid"
+          },
+          "bestOf": {
+            "title": "Bestof",
+            "type": "integer"
+          },
+          "decidedBy": {
+            "anyOf": [
+              {
+                "enum": [
+                  "games",
+                  "armageddon"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decidedby"
+          },
+          "gamesPlayed": {
+            "title": "Gamesplayed",
+            "type": "integer"
+          },
+          "matchId": {
+            "title": "Matchid",
+            "type": "string"
+          },
+          "scores": {
+            "items": {
+              "$ref": "#/components/schemas/DuckScoreData"
+            },
+            "title": "Scores",
+            "type": "array"
+          },
+          "state": {
+            "enum": [
+              "playing",
+              "armageddon",
+              "decided"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "winnerDuckId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Winnerduckid"
+          }
+        },
+        "required": [
+          "matchId",
+          "bestOf",
+          "scores",
+          "gamesPlayed",
+          "state",
+          "winnerDuckId",
+          "decidedBy",
+          "armageddonWhiteDuckId"
+        ],
+        "title": "SeriesUpdatedData",
+        "type": "object"
+      },
+      "SeriesUpdatedEvent": {
+        "properties": {
+          "cursor": {
+            "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+            "title": "Cursor",
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SeriesUpdatedData"
+          },
+          "recordedAt": {
+            "title": "Recordedat",
+            "type": "string"
+          },
+          "seq": {
+            "description": "Position within the stream, starting at 1",
+            "title": "Seq",
+            "type": "integer"
+          },
+          "stream": {
+            "title": "Stream",
+            "type": "string"
+          },
+          "type": {
+            "const": "SeriesUpdated",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cursor",
+          "stream",
+          "seq",
+          "recordedAt",
+          "type",
+          "data"
+        ],
+        "title": "SeriesUpdatedEvent",
+        "type": "object"
+      },
       "StatsModel": {
         "additionalProperties": false,
         "properties": {
@@ -3076,6 +3270,42 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/challengers": {
+      "get": {
+        "description": "House ducks your duck can challenge, easiest first. They are not your ducks.",
+        "operationId": "listChallengers",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ChallengerOut"
+                  },
+                  "title": "Response Listchallengers",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "List Challengers",
+        "tags": [
+          "ducks"
+        ]
+      }
+    },
     "/api/v1/ducks": {
       "get": {
         "operationId": "listDucks",

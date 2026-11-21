@@ -14,6 +14,7 @@ from duckgambit.domain.balance import DEFAULT_BALANCE, ClockPolicy
 from duckgambit.domain.chessutil import position_key
 from duckgambit.domain.duck import default_stats
 from duckgambit.domain.errors import DomainError
+from duckgambit.domain.series import SeriesFormat, armageddon_first_is_white
 from duckgambit.services.ducks import DuckService, duck_stream
 from duckgambit.services.errors import ServiceError
 from duckgambit.services.events import EventLog
@@ -380,3 +381,94 @@ async def test_a_finished_match_cannot_be_resumed(harness):
         await harness.matches.resume(match.id)
 
     assert error.value.status == 409
+
+
+# ----- best-of series (Super Bullet Arena) --------------------------------------------
+
+SUPER_BULLET = Arena(
+    EngineSettings("fake"), VirtualClockLimit(30_000, 0, 200_000), seed=1, max_plies=200
+)
+
+
+async def play_series(h, arena, best_of=5):
+    bold, calm = await h.two_ducks()
+    match = await h.matches.create((bold.id, calm.id), arena, True, SeriesFormat(best_of))
+    job = await h.jobs.wait(match.job_id)
+    return await h.matches.get(match.id), job
+
+
+async def all_events(h, match_id):
+    events, after = [], 0
+    while page := await h.events.read([match_stream(match_id)], after, 500):
+        events += page
+        after = page[-1].cursor
+    return events
+
+
+async def series_events(h, match_id):
+    return [e.data for e in await all_events(h, match_id) if e.type == "SeriesUpdated"]
+
+
+async def test_a_series_stops_once_it_is_decided(harness):
+    match, job = await play_series(harness, SUPER_BULLET)  # seed 1 is decided in 4 games
+
+    games = await harness.matches.games(match.id)
+    updates = await series_events(harness, match.id)
+    assert job.state == "succeeded" and match.state == "finished"
+    assert match.series == SeriesFormat(5) and match.arena.games == 5
+    assert len(games) == 4
+    assert [u["games_played"] for u in updates] == [0, 1, 2, 3, 4]
+    assert [u["state"] for u in updates] == ["playing"] * 4 + ["decided"]
+    final = updates[-1]
+    assert final["decided_by"] == "games"
+    assert final["winner_duck_id"] == match.duck_ids[1]
+    types = [e.type for e in await all_events(harness, match.id)]
+    assert types[-1] == "MatchFinished" and types[:3] == [
+        "MatchCreated",
+        "MatchStarted",
+        "SeriesUpdated",
+    ]
+
+
+async def test_a_tied_series_is_settled_by_armageddon_with_seeded_colours(harness):
+    match, _ = await play_series(harness, replace(SUPER_BULLET, seed=2))  # 2.5 - 2.5 after 5
+
+    games = await harness.matches.games(match.id)
+    updates = await series_events(harness, match.id)
+    assert len(games) == 6
+    assert updates[-2]["state"] == "armageddon"
+    armageddon = games[5]
+    first_white = armageddon_first_is_white(2)
+    assert (armageddon.white_duck_id == match.duck_ids[0]) == first_white
+    assert updates[-2]["armageddon_white_duck_id"] == armageddon.white_duck_id
+    final = updates[-1]
+    assert final["decided_by"] == "armageddon"
+    winner = armageddon.white_duck_id if armageddon.result == "1-0" else armageddon.black_duck_id
+    assert final["winner_duck_id"] == winner
+
+
+async def test_a_drawn_armageddon_goes_to_black(harness):
+    # Two plies per game: every game is drawn at the ply cap, so the series is tied.
+    match, _ = await play_series(harness, replace(SUPER_BULLET, max_plies=2), best_of=3)
+
+    games = await harness.matches.games(match.id)
+    assert [g.result for g in games] == ["1/2-1/2"] * 4
+    finished = (await all_events(harness, match.id))[-1].data
+    assert finished["winner_duck_id"] == games[3].black_duck_id
+
+
+async def test_a_series_resumed_after_a_stop_ends_like_an_uninterrupted_one(harness, tmp_path):
+    straight, _ = await play_series(harness, SUPER_BULLET)
+
+    pool = CancellingPool(after=40)
+    stopped = fresh_harness(tmp_path, "stopped", pool)
+    bold, calm = await stopped.two_ducks()
+    match = await stopped.matches.create((bold.id, calm.id), SUPER_BULLET, True, SeriesFormat(5))
+    pool.cancel = lambda: stopped.jobs.cancel(match.job_id)
+    assert (await stopped.jobs.wait(match.job_id)).state == "cancelled"
+    pool.cancel = None
+    await stopped.matches.resume(match.id)
+    await stopped.jobs.wait(match.job_id)
+
+    assert await stopped.pgns(match.id) == await harness.pgns(straight.id)
+    assert await series_events(stopped, match.id) == await series_events(harness, straight.id)

@@ -135,6 +135,19 @@ class MatchFinishedData(Wire):
     winner_duck_id: str | None
 
 
+class SeriesUpdatedData(Wire):
+    match_id: str
+    best_of: int
+    scores: list[DuckScoreData]
+    games_played: int
+    state: Literal["playing", "armageddon", "decided"]
+    winner_duck_id: str | None
+    decided_by: Literal["games", "armageddon"] | None
+    armageddon_white_duck_id: str | None = Field(
+        description="Who has White in the Armageddon game (a draw there wins for Black)"
+    )
+
+
 class RatingUpdatedData(Wire):
     duck_id: str
     context_id: str
@@ -238,6 +251,11 @@ class JobProgressedEvent(_Envelope):
     data: JobProgressedData
 
 
+class SeriesUpdatedEvent(_Envelope):
+    type: Literal["SeriesUpdated"]
+    data: SeriesUpdatedData
+
+
 class JobFinishedEvent(_Envelope):
     type: Literal["JobFinished"]
     data: JobFinishedData
@@ -267,6 +285,7 @@ EventEnvelope = Annotated[
     | MoveMadeEvent
     | GameFinishedEvent
     | MatchFinishedEvent
+    | SeriesUpdatedEvent
     | RatingUpdatedEvent
     | JobProgressedEvent
     | JobFinishedEvent

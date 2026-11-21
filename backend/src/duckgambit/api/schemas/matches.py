@@ -12,6 +12,7 @@ from duckgambit.domain.arena import (
     NodesLimit,
     VirtualClockLimit,
 )
+from duckgambit.domain.series import SeriesFormat
 from duckgambit.services.records import GameRecord, JobRecord, MatchRecord, MoveRecord
 
 
@@ -110,12 +111,30 @@ class ArenaModel(WireIn):
         )
 
 
+class SeriesModel(WireIn):
+    """A best-of series: it stops once decided; a tie after every game goes to one
+    Armageddon game, where a draw counts as a win for Black."""
+
+    type: Literal["best-of"] = "best-of"
+    best_of: int = Field(description="One of 3, 5, 7, 15")
+
+    def to_domain(self) -> SeriesFormat:
+        return SeriesFormat(best_of=self.best_of, type=self.type)
+
+    @classmethod
+    def of(cls, series: SeriesFormat) -> SeriesModel:
+        return cls(type="best-of", best_of=series.best_of)
+
+
 class CreateMatchRequest(WireIn):
     duck_ids: list[Id] = Field(
         min_length=2, max_length=2, description="First duck has White in the first game"
     )
     arena: ArenaModel
     rated: bool = True
+    series: SeriesModel | None = Field(
+        default=None, description="Play a best-of series instead of `arena.games` games"
+    )
 
 
 class DuckScoreOut(Wire):
@@ -138,6 +157,7 @@ class MatchOut(Wire):
     scores: list[DuckScoreOut]
     created_at: str
     finished_at: str | None
+    series: SeriesModel | None
     stream: str = Field(description="Event stream to follow this match live or replay it")
 
     @classmethod
@@ -157,6 +177,7 @@ class MatchOut(Wire):
             ],
             created_at=match.created_at,
             finished_at=match.finished_at,
+            series=SeriesModel.of(match.series) if match.series else None,
             stream=f"match:{match.id}",
         )
 

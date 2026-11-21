@@ -1436,6 +1436,128 @@
       "title": "ReasonModel",
       "type": "object"
     },
+    "SeriesUpdatedData": {
+      "properties": {
+        "armageddonWhiteDuckId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Who has White in the Armageddon game (a draw there wins for Black)",
+          "title": "Armageddonwhiteduckid"
+        },
+        "bestOf": {
+          "title": "Bestof",
+          "type": "integer"
+        },
+        "decidedBy": {
+          "anyOf": [
+            {
+              "enum": [
+                "games",
+                "armageddon"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Decidedby"
+        },
+        "gamesPlayed": {
+          "title": "Gamesplayed",
+          "type": "integer"
+        },
+        "matchId": {
+          "title": "Matchid",
+          "type": "string"
+        },
+        "scores": {
+          "items": {
+            "$ref": "#/$defs/DuckScoreData"
+          },
+          "title": "Scores",
+          "type": "array"
+        },
+        "state": {
+          "enum": [
+            "playing",
+            "armageddon",
+            "decided"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "winnerDuckId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Winnerduckid"
+        }
+      },
+      "required": [
+        "matchId",
+        "bestOf",
+        "scores",
+        "gamesPlayed",
+        "state",
+        "winnerDuckId",
+        "decidedBy",
+        "armageddonWhiteDuckId"
+      ],
+      "title": "SeriesUpdatedData",
+      "type": "object"
+    },
+    "SeriesUpdatedEvent": {
+      "properties": {
+        "cursor": {
+          "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+          "title": "Cursor",
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/$defs/SeriesUpdatedData"
+        },
+        "recordedAt": {
+          "title": "Recordedat",
+          "type": "string"
+        },
+        "seq": {
+          "description": "Position within the stream, starting at 1",
+          "title": "Seq",
+          "type": "integer"
+        },
+        "stream": {
+          "title": "Stream",
+          "type": "string"
+        },
+        "type": {
+          "const": "SeriesUpdated",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cursor",
+        "stream",
+        "seq",
+        "recordedAt",
+        "type",
+        "data"
+      ],
+      "title": "SeriesUpdatedEvent",
+      "type": "object"
+    },
     "Wdl": {
       "description": "Win, draw and loss chances per mille, from the mover's point of view.",
       "properties": {
@@ -1479,7 +1601,8 @@
       "MatchStarted": "#/$defs/MatchStartedEvent",
       "MoveChosen": "#/$defs/MoveChosenEvent",
       "MoveMade": "#/$defs/MoveMadeEvent",
-      "RatingUpdated": "#/$defs/RatingUpdatedEvent"
+      "RatingUpdated": "#/$defs/RatingUpdatedEvent",
+      "SeriesUpdated": "#/$defs/SeriesUpdatedEvent"
     },
     "propertyName": "type"
   },
@@ -1507,6 +1630,9 @@
     },
     {
       "$ref": "#/$defs/MatchFinishedEvent"
+    },
+    {
+      "$ref": "#/$defs/SeriesUpdatedEvent"
     },
     {
       "$ref": "#/$defs/RatingUpdatedEvent"

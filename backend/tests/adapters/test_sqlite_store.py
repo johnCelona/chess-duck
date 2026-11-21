@@ -1,6 +1,6 @@
 import json
 import sqlite3
-from dataclasses import replace
+from dataclasses import asdict, replace
 
 import chess
 import pytest
@@ -136,7 +136,7 @@ def test_a_version_2_database_upgrades_with_no_active_duck_and_keeps_its_ducks(t
     old.close()
 
     store = SqliteStore(path)
-    assert store.migrate(NOW) == [3]
+    assert store.migrate(NOW)[0] == 3  # later migrations follow
 
     assert (tmp_path / "v2.db.bak-v2").exists()
     assert store.ducks.get("duck_1") == a_duck()
@@ -231,6 +231,21 @@ def expected_keys(initial_fen, moves):
     return keys
 
 
+def write_v1_match(connection):
+    """Insert a match the way a version-1 build did: no series column."""
+    connection.execute(
+        "INSERT INTO matches (id, profile_id, mode, rated, state, arena, duck_ids, context_id,"
+        " job_id, created_at) VALUES ('mat_1', ?, 'duck-vs-duck', 1, 'created', ?, ?, 'ctx_1',"
+        " 'job_1', ?)",
+        (
+            DEFAULT_PROFILE_ID,
+            json.dumps(asdict(a_match().arena)),
+            json.dumps(["duck_1", "duck_2"]),
+            NOW,
+        ),
+    )
+
+
 def write_v1_game(connection, game_id, moves, initial_fen=START, idx=0):
     """Insert a game and its moves the way a version-1 build did: no position keys."""
     connection.execute(
@@ -251,8 +266,8 @@ def test_a_version_1_database_upgrades_keeps_its_data_and_backfills_position_key
     assert Database(path).migrate(NOW, target=1) == [1]
     old = SqliteStore(path)
     old.profiles.ensure_default(NOW)
-    old.matches.add_match(a_match())
     with old.database.tx() as tx:
+        write_v1_match(tx)
         write_v1_game(tx, "game_1", OPENING)
         # A corrupt game: ply 3 is illegal, so plies 1 and 2 get keys and 3 on stays NULL.
         write_v1_game(tx, "game_bad", ("d2d4", "d7d5", "e1e8", "g8f6"), idx=1)
