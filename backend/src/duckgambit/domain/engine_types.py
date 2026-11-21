@@ -85,3 +85,13 @@ class EngineOption:
 class EngineInfo:
     name: str
     options: tuple[EngineOption, ...]
+
+
+@dataclass(frozen=True)
+class EngineIdentity:
+    """Which engine produced a result. The fingerprint is part of the rating context."""
+
+    id: str
+    name: str
+    version: str
+    fingerprint: str  # first 16 hex digits of the binary's sha256

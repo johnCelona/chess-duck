@@ -37,6 +37,10 @@ addopts = "-q --strict-markers"
 markers = [
     "real_engine: needs an installed Stockfish; skipped when none is found, never run in CI",
 ]
+filterwarnings = [
+    # Starlette's test client still works with httpx; revisit when httpx2 is the norm.
+    "ignore:Using `httpx` with `starlette.testclient` is deprecated",
+]
 
 [tool.ruff]
 line-length = 100
@@ -52,7 +56,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S", "B011", "E501"]
+"tests/**" = ["S", "B011", "E501", "PT012", "PT018"]
 
 [tool.mypy]
 python_version = "3.12"

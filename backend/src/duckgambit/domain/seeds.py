@@ -13,7 +13,8 @@ import random
 
 def derive_seed(seed: int, *labels: object) -> int:
     text = ":".join([str(seed), *(str(label) for label in labels)])
-    return int.from_bytes(hashlib.sha256(text.encode("utf-8")).digest()[:8], "big")
+    # 53 bits: exact in JSON/JavaScript numbers and inside a signed 64-bit integer.
+    return int.from_bytes(hashlib.sha256(text.encode("utf-8")).digest()[:8], "big") >> 11
 
 
 def rng_for(seed: int, *labels: object) -> random.Random:

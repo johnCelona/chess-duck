@@ -128,14 +128,16 @@ def test_moves_beyond_the_blunder_tolerance_are_never_played():
 
 
 def test_creativity_spreads_choices_across_acceptable_moves():
-    search = result(("e2e4", 40), ("d2d4", 35), ("g1f3", 30))
+    # Each move is one half-life (30 cp) below the previous: expect roughly 4 : 2 : 1.
+    search = result(("e2e4", 40), ("d2d4", 10), ("g1f3", -20))
 
     moves = [
-        choose(chess.Board(), mind(temperature_cp=50), search, seed).move for seed in range(300)
+        choose(chess.Board(), mind(temperature_cp=30), search, seed).move for seed in range(700)
     ]
 
-    assert set(moves) == {"e2e4", "d2d4", "g1f3"}
-    assert moves.count("e2e4") > moves.count("g1f3")
+    assert 350 < moves.count("e2e4") < 450
+    assert 150 < moves.count("d2d4") < 250
+    assert 60 < moves.count("g1f3") < 140
 
 
 def test_same_seed_gives_the_same_decision():

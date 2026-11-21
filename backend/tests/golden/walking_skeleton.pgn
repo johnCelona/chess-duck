@@ -1,0 +1,36 @@
+[Event "Duck Gambit match"]
+[Site "Duck Gambit"]
+[Date "2026.11.21"]
+[Round "1"]
+[White "Sir Quackalot"]
+[Black "Bill the Solid"]
+[Result "1/2-1/2"]
+[TimeControl "60+0"]
+[Termination "Adjudication"]
+[Annotator "Fake engine 1"]
+[Seed "1826739984564075"]
+[RatingContext "ctx_dd33c0ee766c9e47"]
+
+1. g4 { [%eval 0.44] [%clk 0:00:58] } 1... f6 { [%eval -0.76] [%clk 0:00:58] }
+2. d4 { [%eval 0.80] [%clk 0:00:56] } 2... Kf7 { [%eval -0.97] [%clk 0:00:57] }
+3. Be3 { [%eval 0.94] [%clk 0:00:55] } 3... b6 { [%eval -0.89] [%clk 0:00:55] }
+4. f4 { [%eval 0.88] [%clk 0:00:53] } 4... d6 { [%eval -0.73] [%clk 0:00:54] }
+5. Qd3 { [%eval 0.78] [%clk 0:00:51] } 5... h6 { [%eval -0.99] [%clk 0:00:52] }
+6. Nh3 { [%eval 0.75] [%clk 0:00:50] } 6... Rh7
+{ [%eval -0.96] [%clk 0:00:51] } 7. Nc3 { [%eval 0.98] [%clk 0:00:48] } 7... h5
+{ [%eval -0.80] [%clk 0:00:49] } 8. Qg6+ { [%eval 0.65] [%clk 0:00:47] } 8...
+Ke6 { [%eval 0.71] [%clk 0:00:48] } 9. Nd5 { [%eval 0.94] [%clk 0:00:45] } 9...
+Na6 { [%eval -0.93] [%clk 0:00:47] } 10. Bg1 { [%eval 0.99] [%clk 0:00:44] }
+10... Nb8 { [%eval -0.91] [%clk 0:00:45] } 11. Qf5+
+{ [%eval 0.99] [%clk 0:00:42] } 11... Kf7 { [%clk 0:00:45] forced } 12. Be3
+{ [%eval 0.98] [%clk 0:00:40] } 12... Nd7 { [%eval -0.85] [%clk 0:00:44] } 13.
+Bc1 { [%eval 0.91] [%clk 0:00:39] } 13... g5 { [%eval -0.90] [%clk 0:00:42] }
+14. Bd2 { [%eval 0.86] [%clk 0:00:37] } 14... Ne5
+{ [%eval -0.87] [%clk 0:00:41] } 15. Nb4 { [%eval 0.99] [%clk 0:00:36] } 15...
+e6 { [%eval -0.98] [%clk 0:00:39] } 16. Nxg5+ { [%eval 0.77] [%clk 0:00:34] }
+16... Ke7 { [%eval -0.84] [%clk 0:00:38] } 17. a3
+{ [%eval 0.98] [%clk 0:00:33] } 17... Nh6 { [%eval -0.72] [%clk 0:00:36] } 18.
+h3 { [%eval 0.98] [%clk 0:00:31] } 18... Nexg4 { [%eval -0.87] [%clk 0:00:34] }
+19. Ra2 { [%eval 0.70] [%clk 0:00:30] } 19... a5
+{ [%eval -0.96] [%clk 0:00:33] } 20. Qxh7+ { [%eval 0.69] [%clk 0:00:28] }
+20... Ke8 { [%eval -0.18] [%clk 0:00:31] } 1/2-1/2

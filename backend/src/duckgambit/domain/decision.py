@@ -93,15 +93,21 @@ class Plan:
 
 
 def soft_weight(gap_cp: int, half_life_cp: int) -> int:
-    """Relative weight of a move `gap_cp` below the best. It halves every `half_life_cp`."""
+    """Relative weight of a move `gap_cp` below the best. It halves every `half_life_cp`.
+
+    Integer-only: a 16-step table of 2^(-j/16), interpolated linearly between steps.
+    """
     if gap_cp <= 0:
         return _FRAC16[0]
     if half_life_cp <= 0:
         return 0
-    whole, fraction = divmod(gap_cp * 16 // half_life_cp, 16)
+    steps, remainder = divmod(gap_cp * 16, half_life_cp)
+    whole, fraction = divmod(steps, 16)
     if whole >= 30:
         return 0
-    return _FRAC16[fraction] >> whole
+    upper = _FRAC16[fraction]
+    lower = _FRAC16[fraction + 1] if fraction < 15 else _FRAC16[0] // 2
+    return (upper - (upper - lower) * remainder // half_life_cp) >> whole
 
 
 def plan(

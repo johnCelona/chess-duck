@@ -3,11 +3,16 @@
 from __future__ import annotations
 
 import argparse
+import asyncio
+import json
 import sys
 from collections.abc import Sequence
+from pathlib import Path
 
 from duckgambit.logging_setup import configure_logging
 from duckgambit.settings import Settings
+
+PACKAGE_DIR = Path(__file__).resolve().parents[1]
 
 
 def _serve(args: argparse.Namespace, settings: Settings) -> int:
@@ -15,20 +20,83 @@ def _serve(args: argparse.Namespace, settings: Settings) -> int:
 
     reload = args.reload or settings.env == "dev"
     uvicorn.run(
-        "duckgambit.api.app:app",
+        "duckgambit.api.app:create_app",
+        factory=True,
         host=settings.host,
         port=settings.port,
         reload=reload,
-        reload_dirs=[str(_package_dir())] if reload else None,
+        reload_dirs=[str(PACKAGE_DIR)] if reload else None,
         log_config=None,
     )
     return 0
 
 
-def _package_dir() -> object:
-    from pathlib import Path
+def contract_documents() -> dict[str, str]:
+    """The committed contract files and their current contents (ADR-0002)."""
+    from duckgambit.api.app import create_app
+    from duckgambit.api.schemas.events import EVENT_ADAPTER
 
-    return Path(__file__).resolve().parents[1]
+    app = create_app(Settings(env="prod", _env_file=None))
+    events = {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "https://duckgambit.example/contracts/events.schema.json",
+        "title": "Duck Gambit event envelope",
+        "description": "One event as delivered by /api/v1/events and /api/v1/events/stream.",
+        **EVENT_ADAPTER.json_schema(by_alias=True, mode="serialization"),
+    }
+
+    def render(document: object) -> str:
+        return json.dumps(document, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
+
+    return {"openapi.json": render(app.openapi()), "events.schema.json": render(events)}
+
+
+def _export_contracts(args: argparse.Namespace, settings: Settings) -> int:
+    out = Path(args.out)
+    stale = []
+    for name, text in contract_documents().items():
+        target = out / name
+        current = target.read_text(encoding="utf-8") if target.is_file() else None
+        if current == text:
+            continue
+        stale.append(name)
+        if not args.check:
+            out.mkdir(parents=True, exist_ok=True)
+            target.write_text(text, encoding="utf-8", newline="\n")
+    if args.check and stale:
+        print(f"Contracts are out of date: {', '.join(stale)}. Run `npm run gen`.", file=sys.stderr)
+        return 1
+    print("Contracts are up to date." if not stale else f"Wrote {', '.join(stale)}.")
+    return 0
+
+
+def _seed(args: argparse.Namespace, settings: Settings) -> int:
+    """Create two default ducks so a fresh clone has something to play with."""
+    from duckgambit.api.container import build_container
+    from duckgambit.domain.duck import default_stats
+
+    spreads = {
+        "Sir Quackalot": {**default_stats(), "aggression": 60, "solidity": 20},
+        "Bill the Solid": {**default_stats(), "solidity": 60, "aggression": 20},
+    }
+
+    async def run() -> list[str]:
+        container = build_container(settings)
+        try:
+            existing = {duck.name for duck in await container.ducks.all()}
+            created = []
+            for name, stats in spreads.items():
+                if name not in existing:
+                    await container.ducks.hatch(name, stats=stats)
+                    created.append(name)
+            return created
+        finally:
+            await container.shutdown()
+
+    created = asyncio.run(run())
+    print(f"Hatched: {', '.join(created)}" if created else "Seed ducks already exist.")
+    print(f"Data directory: {settings.resolved_data_dir}")
+    return 0
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -38,6 +106,16 @@ def build_parser() -> argparse.ArgumentParser:
     serve = commands.add_parser("serve", help="run the API server")
     serve.add_argument("--reload", action="store_true", help="restart on code changes")
     serve.set_defaults(handler=_serve)
+
+    export = commands.add_parser(
+        "export-contracts", help="write contracts/openapi.json and events.schema.json"
+    )
+    export.add_argument("--out", default="contracts", help="output folder")
+    export.add_argument("--check", action="store_true", help="fail if the files are out of date")
+    export.set_defaults(handler=_export_contracts)
+
+    seed = commands.add_parser("seed", help="hatch two default ducks (idempotent)")
+    seed.set_defaults(handler=_seed)
 
     return parser
 

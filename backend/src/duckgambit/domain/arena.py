@@ -5,11 +5,12 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import asdict, dataclass
+from typing import Any
 
 from duckgambit.domain.errors import DomainError
 
 STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-MAX_SEED = 2**63 - 1
+MAX_SEED = 2**53 - 1  # exact in JSON numbers
 
 
 @dataclass(frozen=True)
@@ -80,7 +81,7 @@ def validate_arena(arena: Arena, caps: ArenaCaps = ArenaCaps()) -> None:
     if not 2 <= arena.max_plies <= caps.max_plies:
         raise DomainError("arena.max_plies", f"maxPlies must be between 2 and {caps.max_plies}")
     if not 0 <= arena.seed <= MAX_SEED:
-        raise DomainError("arena.seed", "seed must be a non-negative 63-bit integer")
+        raise DomainError("arena.seed", "seed must be between 0 and 2^53 - 1")
     limit = arena.limit
     if isinstance(limit, NodesLimit):
         if not 1 <= limit.nodes <= caps.max_nodes:
@@ -109,6 +110,7 @@ class RatingContext:
 
     engine_id: str
     engine_version: str
+    engine_fingerprint: str
     limit_type: str
     virtual_nps: int
     nodes: int
@@ -125,12 +127,17 @@ class RatingContext:
 
 
 def rating_context(
-    arena: Arena, engine_version: str, decision_version: str, balance_version: str
+    arena: Arena,
+    engine_version: str,
+    engine_fingerprint: str,
+    decision_version: str,
+    balance_version: str,
 ) -> RatingContext:
     limit = arena.limit
     return RatingContext(
         engine_id=arena.engine.id,
         engine_version=engine_version,
+        engine_fingerprint=engine_fingerprint,
         limit_type=limit.type,
         virtual_nps=limit.virtual_nps if isinstance(limit, VirtualClockLimit) else 0,
         nodes=limit.nodes if isinstance(limit, NodesLimit) else 0,
@@ -139,4 +146,27 @@ def rating_context(
         equal_engine=arena.equal_engine,
         decision_version=decision_version,
         balance_version=balance_version,
+    )
+
+
+def arena_from_doc(doc: dict[str, Any]) -> Arena:
+    """Rebuild an Arena from `dataclasses.asdict(arena)` (the stored snapshot)."""
+    limit_doc = dict(doc["limit"])
+    limit: Limit
+    if limit_doc.get("type") == "virtual-clock":
+        limit = VirtualClockLimit(
+            limit_doc["base_ms"], limit_doc["increment_ms"], limit_doc["virtual_nps"]
+        )
+    else:
+        limit = NodesLimit(limit_doc["nodes"])
+    return Arena(
+        engine=EngineSettings(**doc["engine"]),
+        limit=limit,
+        seed=doc["seed"],
+        multipv=doc["multipv"],
+        games=doc["games"],
+        swap_colors=doc["swap_colors"],
+        equal_engine=doc["equal_engine"],
+        max_plies=doc["max_plies"],
+        initial_fen=doc["initial_fen"],
     )
