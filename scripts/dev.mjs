@@ -18,10 +18,10 @@ const services = [
   {
     name: 'backend',
     colour: '\x1b[36m',
-    command: 'uv',
-    args: ['run', '--project', 'backend', 'duckgambit', 'serve', '--reload'],
+    command: 'uv run --project backend duckgambit serve --reload',
+    hint: 'Is uv installed? https://docs.astral.sh/uv/getting-started/installation/',
   },
-  { name: 'web', colour: '\x1b[35m', command: 'npm', args: ['run', 'dev', '-w', 'apps/web'] },
+  { name: 'web', colour: '\x1b[35m', command: 'npm run dev -w apps/web', hint: 'Run npm install.' },
 ]
 
 const children = []
@@ -53,19 +53,16 @@ function prefix(name, colour, stream, target) {
 }
 
 for (const service of services) {
-  const child = spawn(service.command, service.args, { cwd: root, env, shell: windows })
+  const child = spawn(service.command, { cwd: root, env, shell: true })
   children.push(child)
   prefix(service.name, service.colour, child.stdout, process.stdout)
   prefix(service.name, service.colour, child.stderr, process.stderr)
   child.on('error', (error) => {
-    console.error(`[${service.name}] could not start: ${error.message}`)
-    if (service.command === 'uv') {
-      console.error('Install uv first: https://docs.astral.sh/uv/getting-started/installation/')
-    }
+    console.error(`[${service.name}] could not start: ${error.message}. ${service.hint}`)
     stop(1)
   })
   child.on('exit', (code) => {
-    if (!stopping) console.error(`[${service.name}] exited with code ${code}`)
+    if (!stopping) console.error(`[${service.name}] exited with code ${code}. ${service.hint}`)
     stop(code ?? 1)
   })
 }

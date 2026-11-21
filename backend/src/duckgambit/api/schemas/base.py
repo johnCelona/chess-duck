@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, Any
 
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, StringConstraints
 from pydantic.alias_generators import to_camel
 
 ID_PATTERN = r"^[a-z0-9][a-z0-9_-]{0,63}$"
@@ -32,6 +32,24 @@ class WireIn(Wire):
         populate_by_name=True,
         extra="forbid",
     )
+
+
+class Wdl(Wire):
+    """Win, draw and loss chances per mille, from the mover's point of view."""
+
+    win: int
+    draw: int
+    loss: int
+
+
+def _wdl_from_triple(value: Any) -> Any:
+    if isinstance(value, (list, tuple)) and len(value) == 3:
+        return {"win": value[0], "draw": value[1], "loss": value[2]}
+    return value
+
+
+# An object rather than a 3-item array: fixed-length arrays generate poorly in C# and TS.
+WdlField = Annotated[Wdl | None, BeforeValidator(_wdl_from_triple)]
 
 
 class FieldError(Wire):

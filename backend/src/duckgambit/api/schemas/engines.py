@@ -4,7 +4,7 @@ from typing import Literal
 
 from pydantic import Field
 
-from duckgambit.api.schemas.base import Wire, WireIn
+from duckgambit.api.schemas.base import WdlField, Wire, WireIn
 from duckgambit.domain.arena import STARTING_FEN
 from duckgambit.services.engines import Analysis, DescribedOption, EngineListing
 from duckgambit.services.records import EngineProfile
@@ -62,7 +62,7 @@ class AnalysisLineOut(Wire):
     san: str
     cp: int | None
     mate: int | None
-    wdl: tuple[int, int, int] | None
+    wdl: WdlField
     pv: list[str]
 
 

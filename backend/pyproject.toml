@@ -60,7 +60,7 @@ ignore = [
 
 [tool.mypy]
 python_version = "3.12"
-mypy_path = "src"
+mypy_path = "$MYPY_CONFIG_FILE_DIR/src"
 packages = ["duckgambit"]
 strict = true
 warn_unused_ignores = true

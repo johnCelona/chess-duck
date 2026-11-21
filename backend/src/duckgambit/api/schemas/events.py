@@ -13,7 +13,7 @@ from typing import Annotated, Literal
 
 from pydantic import Field, TypeAdapter
 
-from duckgambit.api.schemas.base import Wire
+from duckgambit.api.schemas.base import WdlField, Wire
 from duckgambit.services.records import Envelope
 
 
@@ -62,7 +62,7 @@ class CandidateModel(Wire):
     rank: int = Field(description="The engine's own order; 1 is its favourite")
     cp: int | None = Field(description="Centipawns from the mover's side; null when it is a mate")
     mate: int | None
-    wdl: tuple[int, int, int] | None = Field(description="Win, draw, loss per mille for the mover")
+    wdl: WdlField
     base_score: int
     adjustments: list[AdjustmentModel]
     final_score: int

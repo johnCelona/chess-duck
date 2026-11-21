@@ -50,7 +50,7 @@ Transitive runtime packages (anyio, h11, httpcore, idna, certifi (MPL-2.0), clic
 | vite, @vitejs/plugin-react | MIT | https://github.com/vitejs/vite |
 | typescript | Apache-2.0 | https://github.com/microsoft/TypeScript |
 | vitest | MIT | https://github.com/vitest-dev/vitest |
-| @testing-library/react, @testing-library/jest-dom | MIT | https://github.com/testing-library |
+| @testing-library/react, @testing-library/jest-dom, @testing-library/user-event | MIT | https://github.com/testing-library |
 | jsdom | MIT | https://github.com/jsdom/jsdom |
 | oxlint | MIT | https://github.com/oxc-project/oxc |
 | prettier | MIT | https://github.com/prettier/prettier |

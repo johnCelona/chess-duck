@@ -111,7 +111,9 @@ class ArenaModel(WireIn):
 
 
 class CreateMatchRequest(WireIn):
-    duck_ids: tuple[Id, Id] = Field(description="First duck has White in the first game")
+    duck_ids: list[Id] = Field(
+        min_length=2, max_length=2, description="First duck has White in the first game"
+    )
     arena: ArenaModel
     rated: bool = True
 

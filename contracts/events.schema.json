@@ -107,27 +107,12 @@
         "wdl": {
           "anyOf": [
             {
-              "maxItems": 3,
-              "minItems": 3,
-              "prefixItems": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "integer"
-                }
-              ],
-              "type": "array"
+              "$ref": "#/$defs/Wdl"
             },
             {
               "type": "null"
             }
-          ],
-          "description": "Win, draw, loss per mille for the mover",
-          "title": "Wdl"
+          ]
         }
       },
       "required": [
@@ -1224,6 +1209,30 @@
         "params"
       ],
       "title": "ReasonModel",
+      "type": "object"
+    },
+    "Wdl": {
+      "description": "Win, draw and loss chances per mille, from the mover's point of view.",
+      "properties": {
+        "draw": {
+          "title": "Draw",
+          "type": "integer"
+        },
+        "loss": {
+          "title": "Loss",
+          "type": "integer"
+        },
+        "win": {
+          "title": "Win",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "win",
+        "draw",
+        "loss"
+      ],
+      "title": "Wdl",
       "type": "object"
     }
   },

@@ -92,8 +92,12 @@ class JobRunner:
     async def start(self, job_id: str, work: Work) -> JobRecord:
         """Run (or re-run) the job's work in the background."""
         job = await self.get(job_id)
-        if self.is_active(job_id):
-            raise ServiceError("job.already_running", "The job is already running", 409)
+        task = self._tasks.get(job_id)
+        if task is not None and not task.done():
+            if not job.finished:
+                raise ServiceError("job.already_running", "The job is already running", 409)
+            # The state is settled but the task is still publishing its last event.
+            await asyncio.wait([task])
         if job.state == "succeeded":
             raise ServiceError("job.finished", "The job has already finished", 409)
         job = replace(

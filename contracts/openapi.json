@@ -77,26 +77,12 @@
           "wdl": {
             "anyOf": [
               {
-                "maxItems": 3,
-                "minItems": 3,
-                "prefixItems": [
-                  {
-                    "type": "integer"
-                  },
-                  {
-                    "type": "integer"
-                  },
-                  {
-                    "type": "integer"
-                  }
-                ],
-                "type": "array"
+                "$ref": "#/components/schemas/Wdl"
               },
               {
                 "type": "null"
               }
-            ],
-            "title": "Wdl"
+            ]
           }
         },
         "required": [
@@ -384,27 +370,12 @@
           "wdl": {
             "anyOf": [
               {
-                "maxItems": 3,
-                "minItems": 3,
-                "prefixItems": [
-                  {
-                    "type": "integer"
-                  },
-                  {
-                    "type": "integer"
-                  },
-                  {
-                    "type": "integer"
-                  }
-                ],
-                "type": "array"
+                "$ref": "#/components/schemas/Wdl"
               },
               {
                 "type": "null"
               }
-            ],
-            "description": "Win, draw, loss per mille for the mover",
-            "title": "Wdl"
+            ]
           }
         },
         "required": [
@@ -467,18 +438,12 @@
           },
           "duckIds": {
             "description": "First duck has White in the first game",
+            "items": {
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "type": "string"
+            },
             "maxItems": 2,
             "minItems": 2,
-            "prefixItems": [
-              {
-                "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
-                "type": "string"
-              },
-              {
-                "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
-                "type": "string"
-              }
-            ],
             "title": "Duckids",
             "type": "array"
           },
@@ -2753,6 +2718,30 @@
           "timeControl"
         ],
         "title": "VirtualClockLimitModel",
+        "type": "object"
+      },
+      "Wdl": {
+        "description": "Win, draw and loss chances per mille, from the mover's point of view.",
+        "properties": {
+          "draw": {
+            "title": "Draw",
+            "type": "integer"
+          },
+          "loss": {
+            "title": "Loss",
+            "type": "integer"
+          },
+          "win": {
+            "title": "Win",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "win",
+          "draw",
+          "loss"
+        ],
+        "title": "Wdl",
         "type": "object"
       }
     }

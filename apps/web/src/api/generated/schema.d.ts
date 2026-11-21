@@ -437,12 +437,7 @@ export interface components {
             pv: string[];
             /** San */
             san: string;
-            /** Wdl */
-            wdl: [
-                number,
-                number,
-                number
-            ] | null;
+            wdl: components["schemas"]["Wdl"] | null;
         };
         /** AnalysisOut */
         AnalysisOut: {
@@ -464,22 +459,22 @@ export interface components {
              * Fen
              * @default rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
              */
-            fen: string;
+            fen?: string;
             /**
              * Hashmb
              * @default 16
              */
-            hashMb: number;
+            hashMb?: number;
             /**
              * Multipv
              * @default 3
              */
-            multiPV: number;
+            multiPV?: number;
             /**
              * Nodes
              * @default 100000
              */
-            nodes: number;
+            nodes?: number;
         };
         /** ArenaEngine */
         ArenaEngine: {
@@ -487,7 +482,7 @@ export interface components {
              * Hashmb
              * @default 16
              */
-            hashMb: number;
+            hashMb?: number;
             /** Id */
             id: string;
             /**
@@ -496,7 +491,7 @@ export interface components {
              * @default 1
              * @constant
              */
-            threads: 1;
+            threads?: 1;
         };
         /**
          * ArenaModel
@@ -509,29 +504,29 @@ export interface components {
              * @description Ignore the calculation stat: every duck gets the same nodes
              * @default false
              */
-            equalEngine: boolean;
+            equalEngine?: boolean;
             /**
              * Games
              * @default 1
              */
-            games: number;
+            games?: number;
             /**
              * Initialfen
              * @default rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
              */
-            initialFen: string;
+            initialFen?: string;
             /** Limit */
             limit: components["schemas"]["NodesLimitModel"] | components["schemas"]["VirtualClockLimitModel"];
             /**
              * Maxplies
              * @default 400
              */
-            maxPlies: number;
+            maxPlies?: number;
             /**
              * Multipv
              * @default 5
              */
-            multiPV: number;
+            multiPV?: number;
             /**
              * Seed
              * @description Same seed, same ducks, same games
@@ -541,7 +536,7 @@ export interface components {
              * Swapcolors
              * @default true
              */
-            swapColors: boolean;
+            swapColors?: boolean;
         };
         /** AvatarModel */
         AvatarModel: {
@@ -551,12 +546,12 @@ export interface components {
              * Skin
              * @default default
              */
-            skin: string;
+            skin?: string;
             /**
              * Species
              * @default mallard
              */
-            species: string;
+            species?: string;
         };
         /** CandidateModel */
         CandidateModel: {
@@ -594,15 +589,7 @@ export interface components {
             rank: number;
             /** San */
             san: string;
-            /**
-             * Wdl
-             * @description Win, draw, loss per mille for the mover
-             */
-            wdl: [
-                number,
-                number,
-                number
-            ] | null;
+            wdl: components["schemas"]["Wdl"] | null;
         };
         /** CareOut */
         CareOut: {
@@ -622,15 +609,12 @@ export interface components {
              * Duckids
              * @description First duck has White in the first game
              */
-            duckIds: [
-                string,
-                string
-            ];
+            duckIds: string[];
             /**
              * Rated
              * @default true
              */
-            rated: boolean;
+            rated?: boolean;
         };
         /**
          * DuckFile
@@ -1418,7 +1402,7 @@ export interface components {
              * Type
              * @default about:blank
              */
-            type: string;
+            type?: string;
         };
         /** RatingUpdatedData */
         RatingUpdatedData: {
@@ -1505,7 +1489,7 @@ export interface components {
              * Incrementseconds
              * @default 0
              */
-            incrementSeconds: number;
+            incrementSeconds?: number;
         };
         /**
          * VirtualClockLimitModel
@@ -1522,7 +1506,19 @@ export interface components {
              * Virtualnps
              * @default 200000
              */
-            virtualNps: number;
+            virtualNps?: number;
+        };
+        /**
+         * Wdl
+         * @description Win, draw and loss chances per mille, from the mover's point of view.
+         */
+        Wdl: {
+            /** Draw */
+            draw: number;
+            /** Loss */
+            loss: number;
+            /** Win */
+            win: number;
         };
     };
     responses: never;
