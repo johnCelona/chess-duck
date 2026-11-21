@@ -2,7 +2,7 @@ import zipfile
 
 import pytest
 
-from app.installer import safe_extract
+from duckgambit.adapters.engines.installer import safe_extract
 
 
 def test_zip_slip_is_rejected(tmp_path):

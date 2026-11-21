@@ -1,0 +1,27 @@
+{
+  "name": "duck-gambit",
+  "private": true,
+  "version": "0.1.0",
+  "license": "GPL-3.0-or-later",
+  "type": "module",
+  "workspaces": [
+    "apps/web",
+    "contracts"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:web": "npm run dev -w apps/web",
+    "dev:backend": "uv run --project backend duckgambit serve --reload",
+    "build": "npm run build -w apps/web",
+    "lint": "npm run lint -w apps/web",
+    "test": "npm run test -w apps/web",
+    "test:backend": "uv run --project backend pytest backend/tests",
+    "format": "npm run format -w apps/web && uv run --project backend ruff format backend",
+    "gen": "node scripts/gen.mjs",
+    "seed": "uv run --project backend duckgambit seed",
+    "check": "node scripts/check.mjs"
+  }
+}

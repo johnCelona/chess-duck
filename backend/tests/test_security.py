@@ -1,6 +1,6 @@
 import pytest
 
-from app.security import advertised_limit, validate_limit
+from duckgambit.services.engine_options import advertised_limit, validate_limit
 
 
 ADVERTISED = {

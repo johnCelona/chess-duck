@@ -1,7 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 
-import app.main as main
+import duckgambit.api.app as main
 
 
 @pytest.fixture

@@ -9,8 +9,8 @@ from pathlib import Path
 import httpx
 
 
-ROOT = Path(__file__).resolve().parents[1]
-MANIFEST_PATH = ROOT / "engines" / "manifest.json"
+ROOT = Path(__file__).resolve().parents[4]
+MANIFEST_PATH = Path(__file__).with_name("manifest.json")
 INSTALLED_ROOT = ROOT / "engines" / "installed"
 TMP_ROOT = ROOT / "engines" / ".tmp"
 

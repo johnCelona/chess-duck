@@ -6,11 +6,16 @@ import chess
 from fastapi import Depends, FastAPI, HTTPException, Path
 from fastapi.middleware.cors import CORSMiddleware
 
-from .engine_adapter import UciEngine
-from .installer import installed_state, install_engine, load_manifest, remove_engine
-from .models import AnalyseRequest, SettingsPayload
-from .profiles import list_profiles, save_profile
-from .security import advertised_limit, validate_limit
+from duckgambit.adapters.engines.uci import UciEngine
+from duckgambit.adapters.engines.installer import (
+    install_engine,
+    installed_state,
+    load_manifest,
+    remove_engine,
+)
+from duckgambit.api.schemas import AnalyseRequest, SettingsPayload
+from duckgambit.adapters.profile_files import list_profiles, save_profile
+from duckgambit.services.engine_options import advertised_limit, validate_limit
 
 
 ENGINE_ID_PATTERN = r"^[a-z0-9][a-z0-9_-]{0,63}$"

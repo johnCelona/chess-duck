@@ -1,0 +1,68 @@
+[project]
+name = "duckgambit"
+version = "0.1.0"
+description = "Duck Gambit backend: domain, engine service and API"
+license = "GPL-3.0-or-later"
+requires-python = ">=3.12"
+dependencies = [
+    "chess>=1.11.2",
+    "fastapi>=0.162",
+    "httpx>=0.28",
+    "platformdirs>=4",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.6",
+    "uvicorn>=0.36",
+]
+
+[project.scripts]
+duckgambit = "duckgambit.cli.main:main"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.13",
+    "pytest>=8.3",
+    "ruff>=0.8",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/duckgambit"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+markers = [
+    "real_engine: needs an installed Stockfish; skipped when none is found, never run in CI",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "C4", "RUF", "ASYNC", "PT", "S"]
+ignore = [
+    "S101",   # assert is fine in tests and for invariants
+    "S311",   # random.Random is used for seeded game decisions, not security
+    "RUF012", # pydantic models declare mutable defaults safely
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S", "B011"]
+
+[tool.mypy]
+python_version = "3.12"
+mypy_path = "src"
+packages = ["duckgambit"]
+strict = true
+warn_unused_ignores = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["chess", "chess.*"]
+follow_imports = "skip"
+ignore_missing_imports = true
