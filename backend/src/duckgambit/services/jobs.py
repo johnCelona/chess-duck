@@ -15,7 +15,7 @@ from dataclasses import replace
 from typing import Any
 
 from duckgambit.domain.errors import DomainError
-from duckgambit.domain.events import JobFinished, JobProgressed
+from duckgambit.domain.events import Event, JobFinished, JobProgressed
 from duckgambit.services.errors import ServiceError
 from duckgambit.services.events import EventLog, iso
 from duckgambit.services.ports import Clock, EngineError, IdGenerator, Store
@@ -139,16 +139,24 @@ class JobRunner:
         job = replace(
             job, state=state, finished_at=iso(self._clock), error_code=code, error_detail=detail
         )
-        await self._save(job)
-        await self._events.publish(stream_of(job_id), [JobFinished(job_id, state, code)])
+        await self._save_with_event(job, JobFinished(job_id, state, code))
         self._handles.pop(job_id, None)
 
     async def _progress(self, job_id: str, done: int, total: int) -> None:
         job = replace(await self.get(job_id), done=done, total=total)
-        await self._save(job)
-        await self._events.publish(
-            stream_of(job_id), [JobProgressed(job_id, job.state, done, total)]
-        )
+        await self._save_with_event(job, JobProgressed(job_id, job.state, done, total))
+
+    async def _save_with_event(self, job: JobRecord, event: Event) -> None:
+        """Commit the job's new state and its event together, so a reader that sees the
+        state also sees the event (a client polling the job, then reading the stream)."""
+
+        def write() -> None:
+            with self._store.atomic():
+                self._store.jobs.save(job)
+                self._events.append(stream_of(job.id), [event])
+
+        await asyncio.to_thread(write)
+        self._events.notify()
 
     async def _save(self, job: JobRecord) -> None:
         await asyncio.to_thread(self._store.jobs.save, job)
