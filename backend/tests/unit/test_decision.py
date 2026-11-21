@@ -172,6 +172,15 @@ def test_probabilities_cover_exactly_the_surviving_candidates():
     assert 999_990 <= total <= 1_000_000
 
 
+def test_a_move_reported_twice_by_the_engine_counts_once():
+    search = result(("e2e4", 40), ("d2d4", 35), ("d2d4", 35))
+
+    decision = choose(chess.Board(), mind(temperature_cp=30), search, seed=3)
+
+    assert [c.move for c in decision.candidates] == ["e2e4", "d2d4"]
+    assert 999_990 <= sum(c.probability_ppm for c in decision.candidates) <= 1_000_000
+
+
 def test_shorter_mate_outranks_longer_mate_and_any_centipawn_score():
     quick = Candidate("a2a3", None, 2, None, 8, ())
     slow = Candidate("a2a4", None, 5, None, 8, ())

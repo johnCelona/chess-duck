@@ -5,30 +5,31 @@ import { EnginesPage } from './pages/EnginesPage'
 import { MatchPage } from './pages/MatchPage'
 
 const PAGES = [
-  { id: 'ducks', label: 'Ducks', render: () => <DucksPage /> },
-  { id: 'match', label: 'Match', render: () => <MatchPage /> },
-  { id: 'engines', label: 'Engines', render: () => <EnginesPage /> },
+  { id: 'ducks', label: 'Ducks' },
+  { id: 'match', label: 'Match' },
+  { id: 'engines', label: 'Engines' },
 ] as const
 
 type PageId = (typeof PAGES)[number]['id']
+type Route = { page: PageId; param: string | null }
 
-function pageFromHash(): PageId {
-  const id = window.location.hash.replace('#/', '')
-  return PAGES.some((page) => page.id === id) ? (id as PageId) : 'ducks'
+/** `#/match/mat_123` is the match page watching (or replaying) that match. */
+function routeFromHash(): Route {
+  const [id, param] = window.location.hash.replace(/^#\/?/, '').split('/')
+  const page = PAGES.some((candidate) => candidate.id === id) ? (id as PageId) : 'ducks'
+  return { page, param: param || null }
 }
 
 // Three pages do not need a router yet. The hash keeps the page across reloads;
 // replace this with a real router when navigation grows (see docs/sessions).
 function App() {
-  const [pageId, setPageId] = useState<PageId>(pageFromHash)
+  const [route, setRoute] = useState<Route>(routeFromHash)
 
   useEffect(() => {
-    const onHashChange = () => setPageId(pageFromHash())
+    const onHashChange = () => setRoute(routeFromHash())
     window.addEventListener('hashchange', onHashChange)
     return () => window.removeEventListener('hashchange', onHashChange)
   }, [])
-
-  const page = PAGES.find((candidate) => candidate.id === pageId) ?? PAGES[0]
 
   return (
     <div className="app-shell">
@@ -39,14 +40,18 @@ function App() {
             <a
               key={item.id}
               href={`#/${item.id}`}
-              aria-current={item.id === pageId ? 'page' : undefined}
+              aria-current={item.id === route.page ? 'page' : undefined}
             >
               {item.label}
             </a>
           ))}
         </nav>
       </header>
-      <main>{page.render()}</main>
+      <main>
+        {route.page === 'ducks' && <DucksPage />}
+        {route.page === 'match' && <MatchPage matchId={route.param} />}
+        {route.page === 'engines' && <EnginesPage />}
+      </main>
     </div>
   )
 }

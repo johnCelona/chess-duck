@@ -116,6 +116,20 @@ async def test_only_lines_from_the_last_complete_depth_are_used(make_pool):
     assert [c.move for c in result.candidates] == [c.move for c in expected.candidates]
 
 
+async def test_a_move_is_never_listed_twice_when_the_engine_reorders_mid_iteration(make_pool):
+    """Regression: found by watching a real game, where one move appeared on two lines."""
+    pool = make_pool(mode="reorder")
+
+    async with pool.lease("fake-uci") as engine:
+        result = await engine.search(request())
+
+    expected = await FakeEngine().search(request())
+    moves = [c.move for c in result.candidates]
+    assert len(set(moves)) == len(moves) == 3
+    assert moves == [c.move for c in expected.candidates]
+    assert result.depth == 1
+
+
 async def test_a_hung_engine_is_killed_and_reported(make_pool):
     pool = make_pool(mode="hang", deadline=lambda _request: 0.5)
 

@@ -24,7 +24,7 @@ from duckgambit.domain.knowledge import RepertoireEntry
 from duckgambit.domain.rules import RULES, Adjustment, StyleRule, adjustments_for
 from duckgambit.domain.seeds import draw_below, pick_weighted, rng_for
 
-DECISION_LAYER_VERSION = "decision-1"
+DECISION_LAYER_VERSION = "decision-2"
 
 # round(2**30 * 2 ** (-j / 16)) for j in 0..15: a base-2 softmax without floating point.
 _FRAC16 = (
@@ -188,7 +188,13 @@ def _score(
 ) -> list[ScoredCandidate]:
     """Steps 4 and 5: filter by blunder tolerance, then add style adjustments."""
     legal = {move.uci(): move for move in board.legal_moves}
-    usable = [candidate for candidate in search.candidates if candidate.move in legal]
+    usable = []
+    seen: set[str] = set()
+    for candidate in search.candidates:
+        # One entry per legal move: a duplicate would be counted twice when sampling.
+        if candidate.move in legal and candidate.move not in seen:
+            seen.add(candidate.move)
+            usable.append(candidate)
     if not usable:
         raise DomainError("decision.no_candidates", "The engine returned no legal candidate")
     best_base = max(candidate.score() for candidate in usable)

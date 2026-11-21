@@ -10,7 +10,7 @@ def mind_with(**stats):
 def test_think_budget_is_a_share_of_the_remaining_time():
     budget = think_budget_ms(60_000, 0, fullmove_number=1, mind=mind_with(speed=50))
 
-    assert budget == 60_000 // 40
+    assert budget == 60_000 // 60
 
 
 def test_a_fast_duck_thinks_less_than_a_slow_duck():

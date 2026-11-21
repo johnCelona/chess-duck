@@ -25,14 +25,7 @@ from duckgambit.domain.arena import (
 )
 from duckgambit.domain.balance import DEFAULT_BALANCE, Balance
 from duckgambit.domain.chessutil import board_from, move_flags, parse_move, position_key
-from duckgambit.domain.clock import (
-    DEFAULT_CLOCK_POLICY,
-    ClockPolicy,
-    charge,
-    nodes_for,
-    scale_nodes,
-    think_budget_ms,
-)
+from duckgambit.domain.clock import charge, nodes_for, scale_nodes, think_budget_ms
 from duckgambit.domain.decision import DECISION_LAYER_VERSION, SearchBudget, choose, plan
 from duckgambit.domain.duck import Duck
 from duckgambit.domain.engine_types import EngineIdentity
@@ -78,7 +71,6 @@ class MatchService:
         profile_id: str,
         balance: Balance = DEFAULT_BALANCE,
         caps: ArenaCaps | None = None,
-        clock_policy: ClockPolicy = DEFAULT_CLOCK_POLICY,
     ) -> None:
         self._store = store
         self._events = events
@@ -89,7 +81,7 @@ class MatchService:
         self._profile_id = profile_id
         self._balance = balance
         self._caps = caps or ArenaCaps()
-        self._policy = clock_policy
+        self._policy = balance.clock
 
     # ----- queries -----------------------------------------------------------------
 

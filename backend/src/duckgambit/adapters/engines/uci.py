@@ -168,7 +168,8 @@ class UciEngine:
         protocol: chess.engine.UciProtocol, board: chess.Board, request: SearchRequest
     ) -> SearchResult:
         limit = chess.engine.Limit(nodes=request.nodes, depth=request.depth)
-        by_depth: dict[int, dict[int, chess.engine.InfoDict]] = {}
+        # depth -> root move -> (line number when last reported, info)
+        by_depth: dict[int, dict[str, tuple[int, chess.engine.InfoDict]]] = {}
         nodes = 0
         # A new `game` object makes python-chess send ucinewgame + isready first.
         analysis = await protocol.analysis(
@@ -181,32 +182,36 @@ class UciEngine:
                     continue
                 if info.get("lowerbound") or info.get("upperbound"):
                     continue
+                # Keyed by move, not by line number: while an iteration is in progress the
+                # engine re-sorts its lines and reprints unfinished ones under the previous
+                # depth, so one line number can refer to different moves within a depth.
                 line = int(info.get("multipv", 1))
-                by_depth.setdefault(int(info.get("depth", 0)), {})[line] = info
+                moves = by_depth.setdefault(int(info.get("depth", 0)), {})
+                moves[info["pv"][0].uci()] = (line, info)
 
         expected = min(request.multipv, board.legal_moves.count())
-        complete = [depth for depth, lines in by_depth.items() if len(lines) >= expected]
+        complete = [depth for depth, moves in by_depth.items() if len(moves) >= expected]
         if not complete:
             raise chess.engine.EngineError("engine returned no complete set of lines")
         # Only the deepest depth finished for every line: a search cut off mid-iteration
         # reports deeper lines for some moves only, and mixing depths is not comparable.
         depth = max(complete)
-        candidates = []
-        for line in sorted(by_depth[depth])[:expected]:
-            info = by_depth[depth][line]
+        ranked = []
+        for line, info in by_depth[depth].values():
             score = info["score"].pov(board.turn)
             wdl = info.get("wdl")
-            candidates.append(
-                Candidate(
-                    move=info["pv"][0].uci(),
-                    cp=None if score.is_mate() else score.score(),
-                    mate=score.mate(),
-                    wdl=tuple(wdl.pov(board.turn)) if wdl is not None else None,
-                    depth=depth,
-                    pv=tuple(move.uci() for move in info["pv"]),
-                )
+            candidate = Candidate(
+                move=info["pv"][0].uci(),
+                cp=None if score.is_mate() else score.score(),
+                mate=score.mate(),
+                wdl=tuple(wdl.pov(board.turn)) if wdl is not None else None,
+                depth=depth,
+                pv=tuple(move.uci() for move in info["pv"]),
             )
-        return SearchResult(tuple(candidates), nodes=nodes, depth=depth)
+            ranked.append((-candidate.score(), line, candidate.move, candidate))
+        ranked.sort(key=lambda item: item[:3])
+        candidates = tuple(item[3] for item in ranked[:expected])
+        return SearchResult(candidates, nodes=nodes, depth=depth)
 
     async def _kill(self) -> None:
         self.alive = False

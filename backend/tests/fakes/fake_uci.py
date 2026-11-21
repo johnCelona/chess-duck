@@ -1,7 +1,7 @@
 """A tiny UCI engine for adapter tests. It scores moves like the in-process fake engine.
 
 Behaviour switches (environment):
-  FAKE_UCI_MODE = normal | hang | crash | no-handshake | partial-depth | wrong-name
+  FAKE_UCI_MODE = normal | hang | crash | no-handshake | partial-depth | reorder | wrong-name
   FAKE_UCI_LOG  = path of a file that receives every command line
 
 Run as: python fake_uci.py
@@ -87,6 +87,13 @@ def main() -> None:
             if MODE == "partial-depth" and len(candidates) > 1:
                 # A deeper iteration that only finished its first line, with a different move.
                 say(info_line(2, 1, candidates[-1], nodes + 17))
+            if MODE == "reorder" and len(candidates) > 2:
+                # What Stockfish does when cut off mid-iteration: the third move overtakes the
+                # second at depth 2, and the displaced second move is reprinted on line 3 under
+                # the previous depth. Reading by line number would list the second move twice.
+                say(info_line(2, 1, candidates[0], nodes + 17))
+                say(info_line(2, 2, candidates[2], nodes + 17))
+                say(info_line(1, 3, candidates[1], nodes + 17))
             say(f"bestmove {candidates[0].move}" if candidates else "bestmove 0000")
         elif words[0] == "quit":
             return

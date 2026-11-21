@@ -25,8 +25,26 @@ class Stage:
 
 
 @dataclass(frozen=True)
+class ClockPolicy:
+    """How a duck spends a virtual clock. Placeholders until calibration (M3)."""
+
+    expected_game_moves: int = 60
+    min_moves_left: int = 30
+    increment_share_permille: int = 800
+    min_think_ms: int = 50
+    max_think_ms: int = 10_000
+    move_overhead_ms: int = 20
+    instant_move_ms: int = 100  # book, memory and forced moves
+    min_nodes: int = 100
+
+
+DEFAULT_CLOCK_POLICY = ClockPolicy()
+
+
+@dataclass(frozen=True)
 class Balance:
-    version: str = "balance-0.1-placeholder"
+    version: str = "balance-0.2-placeholder"
+    clock: ClockPolicy = DEFAULT_CLOCK_POLICY
 
     # Growth
     stages: tuple[Stage, ...] = (

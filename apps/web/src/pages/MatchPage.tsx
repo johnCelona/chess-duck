@@ -52,7 +52,7 @@ async function loadSetup() {
   return { ducks, engines: engines.filter((engine) => engine.status === 'installed'), recent }
 }
 
-export function MatchPage() {
+export function MatchPage({ matchId }: { matchId: string | null }) {
   const setup = useResource(loadSetup)
   const ducks = setup.data?.ducks ?? []
   const engines = setup.data?.engines ?? []
@@ -76,6 +76,7 @@ export function MatchPage() {
   const error = actionError || setup.error
 
   const player = useRef<Player | null>(null)
+  const speedRef = useRef(1)
   const stream = useRef<Unsubscribe | null>(null)
   const reloadSetup = setup.reload
 
@@ -90,20 +91,48 @@ export function MatchPage() {
 
   // Following a live match and replaying a finished one are the same thing:
   // read the match's event stream from the start.
-  const watch = (target: Match) => {
-    stopWatching()
-    setMatch(target)
-    setView(emptyMatchView)
-    const playback = createPlayer((event) => {
-      setView((current) => applyEvent(current, event))
-      if (event.type === 'MatchFinished') reloadSetup() // ratings changed
-    }, speed)
-    player.current = playback
-    stream.current = subscribe([target.stream, `job:${target.jobId}`], playback.push)
-  }
+  const watch = useCallback(
+    (target: Match) => {
+      stopWatching()
+      setMatch(target)
+      setView(emptyMatchView)
+      const playback = createPlayer((event) => {
+        setView((current) => applyEvent(current, event))
+        if (event.type === 'MatchFinished') reloadSetup() // ratings changed
+      }, speedRef.current)
+      player.current = playback
+      stream.current = subscribe([target.stream, `job:${target.jobId}`], (event) => {
+        playback.push(event)
+        // Nothing follows a finished job, so free the connection; playback carries on.
+        if (event.type === 'JobFinished' && event.data.state === 'succeeded') {
+          stream.current?.()
+          stream.current = null
+        }
+      })
+    },
+    [stopWatching, reloadSetup],
+  )
+
+  // The address decides which match is on screen, so a link (or a reload) replays it.
+  useEffect(() => {
+    if (!matchId) return
+    let cancelled = false
+    unwrap(api.GET('/api/v1/matches/{match_id}', { params: { path: { match_id: matchId } } })).then(
+      (found) => {
+        if (!cancelled) watch(found)
+      },
+      (requestError: unknown) => {
+        if (!cancelled) setError(messageOf(requestError))
+      },
+    )
+    return () => {
+      cancelled = true
+    }
+  }, [matchId, watch])
 
   const changeSpeed = (next: number) => {
     setSpeed(next)
+    speedRef.current = next
     player.current?.setSpeed(next)
   }
 
@@ -131,7 +160,7 @@ export function MatchPage() {
           },
         }),
       )
-      watch(created)
+      window.location.hash = `#/match/${created.id}`
     } catch (requestError) {
       setError(messageOf(requestError))
     } finally {
@@ -424,9 +453,7 @@ export function MatchPage() {
             {recent.map((item) => (
               <li key={item.id}>
                 {item.duckIds.map(duckName).join(' – ')} · {item.state}{' '}
-                <button type="button" onClick={() => watch(item)}>
-                  {item.state === 'finished' ? 'Replay' : 'Watch'}
-                </button>
+                <a href={`#/match/${item.id}`}>{item.state === 'finished' ? 'Replay' : 'Watch'}</a>
               </li>
             ))}
           </ul>

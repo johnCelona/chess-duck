@@ -9,24 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from duckgambit.domain.balance import MindParams
-
-
-@dataclass(frozen=True)
-class ClockPolicy:
-    """Tunable constants. Placeholders until calibration (M3)."""
-
-    expected_game_moves: int = 40
-    min_moves_left: int = 10
-    increment_share_permille: int = 800
-    min_think_ms: int = 50
-    max_think_ms: int = 10_000
-    move_overhead_ms: int = 20
-    instant_move_ms: int = 100  # book and forced moves
-    min_nodes: int = 100
-
-
-DEFAULT_CLOCK_POLICY = ClockPolicy()
+from duckgambit.domain.balance import DEFAULT_CLOCK_POLICY, ClockPolicy, MindParams
 
 
 def think_budget_ms(

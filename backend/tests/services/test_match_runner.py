@@ -9,7 +9,7 @@ from conftest import CountingIds, FixedClock
 from duckgambit.adapters.engines.fake import FakeEngine, FakeEnginePool
 from duckgambit.adapters.sqlite.store import DEFAULT_PROFILE_ID
 from duckgambit.domain.arena import Arena, EngineSettings, NodesLimit, VirtualClockLimit
-from duckgambit.domain.clock import DEFAULT_CLOCK_POLICY, ClockPolicy
+from duckgambit.domain.balance import DEFAULT_BALANCE, ClockPolicy
 from duckgambit.domain.duck import default_stats
 from duckgambit.domain.errors import DomainError
 from duckgambit.services.ducks import DuckService, duck_stream
@@ -27,7 +27,7 @@ BULLET = Arena(
 
 
 class Harness:
-    def __init__(self, store, pool=None, clock_policy=None):
+    def __init__(self, store, pool=None, balance=DEFAULT_BALANCE):
         self.store = store
         self.clock = FixedClock()
         self.ids = CountingIds()
@@ -43,7 +43,7 @@ class Harness:
             self.clock,
             self.ids,
             DEFAULT_PROFILE_ID,
-            clock_policy=clock_policy or DEFAULT_CLOCK_POLICY,
+            balance=balance,
         )
 
     async def two_ducks(self):
@@ -225,7 +225,7 @@ async def test_bullet_games_run_on_a_virtual_clock(harness):
 
 async def test_a_duck_that_runs_out_of_virtual_time_loses_on_time(store):
     # A policy that insists on 400 ms per move burns a one-second clock in three moves.
-    harness = Harness(store, clock_policy=ClockPolicy(min_think_ms=400))
+    harness = Harness(store, balance=replace(DEFAULT_BALANCE, clock=ClockPolicy(min_think_ms=400)))
     blitz = replace(BULLET, limit=VirtualClockLimit(1_000, 0, 200_000))
 
     match, job = await harness.play(blitz)
