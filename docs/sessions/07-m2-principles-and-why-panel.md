@@ -4,11 +4,11 @@ Milestone: **M2** · Depends on: 05
 
 ## Goal
 
-Add the first principles (develop minors, castle early, fight for the centre, don't move the queen early) as style rules in the registry, let players switch them on, and show them in the "why" panel.
+Add the first principles (develop minors, castle early, fight for the centre, don't move the queen early) as style rules in the registry, let players adopt them by flipping a card ("Rules of the Pond", no quiz; design 03 §5), and show them in the "why" panel.
 
 ## Needs John ⚑
 
-Which principles ship first, their names and the quiz copy.
+Which principles ship first, their names and card copy; how many a duck holds active at once (placeholder 3).
 
 ## Read first
 
@@ -26,7 +26,7 @@ Which principles ship first, their names and the quiz copy.
 
 - Each principle is a pure rule on (board, move) with a label and reason code; a duck applies only principles it has learned.
 - The thinking panel shows principle bonuses like style bonuses.
-- A principle quiz (design package D4) unlocks a principle, through the training door.
+- Flipping a principle card (design package D4) adds it through the training door; a duck holds a limited number active, and swapping is free.
 
 ## Test plan
 
@@ -41,7 +41,7 @@ Which principles ship first, their names and the quiz copy.
 ```text
 You are working on Duck Gambit (repo root: this folder). Session 07: Principles as style rules.
 
-Goal: Add the first principles (develop minors, castle early, fight for the centre, don't move the queen early) as style rules in the registry, let players switch them on, and show them in the "why" panel.
+Goal: Add the first principles (develop minors, castle early, fight for the centre, don't move the queen early) as style rules in the registry, let players adopt them by flipping a card ("Rules of the Pond", no quiz; design 03 §5), and show them in the "why" panel.
 
 Rules for this session:
 - Read `CLAUDE.md` (and the folder `CLAUDE.md` files you touch), this brief, and the documents listed under Read first.

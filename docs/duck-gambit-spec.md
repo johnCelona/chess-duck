@@ -189,6 +189,7 @@ A fixed pool of points that grows with level, so nobody can max everything. All 
 - **Stages** (names are placeholders): Egg, Hatchling, Duckling, Duck, Champion. Stages unlock stat caps and features.
 - **Care state:** hunger, energy, mood. Feeding refills **training energy**, which limits how many lessons fit in a session. Food can offer small, flavorful bonuses.
 - **Rule:** care affects *how much* you can train, never what the duck already knows. No lost progress from neglect.
+- **Decided 2026-11-21 (John):** no energy for now. Nothing may slow the player down, including anything care-like added later. `care` stays in the data model, unused and hidden. See `docs/design/03-player-journey.md` §7.
 
 ### 4.4 Level vs rating
 
@@ -472,7 +473,7 @@ Each milestone is split into session-sized work packages in `docs/sessions/NN-sl
 2. **Unity timing and strategy:** desktop-only sidecar first, or hosted from the start?
 3. **Hosting:** will friends play on your machine, a bundled build, or a hosted server?
 4. **Rating system:** Glicko-2 (proposed) or plain Elo?
-5. **Care loop pacing:** real-time timers, or session-based energy?
+5. **Care loop pacing:** real-time timers, or session-based energy? *Decided 2026-11-21: no energy; nothing may slow the player down.*
 6. **Art direction:** who draws the ducks and pieces, and in what style?
 7. **Duck species and names** for the first release.
 8. **Lichess privacy:** what we store about linked accounts and imported games.

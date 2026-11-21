@@ -83,7 +83,9 @@ These are the load-bearing ones. Break one only with an ADR in `docs/adr/`.
 
 - **Duck**: a player's trainable chess agent: stats, knowledge, growth state.
 - **Decision layer**: the pipeline that picks a duck's move: taught fix (puzzle memory), book, engine candidates, blunder-tolerance filter, style/principle/motif scoring, seeded sampling.
-- **Knowledge**: a duck's repertoire (keyed by normalized FEN), principles, motifs, puzzle memory.
+- **Knowledge**: a duck's trained openings and their repertoire entries (keyed by normalized FEN), principles, motifs, puzzle memory. Before each game a duck shortlists up to 3 trained openings (ADR-0016, proposed).
+- **Egg seed**: the seed a duck hatched from. It sets the starting stat tilt only, never move choice directly.
+- **Active duck**: the duck the hub shows, saved on the profile.
 - **Judge**: fixed, stronger engine setting that grades moves identically for every duck.
 - **Defender**: fixed engine opponent used in convert-the-win and survive exercises.
 - **Arena**: match settings shared by all ducks (engine, limit, lines, threads, hash, format).

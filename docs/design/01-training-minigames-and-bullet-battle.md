@@ -6,6 +6,15 @@ Conventions: **[PH]** marks a placeholder number that belongs in the balance tab
 
 Read with: spec sections 1, 4, 5, 6, 7 and ADR-0002, 0004 to 0009.
 
+> **Updated 2026-11-21 with John's decisions** (`docs/design/03-player-journey.md` §7). The changes:
+> - Energy, food and feeding are **out of scope**: nothing may slow the player down (§2.6, §5).
+> - Games between a player's own ducks **are rated** (§4.2, Q1).
+> - Opening School follows **trained openings and a pre-game shortlist** (ADR-0016) instead of per-move weights (§2.3).
+> - Principles are unlocked by **flipping a card, without a quiz** (§2.3).
+> - Blunder Training is **one screen with two doors**: the Review Room and the Dojo (§3).
+>
+> Doc 03 is the map of the whole player journey; this document keeps the detail of each activity.
+
 ---
 
 ## 0. Summary
@@ -15,7 +24,8 @@ Read with: spec sections 1, 4, 5, 6, 7 and ADR-0002, 0004 to 0009.
 3. **Blunder Training is not a new pipeline.** It is ADR-0008's "teach the fix" with a different entry point (a persistent per-duck queue instead of "top 3 of this game"), one extra fact per annotation (the punishment line), and a small scheduler. Same classify, grade, `apply_lesson` and lesson check.
 4. **Blunder tolerance stays derived from level and stage.** Blunder Training never writes it. It feeds it only through XP, the same currency as every other activity, with XP per blunder card capped.
 5. **Human-versus-duck bullet treats the human as a recorded input.** The duck stays on its deterministic virtual clock; the human's elapsed time is measured in the service layer and passed to the domain as data. These games are never rated.
-6. **Two ducks cannot measure their own growth by only playing each other.** Ratings are relative to a pool. Training games between ducks give XP and review material; the climb from 2000 toward 2500 is *measured* in League games against anchor ducks (ADR-0006 section 5).
+6. **Games between a player's own ducks are rated** (John, 2026-11-21), with the normal formula. A closed pool still only measures ducks relative to each other, so a rating that compares across players comes from League games against anchor ducks (ADR-0006 section 5). Farming risks are in §4.2.
+7. **No energy** (John, 2026-11-21). Activities are free to repeat; nothing may slow the player down.
 
 What I would cut first, in order: the Creativity course ("find two"), the "spot it first" phase of Blunder Training, per-entry memory strength, guards (motif vigilance), time-odds handicaps beyond one preset. The core that must survive: Blunder Training, bullet sparring, the training-bullet cycle with League checks.
 
@@ -31,8 +41,8 @@ From descriptions of the first three games [1][2]: training is a set of short sk
 | --- | --- |
 | One minigame per skill | One activity per stat group (section 2) |
 | Skill level rises as you play | Stat points placed by the matching minigame; knowledge rows written |
-| Energy, fed with seed | `care.energy`, refilled by food earned in play |
-| Coins | Food only. No currency that buys strength (pillar 5) |
+| Energy, fed with seed | None. Energy is out of scope (John, 2026-11-21) |
+| Coins | None. No currency that buys strength (pillar 5) |
 | Races against rivals in leagues | Bullet Battle; League games against named anchor ducks |
 | Level cap raised in a shop | Stat caps raised by growth stage only |
 
@@ -66,27 +76,29 @@ Why this is honest: every stat feeds `derive_mind` (ADR-0006), so a placed point
 | **Blunder Training** ("Oops Pile") | None; pays the most XP | Puzzle memory, repertoire fixes, guards | 3 to 5 min | M5 |
 | **Bullet Battle** | Speed | None directly; produces blunder cards | 1 to 6 min | M3 play, M5 review |
 
-Blunder tolerance has no minigame because it is derived from level and stage. XP is its only input, and Blunder Training pays the best XP per energy [PH]. The client can show the derived value as a "blunder guard" meter next to the XP bar ("at level 8 your duck lets through slips up to X"). That is a display of real derived data, not a second stat.
+Blunder tolerance has no minigame because it is derived from level and stage. XP is its only input, and Blunder Training pays the best XP per minute [PH]. The client can show the derived value as a "blunder guard" meter next to the XP bar ("at level 8 your duck lets through slips up to X"). That is a display of real derived data, not a second stat.
 
 ### 2.3 Opening Drill
 
 **Pitch.** You play your favourite opening on the board and the duck waddles after your moves. Then it quacks the line back from memory. Where it stumbles, you show it again.
 
+> **Model update (ADR-0016).** A session teaches one named **opening**: a White line from move 1, or a Black defence to a given first move. Finishing it adds that `Opening` to the duck, or adds +1 to `times_trained` if the duck already knows it. The duck plays only trained openings, shortlisting up to 3 before each game. Per-move "weight" labels are gone; `weight` only separates branches inside one opening. Read "repertoire entries" below as entries of that opening.
+
 **Core loop.**
 
-1. Choose colour and a starting point: the initial position, or the end of a line the duck already knows. A session teaches up to 6 [PH] new duck-side moves.
+1. Choose the opening to teach (new, or one the duck knows) and where to start: the first move, or the end of what the duck already knows. A session teaches up to 6 [PH] new duck-side moves.
 2. **Teach.** The player plays both sides. Legal moves come from the server (ADR-0002 item 6). Each duck-side move becomes a pending repertoire entry.
 3. **Sound check** (optional, balance toggle). Each taught move gets one low-budget Judge search. If its expected-score loss is above the mistake threshold the player is told what it costs and asked "teach it anyway?". Teaching a dubious gambit is allowed (spec 5.3: "including your mistakes if you want").
 4. **Quack-back.** From the start of the line the duck replays its side. Each duck move is a real `plan()` call with a fixed seed: it recalls with probability `bookRecall` or forgets. Opponent moves are replayed from the taught line. On a forget the player drags the right move again.
 5. **Wrap-up.** `apply_lesson` writes the entries, places a Memory point if one is unassigned, grants XP. The summary states the true recall ("remembered 5 of 6").
 
-**What the duck gains.** Rows in `repertoire_entries` with `source = opening-drill`; +1 `weight` on entries re-shown after a forget; a Memory point; XP.
+**What the duck gains.** The opening (new, or `times_trained` +1); its rows in `repertoire_entries` with `source = opening-drill` and `opening_id`; a Memory point; XP.
 
-**Honesty.** Book moves are step 1 of the decision layer. `weight` only matters when a position has more than one taught move, and we say so. The quack-back is ADR-0008's lesson check applied to an opening, so a low Memory stat visibly costs recall. That is the reason to place points in Memory.
+**Honesty.** Book moves are step 1 of the decision layer, and only for openings on the game's shortlist (ADR-0016). Training an opening more makes the duck pick it more often; it does not make the duck remember it better (that is the Memory stat), and we say so. The quack-back is ADR-0008's lesson check applied to an opening, so a low Memory stat visibly costs recall. That is the reason to place points in Memory.
 
 **Player learns.** The line, twice (once teaching, once patching), and what the Judge thinks of each move.
 
-**Principles quiz** (a second door in the same building). A principle is added to `knowledge.principles` after a five-question quiz: an opening position and three candidate moves, pick the one that follows the rule. Questions are generated by the principle's own detector in the rule registry (ADR-0005), so the quiz and the duck's behaviour can never disagree, and no authored content is needed. One-time per principle. M2.
+**Principle cards ("Rules of the Pond")** (a second door in the same building). *Decided 2026-11-21: flip a card, no quiz.* Flipping a card adds the principle to `knowledge.principles`; a duck holds a few active at once [PH: 3], so choosing them is a style decision. The card shows an example position, built from the principle's own detector in the rule registry (ADR-0005), so the card and the duck's behaviour cannot disagree. Why principles earn their place: lines only fire in positions the duck was shown, while principles re-rank near-equal engine moves in every position, so they carry the duck's personality after the opponent leaves the book (doc 03 §5). M2.
 
 ### 2.4 Tactics Drill
 
@@ -126,9 +138,9 @@ Multi-move puzzles: version 1 grades the first move from the answer key and then
 
 Completing a Bullet Battle game, either variant, places an unassigned point in Speed. Details are in section 4. Speed is a trade, not pure gain: quicker moves keep clock in reserve but search fewer nodes (ADR-0006 section 3).
 
-### 2.6 Free practice
+### 2.6 No energy (decided 2026-11-21)
 
-With no energy, every minigame still runs in practice mode: the player plays and learns, and nothing is written to the duck. Watching, replays and reading reviews are always free. Energy limits the duck's growth per session, never the player's access to chess (pillar 5).
+*Out of scope.* John's rule: nothing may slow the player down. Every activity can be repeated at will, and practice mode is not needed. Whatever bounds a training grind must come from the activity itself (XP per card is bounded, §3.7), never from a timer or a meter.
 
 ---
 
@@ -142,6 +154,8 @@ With no energy, every minigame still runs in practice mode: the player plays and
 | Selection | Top K by loss in that game | Eligible cards, due repeats first, then newest |
 | Presentation | Critical moments list | Scene, slip, punishment, fix, check |
 | Classify, grade, lesson, check | ADR-0008 | The same functions |
+
+**One screen, two doors** (decided 2026-11-21). Blunder Training is one screen. It opens from the Review Room after a game (first) and from the Tactics Dojo (added when the Dojo is built).
 
 Additions the mode needs: (1) a **punishment** fact on each annotation, (2) a **queue** with a scheduler, (3) a **hint ladder** with XP scaling. All knowledge still enters through `apply_lesson`.
 
@@ -208,7 +222,7 @@ A move outside the Judge's stored lines costs one Judge search (about a second a
 
 ### 3.5 Failure and retry under "never punish"
 
-- Attempts are unlimited. A wrong attempt costs nothing: no XP loss, no energy, no mood drop.
+- Attempts are unlimited. A wrong attempt costs nothing: no XP loss, no penalty of any kind.
 - **Hint ladder**, offered after two misses: (1) the piece to move is highlighted; (2) "show me" reveals the move, and the player then plays it. The Judge's move is never shown before an attempt (ADR-0008 rule 4).
 - A fix found with "show me" still writes the lesson. XP is reduced [PH: 50%] and the card returns sooner.
 - A failed lesson check (the duck forgot, because recall is probabilistic) is presented as "it slipped its mind", not as the player's failure. The card goes back to the short interval.
@@ -256,8 +270,8 @@ Without guards the mode still works; we simply must not claim more than XP and e
 
 1. Blunder tolerance is a function of level and stage only. No training writes it.
 2. XP per card is bounded: one fix plus at most three re-checks.
-3. Cards cost energy, and XP per energy is set roughly level across activities [PH], so no activity is "the grind".
-4. New cards come from real reviewed games, which also cost energy.
+3. XP per minute is set roughly level across activities [PH], so no activity is "the grind". (There is no energy, decided 2026-11-21.)
+4. New cards come only from real reviewed games, which take time to play.
 5. Rating is never written by training. A duck can be level 30 and it still has to win games to show a number.
 
 ### 3.8 Starter set
@@ -316,7 +330,7 @@ The server still computes the duck's move at full speed and never sleeps. On a s
 
 **Fair-fight staircase.** A suggested handicap from the head-to-head record: after a human win the next game is one step harder, after a loss one step easier [PH]. It is a pure function of stored results, aims at an even score, and is the measure used for the outgrow arc (section 4.3). Honest limit: a weakened Stockfish does not blunder like a person (ADR-0006 section 7); it is fun, not a human simulator.
 
-**What a game pays.** Costs 1 energy [PH]. Pays small fixed XP for any completed game, win or lose, and places a Speed point. No XP for abandoned games or games under 10 [PH] human moves. The head-to-head record (plain win, draw and loss counts per handicap step) is the only "rating" here.
+**What a game pays.** Pays small fixed XP for any completed game, win or lose, and places a Speed point. No XP for abandoned games or games under 10 [PH] human moves. The head-to-head record (plain win, draw and loss counts per handicap step) is the only "rating" here.
 
 **Feeding Blunder Training.** The finished game enters the review job (ADR-0008 rule 6) for both sides. The duck's eligible slips and the player's eligible slips become cards in the same queue. The player's cards are labelled as theirs; after the outgrow point the copy can flip to "your duck shows you".
 
@@ -348,15 +362,18 @@ MEASURE  every few sets, a League match against anchors moves the rating
 | Read the coach's note, open the "why" panel at a critical moment | 30 s | Player understanding |
 | Fix up to 3 blunders | 3 to 5 min | Lessons, XP |
 | Play the suggested drill | 2 to 4 min | Stat point, knowledge |
-| Feed | 10 s | Energy, mood |
 | Choose which duck to coach (when both are theirs) | 5 s | The other duck's cards wait in its queue |
 | Watch the replay from the fix | 1 min | Proof |
-| Rematch, or enter a League match | 1 to 4 min | XP; rating if League |
+| Rematch, or enter a League match | 1 to 4 min | XP; rating |
 
 **From 2000 toward 2500, honestly.**
 
 1. *Where growth comes from.* Both ducks earn XP from each game and each fix. Levels add Calculation (more nodes) and narrow blunder tolerance; stage raises caps; repertoire fixes save clock and remove opening errors (ADR-0006 section 6). Game XP is small and fix XP is large [PH], so a coached duck climbs faster than a duck that is only watched. That is what makes the player's guidance matter.
-2. *Where measurement comes from.* Two ducks that only play each other cannot show a rating rise: Glicko-2 mostly moves points between them. So **training games between a player's own ducks do not move ratings** (they pay XP and cards), and **League games against anchor ducks do**. This is Duck Life's shape: train, then race.
+2. *Where measurement comes from.* **Games between a player's own ducks are rated** (John, 2026-11-21), with the normal Glicko-2 update, so the lower-rated duck gains more when it wins. Honest limit: two ducks that only play each other mostly move points between themselves, so their numbers mean "relative to your pond". A number that compares across players comes from **League games against anchor ducks**. This is Duck Life's shape: train, then race.
+   *Farming risks (flagged, not blocking; doc 03 §8):*
+   - **Hatch and beat:** a strong duck gains by beating fresh 1500-provisional hatchlings. Glicko-2 discounts high-deviation opponents. A fuller fix is to start ducks from the calibration curve, or skip updates against provisional own ducks.
+   - **Repeat a known win:** same ducks, same knowledge and same seed reproduce the same result. Fix: server-made seeds for rated matches, and rate each (duck versions, seed) pair once.
+   - **Closed pool:** show the pool size beside the number.
 3. *What we do not promise.* How many sets it takes, or that 2500 is reachable in a given context, until the harness has measured each lever (spec 6.3). John's example ("around 2000, then 2500 after playing and reviewing") is the target fantasy. The balance table decides whether it takes an evening or a month.
 
 ### 4.3 The "your duck outgrows you" arc
@@ -379,39 +396,29 @@ The founding example in spec 1.3, a low-rated player teaching a duck their favou
 
 ## 5. The meta loop
 
-### 5.1 Care model (recommended answer to spec 12, decision 5)
+### 5.1 Care model: out of scope (decided 2026-11-21)
 
-**Session-based energy, with activity-driven hunger and no real-time decay.**
+John answered spec 12, decision 5: **no energy for now**, and nothing added later may slow the player down. The earlier proposal (session energy, food, a pantry, hunger and an XP mood multiplier) is withdrawn. `care` stays in the data model unused and is not shown. If something care-like returns, it may only add flavour or small bonuses, never a wait, a cost to play, or a cap on training. Care never affects a game (spec 4.3).
 
-- **Energy** (0 to 10 [PH]) is spent by activities that write to the duck. It refills by feeding.
-- **Food** is earned by playing: finishing a set, a League win, a passed lesson check [PH]. A pantry also refills to full after about 8 hours away [PH], so every session starts with a meal available. It never grows beyond full, so there is no stockpile to fear losing and no reason to log in on a schedule.
-- **Hunger** is "room to eat": it rises as energy is spent and stops the player overfilling. It does not rise into a penalty while the player is away.
-- **Mood** rises with feeding, variety (a different activity than last time), wins and passed checks, and drifts back to neutral. It multiplies XP between ×1.0 and ×1.2 [PH]. It never goes below ×1.0 and never touches move choice.
-- Care never affects a game. A hungry duck plays exactly as well as a fed one (spec 4.3).
-- No purchases, no timers with paid skips, no loss from neglect.
+### 5.2 What each activity pays (all placeholders)
 
-Wall-clock time appears only in the pantry refill. It enters the domain as a `now` argument (ADR-0001) and affects how much training fits in a session, never a result.
-
-### 5.2 Energy costs (all placeholders)
-
-| Activity | Energy | Typical time | XP | Other gains |
-| --- | --- | --- | --- | --- |
-| Feed | +4 | 10 s | none | Mood |
-| Opening Drill | 2 | 2 to 4 min | Medium | Repertoire, Memory point |
-| Tactics Drill | 2 | 2 to 3 min | Medium | Motif, course stat point |
-| Blunder Training, 3 new cards | 2 | 3 to 5 min | Large | Fixes, guards |
-| Re-checks due | 0 | 1 min | Small | Entry strength |
-| Bullet sparring | 1 | 1 to 6 min | Small | Speed point, cards |
-| Training bullet set, duck vs duck | 2 | 1 to 4 min | Small, both ducks | Cards for both |
-| League match (rated) | 3 | 1 to 4 min | Small | Rating, food |
-| Replay from the fix | 0 | 1 min | none | Proof |
-| Free practice, watching, replays | 0 | any | none | Player learning |
+| Activity | Typical time | XP | Other gains |
+| --- | --- | --- | --- |
+| Opening Drill | 2 to 4 min | Medium | An opening, Memory point |
+| Tactics Drill | 2 to 3 min | Medium | Motif, course stat point |
+| Blunder Training, 3 new cards | 3 to 5 min | Large | Fixes, guards |
+| Re-checks due | 1 min | Small | Entry strength |
+| Bullet sparring | 1 to 6 min | Small | Speed point, cards |
+| Duck vs duck (rated) | 1 to 4 min | Small, both ducks | Rating, cards for both |
+| League match (rated) | 1 to 4 min | Small | Rating |
+| Replay from the fix | 1 min | none | Proof |
+| Watching, replays | any | none | Player learning |
 
 ### 5.3 One session
 
-**Five minutes:** feed (10 s) → due re-checks (1 min) → one bullet game (2 min) → fix its worst blunder (1 to 2 min) → the level bar moves.
+**Five minutes:** due re-checks (1 min) → one bullet game (2 min) → fix its worst blunder (1 to 2 min) → the level bar moves.
 
-**Fifteen minutes:** feed → Opening Drill → training set against the partner duck, watched at 2x → coach's note → Blunder Training on three cards → replay from the fix → League match → rating update → feed with the winnings.
+**Fifteen minutes:** Opening Drill → a set against the partner duck, watched at 2x → coach's note → Blunder Training on three cards → replay from the fix → League match → rating update.
 
 **First session of a new duck:** hatch → teach four opening moves → the first bullet game, which will be full of slips → Blunder Training on real cards, with starter cards filling in if there are fewer than three → first level-up → place the first point.
 
@@ -445,7 +452,8 @@ Proposed new events:
 | `DrillItemScheduled` | `{ itemId, box, dueInSessions, mastered }` | Scheduler |
 | `StatTrained` | `{ duckId, stat, from, to, unassignedLeft }` | Any minigame |
 | `XpGained` | `{ duckId, amount, source, multiplier, xpAfter, xpForNextLevel }` | Any XP source |
-| `CareChanged` | `{ duckId, hunger, energy, mood, cause }` | Any activity with an energy cost |
+| ~~`CareChanged`~~ | Withdrawn: no energy (2026-11-21) | |
+| `OpeningsChosen` | `{ gameId, duckId, color, openings: [{ id, name, preference }] }` | Match runner, before the first move (ADR-0016) |
 | `TrainerOutgrown` | `{ duckId, lastGames: [...] }` | Sparring |
 
 Additive fields on existing events:
@@ -491,8 +499,7 @@ Emote names only. This table is John's; it should live in the client as data.
 | `GameFinished` (win / loss / draw) | `victory` / `sulk` / `shrug` |
 | `GameFinished` (lost on time) | `out-of-breath` |
 | `TrainerOutgrown` | `graduation` |
-| `DuckFed` | `munch` |
-| `CareChanged` (energy 0) | `sleepy` |
+| `OpeningsChosen` | `plotting` |
 | `RatingUpdated` (up / down) | `cheer` / `determined` |
 
 ---
@@ -504,15 +511,15 @@ Emote names only. This table is John's; it should live in the client as data.
 | # | Delta | Why | Touches |
 | --- | --- | --- | --- |
 | A1 | **Participants have a kind**: `human \| duck`. `MoveMade` carries `by` and `elapsedMs`; `moves` rows store them | Sparring | ADR-0002, 0004, 0007 |
-| A2 | **Games carry `mode`** (`league`, `training`, `sparring`, `replay`) **and `rated`**; rating updates happen only when `rated` | Training games and sparring must not move ratings | ADR-0004, 0006, 0007 |
+| A2 | **Games carry `mode`** (`league`, `training`, `sparring`, `replay`) **and `rated`**; rating updates happen only when `rated` | Sparring and replays must not move ratings; duck-vs-duck games between own ducks are rated (John, 2026-11-21) | ADR-0004, 0006, 0007 |
 | A3 | **`termination` enum** includes `resignation` and `abandoned`; decide timeout against insufficient material | Human games | ADR-0007 |
 | A4 | **A game can start from a stored game and ply** (`startFrom: { gameId, ply }`, clocks included), unrated | Replay from the fix | ADR-0007 |
 | A5 | **Decision source `memory`**: `plan` consults `puzzle_memory` as well as the repertoire. ADR-0005 names only the repertoire, while ADR-0008 writes puzzle-memory rows that nothing reads | Otherwise fixes outside the opening are cosmetic | ADR-0005, `MoveChosen.source` |
-| A6 | **One door for all training changes**: generalise the lesson to carry a knowledge delta, an optional stat placement, XP and an energy cost, with `kind` as an enum | Stat placement and XP must be as auditable as knowledge | ADR-0008 rule 3 |
+| A6 | **One door for all training changes**: generalise the lesson to carry a knowledge delta, an optional stat placement and XP (no energy cost: out of scope), with `kind` as an enum | Stat placement and XP must be as auditable as knowledge | ADR-0008 rule 3 |
 | A7 | **Reserve the new event names and additive fields** in section 6.1 | Additive under ADR-0002 item 9, cheaper to reserve now | ADR-0002 |
 | A8 | **`SearchResult` keeps the principal variation per candidate**, and annotations store the best line and refutation line per ply | Punishment display; guards | ADR-0005, 0007, 0008 |
 | A9 | **Seed purposes** `lesson-check` and `recheck:n` in the per-decision seed scheme | Repeated checks must differ but be reproducible | ADR-0005 |
-| A10 | **Duck document**: add `knowledge.guards` (map like `motifs`); treat `unassigned` as derived; care gains `food`. Duck file schema follows | Guards, placement, care | ADR-0004 |
+| A10 | **Duck document**: add `knowledge.guards` (map like `motifs`); treat `unassigned` as derived. Duck file schema follows (`food` dropped: no energy) | Guards, placement | ADR-0004 |
 
 ### 7.2 Needed later, with their sessions
 
@@ -540,11 +547,10 @@ GET  /api/v1/ducks/{id}/drills?due=true     -> cards (position, bad move, punish
 POST /api/v1/drills/{itemId}/attempts       { uci }     -> verdict, loss, punishment of that move
 POST /api/v1/drills/{itemId}/hints          { level }
 POST /api/v1/drills/{itemId}/check          -> runs the lesson check
-POST /api/v1/ducks/{id}/training-sessions   { kind, params, practice } -> session; steps as sub-resources
-POST /api/v1/ducks/{id}/feed
+POST /api/v1/ducks/{id}/training-sessions   { kind, params } -> session; steps as sub-resources
 ```
 
-**Balance-table entries (all placeholders).** Stat points per level; points placed per session; XP per activity and outcome; hint XP factor; choice-mode XP factor; mood multiplier range; energy maximum and cost per activity; food per reward; pantry refill hours; drill eligibility per stage (classes, minimum material swing, horizon plies); `fixTolerance`; Leitner intervals; opening-window length; guard caps per stage and the guard penalty curve; motif caps per stage; handicap step size; staircase rule; outgrow rule; minimum plies for sparring XP; human move floor; quick-review Judge nodes.
+**Balance-table entries (all placeholders).** Stat points per level; points placed per session; XP per activity and outcome; hint XP factor; choice-mode XP factor; opening preference terms (ADR-0016); drill eligibility per stage (classes, minimum material swing, horizon plies); `fixTolerance`; Leitner intervals; opening-window length; guard caps per stage and the guard penalty curve; motif caps per stage; handicap step size; staircase rule; outgrow rule; minimum plies for sparring XP; human move floor; quick-review Judge nodes.
 
 ### 7.3 Where this contradicts or stretches the ADRs
 
@@ -555,7 +561,8 @@ POST /api/v1/ducks/{id}/feed
 | 0005 | Book step looks up the repertoire only | Puzzle memory is never read | A5 |
 | 0005 | A rule looks at (board, move) | The guard rule needs the candidate's line | B4, with a version bump |
 | 0006 | Stats come from the budget | Stats are now placed by training | Budget rule unchanged; record the placement rule |
-| 0006 | "Results update ratings" (spec 7.2) | Training games between own ducks are unrated | A2; the rating moves in League games against anchors |
+| 0006 | "Results update ratings" (spec 7.2) | Sparring is unrated; own-duck games are rated (John) | A2; cross-player meaning comes from League games against anchors |
+| 0005 | The book step uses any matching repertoire entry | A duck plays only trained openings, from a pre-game shortlist | ADR-0016 |
 | 0008 | Top K = 3 per game, then done | A persistent queue across games | Same pipeline, new entry point (section 3.1) |
 | 0008 | Annotations hold best move and scores | Lines are needed too | A8 |
 | 0009 | `fen` is the solver's position | Blunder packs need the pre-blunder position | B5 |
@@ -569,10 +576,10 @@ Session-sized. Milestones are from spec section 10. Sparring play is proposed fo
 
 | # | Title | Goal | Depends on | Milestone |
 | --- | --- | --- | --- | --- |
-| D1 | Training door | Generalised lesson with stat placement, XP and energy; `XpGained`, `StatTrained`, `CareChanged` | M0 skeleton | M2 |
-| D2 | Care loop v1 | Energy costs, feeding, food rewards, practice mode | D1 | M2 |
-| D3 | Opening Drill | Teach on the board, sound check, quack-back recall, wrap-up | D1, M2 opening lessons | M2 |
-| D4 | Principles quiz | Detector-generated quiz that unlocks a principle | M2 principle rules | M2 |
+| D1 | Training door | Generalised lesson with stat placement and XP; `XpGained`, `StatTrained` | M0 skeleton | M2 |
+| D2 | ~~Care loop v1~~ | Out of scope (no energy, John 2026-11-21) | | |
+| D3 | Opening Drill | `Opening` entity and pre-game shortlist (ADR-0016); teach on the board, sound check, quack-back recall, wrap-up | D1, M2 opening lessons | M2 |
+| D4 | Principle cards | Flip a card to adopt a principle (no quiz); a few active at once | M2 principle rules | M2 |
 | D5 | Bullet sparring | Interactive game session, human clock port, premove, resign, claim-timeout; replay golden test | M1 live board, wall-clock ADR | M3 |
 | D6 | Handicap and staircase | Younger-duck handicap, time-odds preset, record, suggestion, `TrainerOutgrown` | D5 | M3 |
 | D7 | League and game modes | `mode` and `rated` on games, named anchor rivals, rated League match | M3 harness and anchors | M3 |
@@ -585,19 +592,19 @@ Session-sized. Milestones are from spec section 10. Sparring play is proposed fo
 | D14 | Guards | Guard map, guard rule, harness measurement of its effect | M4 detectors, M3 harness, D10 | M5 or later |
 | D15 | My Lichess blunders | Imported games through the review job into the queue | M6 import, D10 | M6 |
 | D16 | Emote table | Client-side data file mapping events to emote names | Any event stream | M1 web, M7 Unity |
-| D17 | Care tuning | Mood, pantry and reward tuning from play data | D2 | M8 |
+| D17 | ~~Care tuning~~ | Out of scope (no energy) | | |
 
 ---
 
 ## 9. Open questions for John
 
-In priority order. Each has my recommended default.
+In priority order. Each has my recommended default. Q1 to Q3 were answered on 2026-11-21 (doc 03 §7).
 
 | # | Question | Recommended default |
 | --- | --- | --- |
-| Q1 | Do training games between a player's own two ducks move ratings? Your example has two ducks reaching 2500 by playing each other. | **No.** They pay XP and blunder cards. Ratings move in League games against anchor ducks, because a closed pair cannot measure its own growth |
-| Q2 | Are stat points placed by minigames, or allocated freely in the editor? | **Placed by minigames**; the editor remains for respec |
-| Q3 | Care pacing (spec 12, decision 5): real-time timers or session energy? | **Session energy**, food earned by play, pantry full after about 8 hours away, no decay, no streaks |
+| Q1 | Do training games between a player's own two ducks move ratings? | **Answered: yes**, normal formula; farming risks flagged in §4.2 |
+| Q2 | Are stat points placed by minigames, or allocated freely in the editor? | **Answered:** the egg seed tilts the starting spread; later points come from training; the editor remains for respec |
+| Q3 | Care pacing (spec 12, decision 5): real-time timers or session energy? | **Answered: no energy.** Nothing may slow the player down |
 | Q4 | Is respec free? | Free until the first stage change, then free once per stage |
 | Q5 | Do guards ship (blunder fixes generalise to "allows a fork" positions), or is Blunder Training XP plus exact-position memory only? | Ship guards after M4, only once the harness has measured them |
 | Q6 | Sparring defaults for a new player: time control, relaxed clock, starting handicap? | Human 3+0 against the duck's 1+0, relaxed clock off, staircase starting at even |
