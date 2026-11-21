@@ -1,6 +1,6 @@
 # ADR-0014 · Developer experience, configuration and data directory
 
-Status: Proposed · 2026-11-21
+Status: Accepted (John, 2026-11-21) · 2026-11-21
 
 ## Context
 

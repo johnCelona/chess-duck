@@ -1,6 +1,6 @@
 # ADR-0011 · Security model
 
-Status: Proposed · 2026-11-21
+Status: Accepted (John, 2026-11-21) · 2026-11-21
 
 ## Context
 

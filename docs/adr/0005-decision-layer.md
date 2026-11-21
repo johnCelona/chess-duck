@@ -1,6 +1,6 @@
 # ADR-0005 · The decision layer
 
-Status: Proposed · 2026-11-21 · Implements spec 6.1
+Status: Accepted (John, 2026-11-21) · 2026-11-21 · Implements spec 6.1
 
 ## Context
 
@@ -51,3 +51,10 @@ M0 implements the full pipeline shape with a handful of rules (capture, check, c
 - Principle and motif detectors (M2, M4), opening-name lookup, tablebase step (endgame school).
 - Per-duck learned weights beyond the stats and knowledge in the spec.
 - Any tuning of weights or temperature curves: placeholders now, measured in M3.
+
+## Amendments (2026-11-21, M0 build)
+
+- **Taught fixes come first.** `plan` takes the duck's `taught_move` for the exact position (puzzle memory, written by ADR-0008's lessons) and recalls it with the same memory-stat chance as the book, before the book. `Decision.source` is now `memory | book | forced | engine`. Without this, fixes outside the opening would never change play (design 01, delta A5).
+- **One candidate per move.** `_score` ignores a repeated move, so a duplicate can never be counted twice when sampling. The engine adapter also stopped producing duplicates (ADR-0007 amendment).
+- **Base-2 softmax is interpolated** between the 16 table steps, so weights fall smoothly with the gap.
+- `DECISION_LAYER_VERSION` is now `decision-2`.

@@ -1,6 +1,6 @@
 # ADR-0009 · Puzzle Arena data pipeline
 
-Status: Proposed · 2026-11-21 · Implements spec 7.4
+Status: Accepted (John, 2026-11-21) · 2026-11-21 · Implements spec 7.4
 
 ## Context
 

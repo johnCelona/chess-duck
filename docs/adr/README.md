@@ -6,17 +6,18 @@ To change a decision, add a new ADR that supersedes the old one; do not rewrite 
 
 | # | Title | Status | Needs John |
 | --- | --- | --- | --- |
-| [0001](0001-layering-and-repo-layout.md) | Layering and repository layout | Proposed | Go-ahead for the folder move |
-| [0002](0002-contract-and-events.md) | Client-agnostic contract and event vocabulary | Proposed | |
-| [0003](0003-unity-strategy.md) | Unity front-end strategy | Proposed | Desktop sidecar first? |
-| [0004](0004-persistence-and-data-model.md) | Persistence and data model | Proposed | |
-| [0005](0005-decision-layer.md) | The decision layer | Proposed | |
+| [0001](0001-layering-and-repo-layout.md) | Layering and repository layout | Accepted | |
+| [0002](0002-contract-and-events.md) | Client-agnostic contract and event vocabulary | Accepted | |
+| [0003](0003-unity-strategy.md) | Unity front-end strategy | Accepted (desktop sidecar) | |
+| [0004](0004-persistence-and-data-model.md) | Persistence and data model | Accepted | |
+| [0005](0005-decision-layer.md) | The decision layer | Accepted | |
 | [0006](0006-strength-time-and-progression.md) | Strength, virtual time, ratings and progression | Proposed | Balance numbers (M3) |
-| [0007](0007-match-and-arena-runtime.md) | Match and arena runtime | Proposed | |
+| [0007](0007-match-and-arena-runtime.md) | Match and arena runtime | Accepted | |
 | [0008](0008-review-and-coaching-pipeline.md) | Review and coaching pipeline | Proposed | Thresholds and XP (M5) |
-| [0009](0009-puzzle-arena-data-pipeline.md) | Puzzle Arena data pipeline | Proposed | |
+| [0009](0009-puzzle-arena-data-pipeline.md) | Puzzle Arena data pipeline | Accepted | |
 | [0010](0010-lichess-integration.md) | Lichess integration | Proposed | Privacy choices (M6) |
-| [0011](0011-security.md) | Security model | Proposed | |
-| [0012](0012-quality-system.md) | Quality system | Proposed | |
-| [0013](0013-licensing-and-assets.md) | Licensing and assets | Open | Repository license |
-| [0014](0014-developer-experience.md) | Developer experience, configuration and data directory | Proposed | |
+| [0011](0011-security.md) | Security model | Accepted | |
+| [0012](0012-quality-system.md) | Quality system | Accepted | |
+| [0013](0013-licensing-and-assets.md) | Licensing and assets | Accepted (GPL-3.0-or-later) | Art license before release |
+| [0014](0014-developer-experience.md) | Developer experience, configuration and data directory | Accepted | |
+| [0015](0015-human-players-and-real-time-clocks.md) | Human players and real-time clocks | Proposed | Defaults for sparring |

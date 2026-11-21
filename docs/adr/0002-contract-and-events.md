@@ -1,6 +1,6 @@
 # ADR-0002 · Client-agnostic contract and event vocabulary
 
-Status: Proposed · 2026-11-21
+Status: Accepted (John, 2026-11-21) · 2026-11-21
 
 ## Context
 

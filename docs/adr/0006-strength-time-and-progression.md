@@ -117,3 +117,10 @@ XP amounts, the level curve, budget per level, and stage thresholds are rows in 
 4. Stockfish 19 release notes: https://stockfishchess.org/blog/2026/stockfish-19/
 5. Maia: https://github.com/CSSLab/maia-chess and https://github.com/CSSLab/maia3
 6. Glickman, "Example of the Glicko-2 system": http://www.glicko.net/glicko/glicko2.pdf
+
+## Amendments (2026-11-21, M0 build)
+
+- **The clock policy is part of the balance table** (`Balance.clock`, `domain/balance.py`), so one version (`balance-0.2-placeholder`) covers every tunable number.
+- **Retuned defaults: `expected_game_moves` 60, `min_moves_left` 30.** With the first values (40 and 10) a default duck in a 1+0 game ran out of virtual time around move 64; most real games then ended on time rather than on the board. Simulated with the integer formula: a speed-40 duck now flags only after about move 125; with speed 0 after about move 105. Still placeholders for M3 calibration.
+- **Measured on real Stockfish 19 (Windows x86-64):** two runs of the same seeded bullet match (127 plies) produced identical moves, node counts, evaluations, clocks and event streams. A 40-ply real game replays identically in `backend/tests/real`. Cross-machine and cross-OS equality is still unverified beyond Stockfish's own CI evidence.
+- The calibration stub shows every new duck at 1500, provisional, with no rating context, until it plays a rated game.

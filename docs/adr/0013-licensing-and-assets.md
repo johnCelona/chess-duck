@@ -1,6 +1,6 @@
 # ADR-0013 · Licensing and assets
 
-Status: **Open: John decides the license** · 2026-11-21 · Not legal advice
+Status: Accepted: code GPL-3.0-or-later (John, 2026-11-21); art license open · 2026-11-21 · Not legal advice
 
 ## Context
 

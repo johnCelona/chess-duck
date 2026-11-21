@@ -1,6 +1,6 @@
 # ADR-0003 · Unity front-end strategy
 
-Status: Proposed (needs John's call) · 2026-11-21 · Not legal advice
+Status: Accepted: desktop sidecar first (John, 2026-11-21) · 2026-11-21 · Not legal advice
 
 ## Context
 

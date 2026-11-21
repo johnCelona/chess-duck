@@ -1,6 +1,6 @@
 # ADR-0001 · Layering and repository layout
 
-Status: Proposed (needs John's go for the move) · 2026-11-21
+Status: Accepted (John, 2026-11-21) · 2026-11-21
 
 ## Context
 

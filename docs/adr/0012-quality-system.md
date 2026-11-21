@@ -1,6 +1,6 @@
 # ADR-0012 · Quality system
 
-Status: Proposed · 2026-11-21
+Status: Accepted (John, 2026-11-21) · 2026-11-21
 
 ## Context
 
