@@ -13,7 +13,9 @@ _SECRET_PATTERNS = (
     re.compile(r"(?i)(authorization\s*[:=]\s*)(bearer\s+)?[^\s,;\"']+"),
     re.compile(r"(?i)\b(bearer)\s+[A-Za-z0-9._~+/=-]{8,}"),
     re.compile(r"\blip_[A-Za-z0-9]{8,}"),
-    re.compile(r"(?i)((?:access_?token|api_?token|code_verifier)\s*[\"']?\s*[:=]\s*[\"']?)[^\s,;\"'&]+"),
+    re.compile(
+        r"(?i)((?:access_?token|api_?token|code_verifier)\s*[\"']?\s*[:=]\s*[\"']?)[^\s,;\"'&]+"
+    ),
 )
 
 
