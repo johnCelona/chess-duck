@@ -367,6 +367,7 @@ class MatchService:
                     clock_ms=clocks[color],
                     fen_after=board.fen(),
                     event_seq=0,
+                    position_key=key,  # computed above, before the move was pushed
                 )
                 await self._record_ply(match.id, record, [chosen, made], clocks)
 

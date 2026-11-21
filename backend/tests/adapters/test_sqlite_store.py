@@ -1,12 +1,15 @@
 import sqlite3
 from dataclasses import replace
 
+import chess
 import pytest
 
 from conftest import NOW
+from duckgambit.adapters.sqlite.data_steps import backfill_move_position_keys
 from duckgambit.adapters.sqlite.database import Database, SchemaTooNewError, available_migrations
 from duckgambit.adapters.sqlite.store import DEFAULT_PROFILE_ID, SqliteStore, upcast_duck_doc
 from duckgambit.domain.arena import BULLET, Arena, EngineSettings, NodesLimit
+from duckgambit.domain.chessutil import position_key
 from duckgambit.domain.duck import hatch
 from duckgambit.domain.knowledge import Knowledge, PuzzleMemoryEntry, RepertoireEntry
 from duckgambit.domain.rating import Rating
@@ -16,6 +19,7 @@ from duckgambit.services.records import (
     JobRecord,
     MatchRecord,
     MoveRecord,
+    PositionMove,
     RatingRecord,
 )
 
@@ -144,7 +148,7 @@ def test_game_and_moves_round_trip_and_track_clocks(store):
         "game_1", "mat_1", 0, "duck_1", "duck_2", 99, "startfen", "running", 60_000, 60_000, NOW
     )
     move = MoveRecord(
-        "game_1", 1, "white", "e2e4", "e4", "engine", 30, None, 1000, 8, 1500, 58_480, "fen", 4
+        "game_1", 1, "white", "e2e4", "e4", "engine", 30, None, 1000, 8, 1500, 58_480, "fen", 4, "k"
     )
 
     store.matches.add_game(game)
@@ -156,6 +160,111 @@ def test_game_and_moves_round_trip_and_track_clocks(store):
     assert (loaded.state, loaded.result, loaded.pgn) == ("finished", "1-0", "1. e4 1-0")
     assert store.matches.list_moves("game_1") == [move]
     assert store.matches.list_games("mat_1") == [loaded]
+
+
+START = chess.STARTING_FEN
+OPENING = ("e2e4", "e7e5", "g1f3", "b8c6")
+
+
+def expected_keys(initial_fen, moves):
+    board = chess.Board(initial_fen)
+    keys = []
+    for uci in moves:
+        keys.append(position_key(board))
+        board.push_uci(uci)
+    return keys
+
+
+def write_v1_game(connection, game_id, moves, initial_fen=START, idx=0):
+    """Insert a game and its moves the way a version-1 build did: no position keys."""
+    connection.execute(
+        "INSERT INTO games (id, match_id, idx, white_duck_id, black_duck_id, seed, initial_fen,"
+        " state, started_at) VALUES (?, 'mat_1', ?, 'duck_1', 'duck_2', 1, ?, 'finished', ?)",
+        (game_id, idx, initial_fen, NOW),
+    )
+    for ply, uci in enumerate(moves, start=1):
+        connection.execute(
+            "INSERT INTO moves (game_id, ply, color, uci, san, source, nodes, depth, think_ms,"
+            " fen_after, event_seq) VALUES (?, ?, ?, ?, ?, 'engine', 0, 0, 0, 'fen', ?)",
+            (game_id, ply, "white" if ply % 2 else "black", uci, uci, ply),
+        )
+
+
+def test_a_version_1_database_upgrades_keeps_its_data_and_backfills_position_keys(tmp_path):
+    path = tmp_path / "old.db"
+    assert Database(path).migrate(NOW, target=1) == [1]
+    old = SqliteStore(path)
+    old.profiles.ensure_default(NOW)
+    old.matches.add_match(a_match())
+    with old.database.tx() as tx:
+        write_v1_game(tx, "game_1", OPENING)
+        # A corrupt game: ply 3 is illegal, so plies 1 and 2 get keys and 3 on stays NULL.
+        write_v1_game(tx, "game_bad", ("d2d4", "d7d5", "e1e8", "g8f6"), idx=1)
+    old.close()
+
+    store = SqliteStore(path)
+    assert store.migrate(NOW) == [2]
+
+    assert (tmp_path / "old.db.bak-v1").exists()
+    moves = store.matches.list_moves("game_1")
+    assert [m.uci for m in moves] == list(OPENING)
+    assert [m.position_key for m in moves] == expected_keys(START, OPENING)
+    assert moves[0].position_key == "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -"
+    bad = store.matches.list_moves("game_bad")
+    assert [m.position_key is not None for m in bad] == [True, True, False, False]
+    assert store.matches.get_match("mat_1") is not None
+    store.close()
+
+
+def test_the_position_key_backfill_is_idempotent_and_follows_the_initial_fen(tmp_path):
+    from_fen = "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3"
+    store = SqliteStore(tmp_path / "steps.db")
+    store.migrate(NOW)
+    store.profiles.ensure_default(NOW)
+    store.matches.add_match(a_match())
+    with store.database.tx() as tx:
+        write_v1_game(tx, "game_1", ("f1b5", "a7a6", "b5a4"), initial_fen=from_fen)
+
+        assert backfill_move_position_keys(tx) == 3
+        assert backfill_move_position_keys(tx) == 0
+
+    keys = [m.position_key for m in store.matches.list_moves("game_1")]
+    assert keys == expected_keys(from_fen, ("f1b5", "a7a6", "b5a4"))
+    store.close()
+
+
+def test_moves_at_position_finds_what_each_duck_played_there(store):
+    store.matches.add_match(a_match())
+    with store.database.tx() as tx:
+        write_v1_game(tx, "game_1", ("e2e4", "e7e5"))
+        write_v1_game(tx, "game_2", ("d2d4", "d7d5"), idx=1)
+        # Colours swap: duck_2 has white here and opens 1. e4, reaching the same key.
+        write_v1_game(tx, "game_3", ("e2e4", "c7c5"), idx=2)
+        tx.execute(
+            "UPDATE games SET white_duck_id = 'duck_2', black_duck_id = 'duck_1',"
+            " started_at = '2026-11-22T00:00:00Z' WHERE id = 'game_3'"
+        )
+        tx.execute("UPDATE games SET result = '1-0' WHERE id = 'game_1'")
+        backfill_move_position_keys(tx)
+
+    start = position_key(chess.Board())
+    after_e4 = expected_keys(START, ("e2e4", "e7e5"))[1]
+
+    at_start = store.matches.moves_at_position(start)
+    assert [(p.game_id, p.duck_id, p.uci) for p in at_start] == [
+        ("game_3", "duck_2", "e2e4"),  # newest game first
+        ("game_2", "duck_1", "d2d4"),
+        ("game_1", "duck_1", "e2e4"),
+    ]
+    assert at_start[-1] == PositionMove(
+        "game_1", "mat_1", 1, "white", "duck_1", "e2e4", "e2e4", "engine", None, None, "1-0"
+    )
+    replies = store.matches.moves_at_position(after_e4, duck_id="duck_1")
+    assert [(p.game_id, p.uci, p.color) for p in replies] == [("game_3", "c7c5", "black")]
+    by_duck_2 = store.matches.moves_at_position(after_e4, duck_id="duck_2")
+    assert [(p.game_id, p.uci) for p in by_duck_2] == [("game_1", "e7e5")]
+    assert len(store.matches.moves_at_position(start, limit=1)) == 1
+    assert store.matches.moves_at_position("no such position w - -") == []
 
 
 def test_jobs_round_trip_and_unfinished_ones_are_listed(store):

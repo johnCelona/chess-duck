@@ -27,6 +27,7 @@ from duckgambit.services.records import (
     JobRecord,
     MatchRecord,
     MoveRecord,
+    PositionMove,
     RatingRecord,
 )
 
@@ -111,6 +112,15 @@ class MatchRepository(Protocol):
         self, move: MoveRecord, white_clock_ms: int | None, black_clock_ms: int | None
     ) -> None: ...
     def list_moves(self, game_id: str) -> list[MoveRecord]: ...
+    def moves_at_position(
+        self, position_key: str, duck_id: str | None = None, limit: int = 50
+    ) -> list[PositionMove]:
+        """Moves played from this exact position, newest game first.
+
+        `duck_id` keeps only moves that duck played (it was the side to move).
+        """
+        ...
+
     def finish_game(
         self, game_id: str, result: str, termination: str, pgn: str, finished_at: str
     ) -> None: ...

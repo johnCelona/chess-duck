@@ -26,6 +26,7 @@ from duckgambit.services.records import (
     JobRecord,
     MatchRecord,
     MoveRecord,
+    PositionMove,
     RatingRecord,
 )
 
@@ -324,8 +325,8 @@ class SqliteMatches(_Repository):
         with self._db.tx() as tx:
             tx.execute(
                 "INSERT INTO moves (game_id, ply, color, uci, san, source, cp, mate, nodes, depth,"
-                " think_ms, clock_ms, fen_after, event_seq)"
-                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                " think_ms, clock_ms, fen_after, event_seq, position_key)"
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     move.game_id,
                     move.ply,
@@ -341,6 +342,7 @@ class SqliteMatches(_Repository):
                     move.clock_ms,
                     move.fen_after,
                     move.event_seq,
+                    move.position_key,
                 ),
             )
             tx.execute(
@@ -354,6 +356,23 @@ class SqliteMatches(_Repository):
                 "SELECT * FROM moves WHERE game_id = ? ORDER BY ply", (game_id,)
             ).fetchall()
         return [MoveRecord(**dict(row)) for row in rows]
+
+    def moves_at_position(
+        self, position_key: str, duck_id: str | None = None, limit: int = 50
+    ) -> list[PositionMove]:
+        # Served by moves_by_position (0002). The mover is the duck on the side to move.
+        mover = "CASE m.color WHEN 'white' THEN g.white_duck_id ELSE g.black_duck_id END"
+        with self._db.tx() as tx:
+            rows = tx.execute(
+                f"SELECT m.game_id, g.match_id, m.ply, m.color, {mover} AS duck_id,"  # noqa: S608
+                " m.uci, m.san, m.source, m.cp, m.mate, g.result"
+                " FROM moves m JOIN games g ON g.id = m.game_id"
+                f" WHERE m.position_key = ? AND (? IS NULL OR {mover} = ?)"
+                " ORDER BY g.started_at DESC, m.game_id DESC, m.ply"
+                " LIMIT ?",
+                (position_key, duck_id, duck_id, limit),
+            ).fetchall()
+        return [PositionMove(**dict(row)) for row in rows]
 
     def finish_game(
         self, game_id: str, result: str, termination: str, pgn: str, finished_at: str

@@ -11,6 +11,8 @@ from contextvars import ContextVar
 from importlib import resources
 from pathlib import Path
 
+from duckgambit.adapters.sqlite.data_steps import DATA_STEPS
+
 log = logging.getLogger(__name__)
 
 _current: ContextVar[sqlite3.Connection | None] = ContextVar("duckgambit_sqlite_tx", default=None)
@@ -80,11 +82,18 @@ class Database:
             _current.reset(token)
             connection.close()
 
-    def migrate(self, applied_at: str) -> list[int]:
-        """Apply pending migrations. Backs the file up first. Returns the versions applied."""
+    def migrate(self, applied_at: str, target: int | None = None) -> list[int]:
+        """Apply pending migrations. Backs the file up first. Returns the versions applied.
+
+        `target` stops at that version instead of the latest; tests use it to build a
+        database as an older build would have left it. A migration's data step, if it has
+        one (`data_steps.DATA_STEPS`), runs after its SQL in the same transaction.
+        """
         self.path.parent.mkdir(parents=True, exist_ok=True)
         migrations = available_migrations()
         latest = migrations[-1][0]
+        if target is not None:
+            migrations = [m for m in migrations if m[0] <= target]
         connection = self._connect()
         try:
             connection.execute("PRAGMA journal_mode = WAL")
@@ -110,6 +119,9 @@ class Database:
                 try:
                     for statement in _statements(sql):
                         connection.execute(statement)
+                    step = DATA_STEPS.get(version)
+                    if step is not None:
+                        step(connection)
                     connection.execute(
                         "CREATE TABLE IF NOT EXISTS schema_migrations ("
                         "version INTEGER PRIMARY KEY, name TEXT NOT NULL, applied_at TEXT NOT NULL)"

@@ -72,6 +72,27 @@ class MoveRecord:
     clock_ms: int | None
     fen_after: str
     event_seq: int
+    # domain.chessutil.position_key of the board before this move. Required so every
+    # writer must think about it; None only for an old row whose game could not be
+    # replayed by the 0002 backfill.
+    position_key: str | None
+
+
+@dataclass(frozen=True)
+class PositionMove:
+    """One time a move was played from a given position, with the game it was played in."""
+
+    game_id: str
+    match_id: str
+    ply: int
+    color: str
+    duck_id: str  # the duck that played the move
+    uci: str
+    san: str
+    source: str
+    cp: int | None
+    mate: int | None
+    result: str | None  # the game's result ("1-0", "0-1", "1/2-1/2"); None while it runs
 
 
 @dataclass(frozen=True)

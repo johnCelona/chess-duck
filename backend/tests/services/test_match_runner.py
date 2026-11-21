@@ -3,6 +3,7 @@
 from contextlib import asynccontextmanager
 from dataclasses import replace
 
+import chess
 import pytest
 
 from conftest import CountingIds, FixedClock
@@ -10,6 +11,7 @@ from duckgambit.adapters.engines.fake import FakeEngine, FakeEnginePool
 from duckgambit.adapters.sqlite.store import DEFAULT_PROFILE_ID
 from duckgambit.domain.arena import Arena, EngineSettings, NodesLimit, VirtualClockLimit
 from duckgambit.domain.balance import DEFAULT_BALANCE, ClockPolicy
+from duckgambit.domain.chessutil import position_key
 from duckgambit.domain.duck import default_stats
 from duckgambit.domain.errors import DomainError
 from duckgambit.services.ducks import DuckService, duck_stream
@@ -94,6 +96,15 @@ async def test_a_match_plays_to_the_end_and_records_everything(harness):
     moves = await harness.matches.moves(games[0].id)
     assert [m.ply for m in moves] == list(range(1, len(moves) + 1))
     assert games[0].pgn.count("[%eval") == len(moves)
+    board = chess.Board(games[0].initial_fen)
+    for move in moves:  # each row is keyed by the position the move was played from
+        assert move.position_key == position_key(board)
+        board.push_uci(move.uci)
+    first = moves[0]
+    played_there = harness.store.matches.moves_at_position(
+        first.position_key, games[0].white_duck_id
+    )
+    assert (first.uci, games[0].id) in {(p.uci, p.game_id) for p in played_there}
 
 
 async def test_the_event_stream_tells_the_whole_story_in_order(harness):
