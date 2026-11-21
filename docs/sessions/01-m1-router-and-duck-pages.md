@@ -1,5 +1,7 @@
 # Session 01 · Router, app shell and duck detail page
 
+> **Partly done (2026-11-21, branch `m1-pond-slice`):** react-router with hash routes, the title, hatch and Pond screens, the Lab (old routes redirect there) and a not-found page are built (design 03 §9). Still to do here: the duck detail page (`/lab/ducks/:id` or a Pond screen) and the recent-games query.
+
 Milestone: **M1** · Depends on: 00
 
 ## Goal

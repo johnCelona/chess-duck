@@ -1,5 +1,7 @@
 # Session 02 · Hatching flow and stat editor ⚑
 
+> **Partly done (2026-11-21, branch `m1-pond-slice`):** the hatching flow is built: tap-to-crack egg, `eggSeed` (starting stats tilted by the egg, John's Q2), name and a placeholder skin from `assets/manifest.json`, and the profile's active duck. Still to do here: the stat editor and respec (design 01 Q4); stats are no longer spent at hatch.
+
 Milestone: **M1** · Depends on: 01
 
 ## Goal
