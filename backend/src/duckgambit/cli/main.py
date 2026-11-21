@@ -18,7 +18,9 @@ PACKAGE_DIR = Path(__file__).resolve().parents[1]
 def _serve(args: argparse.Namespace, settings: Settings) -> int:
     import uvicorn
 
-    reload = args.reload or settings.env == "dev"
+    # npm run dev restarts the server itself (scripts/dev.mjs); --reload uses uvicorn's
+    # reloader, which on Windows only works when attached to a console window.
+    reload = bool(args.reload)
     uvicorn.run(
         "duckgambit.api.app:create_app",
         factory=True,

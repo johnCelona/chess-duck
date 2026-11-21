@@ -14,7 +14,7 @@
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "dev:web": "npm run dev -w apps/web",
-    "dev:backend": "uv run --project backend duckgambit serve --reload",
+    "dev:backend": "uv run --project backend duckgambit serve",
     "build": "npm run build -w apps/web",
     "lint": "npm run lint -w apps/web",
     "test": "npm run test -w apps/web",

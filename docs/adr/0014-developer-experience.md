@@ -71,3 +71,7 @@ Each top-level folder gets a short `CLAUDE.md` with the rules that apply there (
 - Docker, dev containers, installers, auto-update.
 - A settings UI; settings are environment only.
 - Log shipping or metrics.
+
+## Amendment (2026-11-21)
+
+`npm run dev` restarts the backend itself (`scripts/dev.mjs` watches `backend/src` for `.py` changes and restarts the process tree) instead of using uvicorn's `--reload`. On Windows uvicorn stops its worker with a Ctrl+C event, which only reaches processes attached to a console window; when launched without one, the old worker kept serving old code. `duckgambit serve --reload` is still available for a plain terminal.
