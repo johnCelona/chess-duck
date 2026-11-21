@@ -2,23 +2,33 @@
 
 A chess training game. Players hatch a duck, teach it chess, and battle other ducks; the player learns as the duck does. Every duck runs on the same base engine (Stockfish). Stockfish does not learn, so "training" shapes a **decision layer** on top of it: opening book, principles, tactic motifs, blunder tolerance, style.
 
-Status: early skeleton. Built: Python engine service plus an Engines page (install Stockfish from a pinned manifest, tune settings, "Test engine"). Planned: ducks, matches and tournaments, Puzzle Arena, review and coaching, a Lichess link, and possibly a Unity front end. The product spec is in `docs/`. Layout and other decisions are recorded in `docs/adr/`.
+Status: M0 foundation done (branch `m0-foundation`). Built: layered backend (pure domain, services, adapters, `/api/v1`), SQLite persistence, a deterministic duck-vs-duck match runner on a virtual clock, SSE event streams, and a rough web UI to hatch ducks, watch a bullet match and download its PGN. Lessons, review, puzzles, tournaments and Lichess exist as tested contracts only. Product intent: `docs/duck-gambit-spec.md`. Decisions: `docs/adr/`. Game design: `docs/design/`. Next work: `docs/sessions/`.
 
 ## Commands
 
-- Install web deps: `npm install`
-- Web dev server: `npm run dev` (http://localhost:5173, proxies `/api` to 127.0.0.1:8000)
-- Backend (Python 3.12): `cd backend && python run.py` (Windows launcher: `py run.py`)
-- Web tests: `npm test` (vitest). Backend tests: `python -m pytest backend/tests`
-- Lint: `npm run lint` (oxlint). Format web code: `npm run format`
-- Before calling a task done, all of these must pass: lint, `npm test`, `npm run build`, backend tests.
+Prerequisites: Node 26 (`.nvmrc`), [uv](https://docs.astral.sh/uv/) (it installs Python 3.12 itself).
+
+- Install: `npm install` (uv creates `backend/.venv` on first `uv run`)
+- Run everything: `npm run dev` (web http://localhost:5173, API http://127.0.0.1:8000/api/v1, data in `./data`)
+- All gates, as CI runs them: `npm run check` (or `npm run check -- web` for a subset)
+- Backend only: `uv run --project backend pytest backend/tests` / `ruff check backend` / `mypy --config-file backend/pyproject.toml`
+- Real-Stockfish checks (skipped if not installed): `uv run --project backend pytest backend/tests/real`
+- After changing an API or event schema: `npm run gen`, then commit `contracts/` and `apps/web/src/api/generated/`
+- Golden files changed on purpose: `uv run --project backend pytest backend/tests/api --update-golden`, review the diff
+- Two demo ducks: `npm run seed`. CLI: `uv run --project backend duckgambit --help`
+- Before calling a task done, `npm run check` must pass, and a user-visible change must be tried in the running app.
 
 ## Layout (verify before relying on it)
 
-- `src/`: web app (Vite, React, TypeScript, chess.js for rules, chessground for the board)
-- `backend/`: Python service (engines, API) with tests in `backend/tests`
-- `docs/`: spec, architecture notes, ADRs (`docs/adr/`), session briefs (`docs/sessions/`)
-- `engines/installed/`: downloaded engine binaries. Gitignored, never commit.
+- `apps/web/`: React client (Vite, TypeScript, chessground). No chess rules. See `apps/web/CLAUDE.md`
+- `apps/unity/`: placeholder only (ADR-0003)
+- `backend/src/duckgambit/`: `domain/` (pure), `services/` (use cases, ports), `adapters/` (UCI, SQLite, installer, fakes), `api/` (FastAPI, wire schemas), `cli/`. See `backend/CLAUDE.md`
+- `backend/tests/`: `unit/`, `adapters/`, `services/`, `api/` (incl. golden), `real/` (needs Stockfish), `fakes/fake_uci.py`
+- `contracts/`: generated `openapi.json` and `events.schema.json`. Never hand-edit
+- `assets/`: art sources and their license manifest (ADR-0013)
+- `scripts/`: `dev.mjs`, `check.mjs`, `gen.mjs`
+- `data/`: local mutable state (database, installed engines, logs). Gitignored, never commit
+- `docs/`: spec, `adr/`, `design/`, `sessions/`; `docs/architecture/` is local-only notes
 
 If this file and the repo disagree, say so and fix whichever is wrong.
 
@@ -72,10 +82,12 @@ These are the load-bearing ones. Break one only with an ADR in `docs/adr/`.
 ## Glossary
 
 - **Duck**: a player's trainable chess agent: stats, knowledge, growth state.
-- **Decision layer**: the pipeline that picks a duck's move: book, engine candidates, blunder-tolerance filter, style/principle/motif scoring, seeded sampling.
+- **Decision layer**: the pipeline that picks a duck's move: taught fix (puzzle memory), book, engine candidates, blunder-tolerance filter, style/principle/motif scoring, seeded sampling.
 - **Knowledge**: a duck's repertoire (keyed by normalized FEN), principles, motifs, puzzle memory.
 - **Judge**: fixed, stronger engine setting that grades moves identically for every duck.
 - **Defender**: fixed engine opponent used in convert-the-win and survive exercises.
 - **Arena**: match settings shared by all ducks (engine, limit, lines, threads, hash, format).
 - **Answer key**: precomputed Judge score for every legal move of a puzzle position.
 - **Candidate Showdown**: puzzle mode where each duck submits ranked top-5 moves.
+- **Rating context**: engine version and binary, limits, decision-layer and balance versions. Ratings only compare within one.
+- **Balance table**: versioned placeholder numbers (`domain/balance.py`) for stats, XP, tolerance and the clock policy.
