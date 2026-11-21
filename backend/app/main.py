@@ -1,9 +1,9 @@
 import asyncio
 from contextlib import asynccontextmanager
-from typing import Any
+from typing import Annotated, Any
 
 import chess
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Path
 from fastapi.middleware.cors import CORSMiddleware
 
 from .engine_adapter import UciEngine
@@ -12,6 +12,20 @@ from .models import AnalyseRequest, SettingsPayload
 from .profiles import list_profiles, save_profile
 from .security import advertised_limit, validate_limit
 
+
+ENGINE_ID_PATTERN = r"^[a-z0-9][a-z0-9_-]{0,63}$"
+
+
+def known_engine_id(
+    engine_id: Annotated[str, Path(pattern=ENGINE_ID_PATTERN)],
+) -> str:
+    """Only ids from the committed manifest may reach the filesystem."""
+    if not any(item["id"] == engine_id for item in load_manifest()["engines"]):
+        raise HTTPException(status_code=404, detail="Unknown engine")
+    return engine_id
+
+
+EngineId = Annotated[str, Depends(known_engine_id)]
 
 engines: dict[str, UciEngine] = {}
 engine_settings: dict[str, SettingsPayload] = {}
@@ -49,7 +63,7 @@ async def list_engines() -> list[dict[str, Any]]:
 
 
 @app.post("/api/engines/{engine_id}/install")
-async def install(engine_id: str) -> dict:
+async def install(engine_id: EngineId) -> dict:
     try:
         return await install_engine(engine_id)
     except Exception as exc:
@@ -57,7 +71,7 @@ async def install(engine_id: str) -> dict:
 
 
 @app.delete("/api/engines/{engine_id}")
-async def remove(engine_id: str) -> dict:
+async def remove(engine_id: EngineId) -> dict:
     remove_engine(engine_id)
     engine = engines.pop(engine_id, None)
     if engine:
@@ -66,7 +80,7 @@ async def remove(engine_id: str) -> dict:
     return {"status": "removed"}
 
 
-def get_installed_engine(engine_id: str) -> UciEngine:
+def get_installed_engine(engine_id: EngineId) -> UciEngine:
     state = installed_state(engine_id)
     if not state:
         raise HTTPException(status_code=409, detail="Engine is not installed")
@@ -78,7 +92,7 @@ def get_installed_engine(engine_id: str) -> UciEngine:
 
 
 @app.get("/api/engines/{engine_id}/options")
-async def engine_options(engine_id: str) -> dict:
+async def engine_options(engine_id: EngineId) -> dict:
     engine = get_installed_engine(engine_id)
     try:
         return {"options": await engine.options()}
@@ -87,7 +101,7 @@ async def engine_options(engine_id: str) -> dict:
 
 
 @app.get("/api/engines/{engine_id}/settings")
-async def get_settings(engine_id: str) -> dict:
+async def get_settings(engine_id: EngineId) -> dict:
     settings = engine_settings.get(
         engine_id,
         SettingsPayload(limit={"type": "nodes", "value": 100_000}, multipv=3),
@@ -96,7 +110,7 @@ async def get_settings(engine_id: str) -> dict:
 
 
 @app.put("/api/engines/{engine_id}/settings")
-async def put_settings(engine_id: str, payload: SettingsPayload) -> dict:
+async def put_settings(engine_id: EngineId, payload: SettingsPayload) -> dict:
     engine = get_installed_engine(engine_id)
     advertised = await engine.options()
     validated: dict[str, object] = {}
@@ -112,7 +126,7 @@ async def put_settings(engine_id: str, payload: SettingsPayload) -> dict:
 
 
 @app.post("/api/engines/{engine_id}/analyse")
-async def analyse(engine_id: str, payload: AnalyseRequest) -> dict:
+async def analyse(engine_id: EngineId, payload: AnalyseRequest) -> dict:
     engine = get_installed_engine(engine_id)
     advertised = await engine.options()
     overrides: dict[str, object] = {}
@@ -139,7 +153,7 @@ async def analyse(engine_id: str, payload: AnalyseRequest) -> dict:
 
 
 @app.post("/api/engines/{engine_id}/test")
-async def test_engine(engine_id: str) -> dict:
+async def test_engine(engine_id: EngineId) -> dict:
     request = AnalyseRequest(
         fen=chess.STARTING_FEN,
         limit={"type": "nodes", "value": 100_000},
@@ -150,12 +164,12 @@ async def test_engine(engine_id: str) -> dict:
 
 
 @app.get("/api/engines/{engine_id}/profiles")
-async def profiles(engine_id: str) -> dict:
+async def profiles(engine_id: EngineId) -> dict:
     return {"profiles": list_profiles(engine_id)}
 
 
 @app.post("/api/engines/{engine_id}/profiles")
-async def create_profile(engine_id: str, payload: dict) -> dict:
+async def create_profile(engine_id: EngineId, payload: dict) -> dict:
     try:
         name = payload["name"]
         settings = SettingsPayload(**payload["settings"])
