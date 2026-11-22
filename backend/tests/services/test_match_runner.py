@@ -6,16 +6,17 @@ from dataclasses import replace
 import chess
 import pytest
 
-from conftest import CountingIds, FixedClock
+from conftest import NOW, CountingIds, FixedClock
 from duckgambit.adapters.engines.fake import FakeEngine, FakeEnginePool
 from duckgambit.adapters.sqlite.store import DEFAULT_PROFILE_ID
 from duckgambit.domain.arena import Arena, EngineSettings, NodesLimit, VirtualClockLimit
 from duckgambit.domain.balance import DEFAULT_BALANCE, ClockPolicy
+from duckgambit.domain.challengers import ROSTER
 from duckgambit.domain.chessutil import position_key
 from duckgambit.domain.duck import default_stats
 from duckgambit.domain.errors import DomainError
 from duckgambit.domain.series import SeriesFormat, armageddon_first_is_white
-from duckgambit.services.ducks import DuckService, duck_stream
+from duckgambit.services.ducks import DuckService, duck_stream, ensure_challengers
 from duckgambit.services.errors import ServiceError
 from duckgambit.services.events import EventLog
 from duckgambit.services.jobs import JobRunner
@@ -472,3 +473,45 @@ async def test_a_series_resumed_after_a_stop_ends_like_an_uninterrupted_one(harn
 
     assert await stopped.pgns(match.id) == await harness.pgns(straight.id)
     assert await series_events(stopped, match.id) == await series_events(harness, straight.id)
+
+
+async def test_ducks_gain_xp_when_a_match_ends_but_challengers_do_not(harness):
+    ensure_challengers(harness.store, NOW)
+    mine = await harness.ducks.hatch("Learner")
+    rival = ROSTER[0].duck_id
+    match = await harness.matches.create((mine.id, rival), SUPER_BULLET, True, SeriesFormat(3))
+    await harness.jobs.wait(match.job_id)
+
+    games = await harness.matches.games(match.id)
+    wins = sum(
+        1
+        for g in games
+        if (g.result == "1-0" and g.white_duck_id == mine.id)
+        or (g.result == "0-1" and g.black_duck_id == mine.id)
+    )
+    rewards = DEFAULT_BALANCE.xp_rewards
+    expected = len(games) * rewards["game_played"] + wins * rewards["game_won"]
+    assert (await harness.ducks.get(mine.id)).growth.xp == expected
+    assert (await harness.ducks.get(rival)).growth.xp == DEFAULT_BALANCE.xp_needed(ROSTER[0].level)
+    gained = [
+        e.data
+        for e in await harness.events.read([duck_stream(mine.id)], 0, 50)
+        if e.type == "XpGained"
+    ]
+    assert gained == [
+        {
+            "duck_id": mine.id,
+            "amount": expected,
+            "source": "match",
+            "xp_after": expected,
+            "level": DEFAULT_BALANCE.level_for_xp(expected),
+            "xp_for_next_level": DEFAULT_BALANCE.xp_for_next_level(
+                DEFAULT_BALANCE.level_for_xp(expected)
+            ),
+        }
+    ]
+    assert [
+        e.type
+        for e in await harness.events.read([duck_stream(rival)], 0, 50)
+        if e.type == "XpGained"
+    ] == []

@@ -25,10 +25,11 @@ from duckgambit.domain.arena import (
     validate_arena,
 )
 from duckgambit.domain.balance import DEFAULT_BALANCE, Balance
+from duckgambit.domain.challengers import HOUSE_PROFILE_ID
 from duckgambit.domain.chessutil import board_from, move_flags, parse_move, position_key
 from duckgambit.domain.clock import charge, nodes_for, scale_nodes, think_budget_ms
 from duckgambit.domain.decision import DECISION_LAYER_VERSION, SearchBudget, choose, plan
-from duckgambit.domain.duck import Duck
+from duckgambit.domain.duck import Duck, grant_xp
 from duckgambit.domain.engine_types import EngineIdentity
 from duckgambit.domain.events import (
     DuckScore,
@@ -591,11 +592,35 @@ class MatchService:
             winner,
         )
         now = iso(self._clock)
+        rewards = self._balance.xp_rewards
 
         def write() -> None:
             with self._store.atomic():
                 self._store.matches.set_match_state(match.id, "finished", now, scores)
                 self._events.append(match_stream(match.id), [finished])
+                # XP only now, at the end: every game of the match (and any resume) was
+                # played at the level the duck had when the match started.
+                for duck_id in match.duck_ids:
+                    duck = self._store.ducks.get(duck_id)
+                    if duck is None or duck.profile_id == HOUSE_PROFILE_ID:
+                        continue  # challengers do not grow
+                    played = [
+                        g
+                        for g in games
+                        if g.result is not None and duck_id in (g.white_duck_id, g.black_duck_id)
+                    ]
+                    wins = sum(
+                        1
+                        for g in played
+                        if points(
+                            g.result or "", "white" if g.white_duck_id == duck_id else "black"
+                        )
+                        == 1
+                    )
+                    amount = len(played) * rewards["game_played"] + wins * rewards["game_won"]
+                    grown, events = grant_xp(duck, amount, "match", self._balance)
+                    self._store.ducks.update(grown)
+                    self._events.append(duck_stream(duck_id), events)
 
         await asyncio.to_thread(write)
         self._events.notify()

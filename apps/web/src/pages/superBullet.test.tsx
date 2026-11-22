@@ -171,3 +171,54 @@ test('the series viewer shows the score and announces Armageddon', async () => {
   })
   expect(score).toHaveTextContent('Speckles wins the series in Armageddon')
 })
+
+const xpGained = (duckId: string, amount: number) =>
+  envelope(
+    'XpGained',
+    { duckId, amount, source: 'match', xpAfter: amount, level: 1, xpForNextLevel: 100 },
+    `duck:${duckId}`,
+  )
+
+async function watchSeries(state: 'running' | 'finished') {
+  stubApi({
+    'GET /api/v1/profile': () => Response.json(profile('duck_1')),
+    'GET /api/v1/ducks': () => Response.json([speckles]),
+    'GET /api/v1/challengers': () => Response.json(challengers),
+    'GET /api/v1/matches/mat_1': () => Response.json({ ...match, state }),
+    'GET /api/v1/events': () => Response.json({ events: [], nextCursor: 0 }),
+  })
+  window.location.hash = '#/arena/super-bullet/mat_1'
+  const user = userEvent.setup()
+  render(<App />)
+  await screen.findByRole('heading', { name: 'Super Bullet Arena' })
+  await user.click(screen.getByRole('button', { name: 'Instant' }))
+  await waitFor(() => expect(PushEventSource.last?.url).toContain('duck%3Aduck_1'))
+}
+
+test('the XP a live series earns is shown when it ends', async () => {
+  await watchSeries('running')
+
+  act(() => {
+    PushEventSource.last!.emit(envelope('MatchStarted', { matchId: 'mat_1' }))
+    PushEventSource.last!.emit(
+      envelope('MatchFinished', { matchId: 'mat_1', scores: [], winnerDuckId: 'duck_1' }),
+    )
+    PushEventSource.last!.emit(xpGained('duck_1', 35))
+  })
+
+  expect(await screen.findByText('Speckles +35 XP')).toBeInTheDocument()
+})
+
+test('a replayed series does not announce XP again', async () => {
+  await watchSeries('finished')
+
+  act(() => {
+    PushEventSource.last!.emit(
+      envelope('MatchFinished', { matchId: 'mat_1', scores: [], winnerDuckId: 'duck_1' }),
+    )
+    PushEventSource.last!.emit(xpGained('duck_1', 35))
+  })
+
+  expect(await screen.findByText(/wins the match/)).toBeInTheDocument()
+  expect(screen.queryByText(/\+35 XP/)).not.toBeInTheDocument()
+})

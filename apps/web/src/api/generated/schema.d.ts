@@ -905,7 +905,7 @@ export interface components {
         /** EventPage */
         EventPage: {
             /** Events */
-            events: (components["schemas"]["DuckHatchedEvent"] | components["schemas"]["MatchCreatedEvent"] | components["schemas"]["MatchStartedEvent"] | components["schemas"]["GameStartedEvent"] | components["schemas"]["MoveChosenEvent"] | components["schemas"]["MoveMadeEvent"] | components["schemas"]["GameFinishedEvent"] | components["schemas"]["MatchFinishedEvent"] | components["schemas"]["SeriesUpdatedEvent"] | components["schemas"]["RatingUpdatedEvent"] | components["schemas"]["JobProgressedEvent"] | components["schemas"]["JobFinishedEvent"] | components["schemas"]["LessonCompletedEvent"] | components["schemas"]["KnowledgeAddedEvent"] | components["schemas"]["DuckLeveledUpEvent"])[];
+            events: (components["schemas"]["DuckHatchedEvent"] | components["schemas"]["MatchCreatedEvent"] | components["schemas"]["MatchStartedEvent"] | components["schemas"]["GameStartedEvent"] | components["schemas"]["MoveChosenEvent"] | components["schemas"]["MoveMadeEvent"] | components["schemas"]["GameFinishedEvent"] | components["schemas"]["MatchFinishedEvent"] | components["schemas"]["SeriesUpdatedEvent"] | components["schemas"]["RatingUpdatedEvent"] | components["schemas"]["JobProgressedEvent"] | components["schemas"]["JobFinishedEvent"] | components["schemas"]["LessonCompletedEvent"] | components["schemas"]["KnowledgeAddedEvent"] | components["schemas"]["XpGainedEvent"] | components["schemas"]["DuckLeveledUpEvent"])[];
             /**
              * Nextcursor
              * @description Pass as `after` to continue
@@ -1808,6 +1808,44 @@ export interface components {
             loss: number;
             /** Win */
             win: number;
+        };
+        /** XpGainedData */
+        XpGainedData: {
+            /** Amount */
+            amount: number;
+            /** Duckid */
+            duckId: string;
+            /** Level */
+            level: number;
+            /** Source */
+            source: string;
+            /** Xpafter */
+            xpAfter: number;
+            /** Xpfornextlevel */
+            xpForNextLevel: number | null;
+        };
+        /** XpGainedEvent */
+        XpGainedEvent: {
+            /**
+             * Cursor
+             * @description Global position; pass as `after` (or Last-Event-ID) to resume
+             */
+            cursor: number;
+            data: components["schemas"]["XpGainedData"];
+            /** Recordedat */
+            recordedAt: string;
+            /**
+             * Seq
+             * @description Position within the stream, starting at 1
+             */
+            seq: number;
+            /** Stream */
+            stream: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "XpGained";
         };
     };
     responses: never;

@@ -1057,7 +1057,8 @@
                   "MoveChosen": "#/components/schemas/MoveChosenEvent",
                   "MoveMade": "#/components/schemas/MoveMadeEvent",
                   "RatingUpdated": "#/components/schemas/RatingUpdatedEvent",
-                  "SeriesUpdated": "#/components/schemas/SeriesUpdatedEvent"
+                  "SeriesUpdated": "#/components/schemas/SeriesUpdatedEvent",
+                  "XpGained": "#/components/schemas/XpGainedEvent"
                 },
                 "propertyName": "type"
               },
@@ -1103,6 +1104,9 @@
                 },
                 {
                   "$ref": "#/components/schemas/KnowledgeAddedEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/XpGainedEvent"
                 },
                 {
                   "$ref": "#/components/schemas/DuckLeveledUpEvent"
@@ -3259,6 +3263,91 @@
           "loss"
         ],
         "title": "Wdl",
+        "type": "object"
+      },
+      "XpGainedData": {
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "integer"
+          },
+          "duckId": {
+            "title": "Duckid",
+            "type": "string"
+          },
+          "level": {
+            "title": "Level",
+            "type": "integer"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "xpAfter": {
+            "title": "Xpafter",
+            "type": "integer"
+          },
+          "xpForNextLevel": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Xpfornextlevel"
+          }
+        },
+        "required": [
+          "duckId",
+          "amount",
+          "source",
+          "xpAfter",
+          "level",
+          "xpForNextLevel"
+        ],
+        "title": "XpGainedData",
+        "type": "object"
+      },
+      "XpGainedEvent": {
+        "properties": {
+          "cursor": {
+            "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+            "title": "Cursor",
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/XpGainedData"
+          },
+          "recordedAt": {
+            "title": "Recordedat",
+            "type": "string"
+          },
+          "seq": {
+            "description": "Position within the stream, starting at 1",
+            "title": "Seq",
+            "type": "integer"
+          },
+          "stream": {
+            "title": "Stream",
+            "type": "string"
+          },
+          "type": {
+            "const": "XpGained",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cursor",
+          "stream",
+          "seq",
+          "recordedAt",
+          "type",
+          "data"
+        ],
+        "title": "XpGainedEvent",
         "type": "object"
       }
     }

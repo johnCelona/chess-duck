@@ -199,6 +199,19 @@ class KnowledgeAdded(Event):
 
 
 @dataclass(frozen=True)
+class XpGained(Event):
+    """A duck earned experience. `source` says from what (e.g. "match")."""
+
+    type: ClassVar[str] = "XpGained"
+    duck_id: str
+    amount: int
+    source: str
+    xp_after: int
+    level: int
+    xp_for_next_level: int | None
+
+
+@dataclass(frozen=True)
 class DuckLeveledUp(Event):
     type: ClassVar[str] = "DuckLeveledUp"
     duck_id: str

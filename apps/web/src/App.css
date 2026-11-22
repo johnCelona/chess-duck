@@ -1043,3 +1043,23 @@ nav.tiles {
   font-weight: 600;
   text-align: center;
 }
+
+/* XP and level-up news on the Pond (placeholder look and copy) */
+.news {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  background: #ecfdf5;
+  color: #065f46;
+  font-weight: 600;
+}
+
+.news button {
+  margin-left: auto;
+  border: none;
+  background: none;
+  padding: 0 4px;
+}

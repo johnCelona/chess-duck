@@ -7,7 +7,7 @@ from dataclasses import dataclass, replace
 
 from duckgambit.domain.balance import DEFAULT_BALANCE, STAT_NAMES, Balance, MindParams, derive_mind
 from duckgambit.domain.errors import DomainError
-from duckgambit.domain.events import DuckHatched, Event
+from duckgambit.domain.events import DuckHatched, DuckLeveledUp, Event, XpGained
 from duckgambit.domain.knowledge import Knowledge
 from duckgambit.domain.seeds import draw_below, rng_for
 
@@ -62,6 +62,30 @@ class Duck:
 
     def with_knowledge(self, knowledge: Knowledge) -> Duck:
         return replace(self, knowledge=knowledge)
+
+
+def grant_xp(
+    duck: Duck, amount: int, source: str, balance: Balance = DEFAULT_BALANCE
+) -> tuple[Duck, list[Event]]:
+    """Add experience. Level and stage follow from total XP; a level-up raises the stat
+    budget (points to place by training, design 01 §2.1). XP is never taken away."""
+    xp = duck.growth.xp + max(0, amount)
+    level = balance.level_for_xp(xp)
+    growth = Growth(stage=balance.stage_for(level).name, level=level, xp=xp)
+    events: list[Event] = [
+        XpGained(duck.id, max(0, amount), source, xp, level, balance.xp_for_next_level(level))
+    ]
+    if level > duck.growth.level:
+        events.append(
+            DuckLeveledUp(
+                duck_id=duck.id,
+                level=level,
+                stage=growth.stage,
+                stat_budget=balance.stat_budget(level),
+                stage_advanced=growth.stage != duck.growth.stage,
+            )
+        )
+    return replace(duck, growth=growth), events
 
 
 def default_stats(balance: Balance = DEFAULT_BALANCE) -> dict[str, int]:

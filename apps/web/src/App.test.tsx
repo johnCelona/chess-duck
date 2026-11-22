@@ -107,7 +107,14 @@ test('an old match link opens that match in the Lab', async () => {
   const calls = stubApi({
     'GET /api/v1/ducks': () => Response.json([duck]),
     'GET /api/v1/matches/mat_9': () =>
-      Response.json({ id: 'mat_9', stream: 'match:mat_9', jobId: 'job_9', arena: { games: 1 } }),
+      Response.json({
+        id: 'mat_9',
+        duckIds: ['duck_1', 'duck_2'],
+        state: 'finished',
+        stream: 'match:mat_9',
+        jobId: 'job_9',
+        arena: { games: 1 },
+      }),
   })
   window.location.hash = '#/match/mat_9'
   render(<App />)

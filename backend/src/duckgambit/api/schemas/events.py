@@ -186,6 +186,15 @@ class KnowledgeAddedData(Wire):
     entries: int
 
 
+class XpGainedData(Wire):
+    duck_id: str
+    amount: int
+    source: str
+    xp_after: int
+    level: int
+    xp_for_next_level: int | None
+
+
 class DuckLeveledUpData(Wire):
     duck_id: str
     level: int
@@ -271,6 +280,11 @@ class KnowledgeAddedEvent(_Envelope):
     data: KnowledgeAddedData
 
 
+class XpGainedEvent(_Envelope):
+    type: Literal["XpGained"]
+    data: XpGainedData
+
+
 class DuckLeveledUpEvent(_Envelope):
     type: Literal["DuckLeveledUp"]
     data: DuckLeveledUpData
@@ -291,6 +305,7 @@ EventEnvelope = Annotated[
     | JobFinishedEvent
     | LessonCompletedEvent
     | KnowledgeAddedEvent
+    | XpGainedEvent
     | DuckLeveledUpEvent,
     Field(discriminator="type"),
 ]

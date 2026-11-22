@@ -29,6 +29,16 @@ export function PondPage() {
           {error}
         </div>
       )}
+      {pond.news.length > 0 && (
+        <div className="news" role="status">
+          {pond.news.map((item, index) => (
+            <span key={index}>{item}</span>
+          ))}
+          <button type="button" aria-label="Dismiss" onClick={pond.dismissNews}>
+            ×
+          </button>
+        </div>
+      )}
       {pond.active && (
         <AttributesBar
           duck={pond.active}

@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef } from 'react'
-import { api, unwrap, type Duck } from '../api/client'
-import { subscribe } from '../api/events'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { api, unwrap, type Duck, type EventEnvelope } from '../api/client'
+import { latestCursor, subscribe } from '../api/events'
 import { useResource } from '../api/useResource'
 
 async function loadPond() {
@@ -17,6 +17,20 @@ export type Pond = {
   loading: boolean
   error: string
   setActive: (duckId: string) => Promise<void>
+  /** Short news about the active duck from events that just happened ("+25 XP"). */
+  news: string[]
+  dismissNews: () => void
+}
+
+/** Placeholder copy for XP and level-up news (John's to change). */
+export function newsFor(event: EventEnvelope): string | null {
+  if (event.type === 'XpGained') return `+${event.data.amount} XP`
+  if (event.type === 'DuckLeveledUp') {
+    return event.data.stageAdvanced
+      ? `Level ${event.data.level}! Now a ${event.data.stage}.`
+      : `Level ${event.data.level}!`
+  }
+  return null
 }
 
 /**
@@ -36,13 +50,32 @@ export function usePond(): Pond {
     timer.current = setTimeout(reload, 250)
   }, [reload])
 
+  const [news, setNews] = useState<string[]>([])
   const stream = active?.stream
   useEffect(() => {
     if (!stream) return
-    const unsubscribe = subscribe([stream], reloadSoon)
+    let unsubscribe: (() => void) | null = null
+    let cancelled = false
+    // Only what happens from now on: past events are already in the data we loaded.
+    latestCursor([stream])
+      .catch(() => 0)
+      .then((after) => {
+        if (cancelled) return
+        unsubscribe = subscribe(
+          [stream],
+          (event) => {
+            const item = newsFor(event)
+            if (item) setNews((current) => [...current, item])
+            reloadSoon()
+          },
+          { after },
+        )
+      })
     return () => {
-      unsubscribe()
+      cancelled = true
+      unsubscribe?.()
       if (timer.current) clearTimeout(timer.current)
+      setNews([])
     }
   }, [stream, reloadSoon])
 
@@ -54,5 +87,6 @@ export function usePond(): Pond {
     [reload],
   )
 
-  return { ducks, active, loading: data === null && !error, error, setActive }
+  const dismissNews = useCallback(() => setNews([]), [])
+  return { ducks, active, loading: data === null && !error, error, setActive, news, dismissNews }
 }

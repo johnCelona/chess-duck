@@ -1,7 +1,14 @@
 import pytest
 
 from duckgambit.domain.balance import DEFAULT_BALANCE
-from duckgambit.domain.duck import Avatar, default_stats, hatch, stats_from_egg, validate_stats
+from duckgambit.domain.duck import (
+    Avatar,
+    default_stats,
+    grant_xp,
+    hatch,
+    stats_from_egg,
+    validate_stats,
+)
 from duckgambit.domain.errors import DomainError
 
 NOW = "2026-11-21T12:00:00Z"
@@ -124,3 +131,36 @@ def test_an_egg_seed_must_be_a_53_bit_whole_number(seed):
     with pytest.raises(DomainError) as error:
         hatch_duck(egg_seed=seed)
     assert error.value.code == "duck.invalid_egg_seed"
+
+
+def test_xp_adds_up_and_levels_follow_from_the_total():
+    duck, _ = hatch_duck()
+    needed = DEFAULT_BALANCE.xp_needed(2)
+
+    same_level, events = grant_xp(duck, needed - 1, "match")
+    assert (same_level.growth.level, same_level.growth.xp) == (1, needed - 1)
+    assert [e.type for e in events] == ["XpGained"]
+    assert events[0].data()["xp_for_next_level"] == needed
+
+    grown, events = grant_xp(duck, DEFAULT_BALANCE.xp_needed(3), "match")
+    assert grown.growth.level == 3
+    assert [e.type for e in events] == ["XpGained", "DuckLeveledUp"]
+    assert events[1].data()["stat_budget"] == DEFAULT_BALANCE.stat_budget(3)
+
+
+def test_reaching_a_new_stage_is_announced_and_xp_never_goes_down():
+    duck, _ = hatch_duck()
+    duckling = next(s for s in DEFAULT_BALANCE.stages if s.name == "duckling")
+
+    grown, events = grant_xp(duck, DEFAULT_BALANCE.xp_needed(duckling.min_level), "match")
+    assert grown.growth.stage == "duckling"
+    assert events[-1].data()["stage_advanced"] is True
+    assert grant_xp(duck, -50, "match")[0].growth.xp == 0
+
+
+def test_the_top_level_has_no_next_level():
+    duck, _ = hatch_duck()
+    top, events = grant_xp(duck, 10**9, "match")
+
+    assert top.growth.level == DEFAULT_BALANCE.max_level
+    assert events[0].data()["xp_for_next_level"] is None

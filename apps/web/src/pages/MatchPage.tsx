@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { api, messageOf, pgnUrl, unwrap, type Arena, type Match } from '../api/client'
-import { subscribe, type Unsubscribe } from '../api/events'
+import { latestCursor, subscribe, type Unsubscribe } from '../api/events'
+import { newsFor } from '../ducks/usePond'
 import { useResource } from '../api/useResource'
 import { Board } from '../components/Board'
 import { DuckSprite } from '../components/DuckSprite'
@@ -113,6 +114,7 @@ export function MatchPage({
   const [busy, setBusy] = useState(false)
   const [actionError, setError] = useState('')
   const error = actionError || setup.error
+  const [news, setNews] = useState<{ duckId: string; text: string }[]>([])
 
   const player = useRef<Player | null>(null)
   const speedRef = useRef(1)
@@ -131,23 +133,32 @@ export function MatchPage({
   // Following a live match and replaying a finished one are the same thing:
   // read the match's event stream from the start.
   const watch = useCallback(
-    (target: Match) => {
+    async (target: Match) => {
       stopWatching()
       setMatch(target)
       setView(emptyMatchView)
       setCursor(null)
+      setNews([])
+      // XP and level-ups land on each duck's stream when the match ends. Show only the ones
+      // this match earns, in order after the final move; never old ones, never on a replay.
+      const duckStreams = target.duckIds.map((id) => `duck:${id}`)
+      const newsAfter =
+        target.state === 'finished'
+          ? Number.POSITIVE_INFINITY
+          : await latestCursor(duckStreams).catch(() => Number.POSITIVE_INFINITY)
       const playback = createPlayer((event) => {
         setView((current) => applyEvent(current, event))
         if (event.type === 'MatchFinished') reloadSetup() // ratings changed
+        const item = event.cursor > newsAfter ? newsFor(event) : null
+        if (item && (event.type === 'XpGained' || event.type === 'DuckLeveledUp')) {
+          const duckId = event.data.duckId
+          setNews((current) => [...current, { duckId, text: item }])
+        }
       }, speedRef.current)
       player.current = playback
-      stream.current = subscribe([target.stream, `job:${target.jobId}`], (event) => {
+      const streams = [target.stream, `job:${target.jobId}`, ...duckStreams]
+      stream.current = subscribe(streams, (event) => {
         playback.push(event)
-        // Nothing follows a finished job, so free the connection; playback carries on.
-        if (event.type === 'JobFinished' && event.data.state === 'succeeded') {
-          stream.current?.()
-          stream.current = null
-        }
       })
     },
     [stopWatching, reloadSetup],
@@ -159,7 +170,7 @@ export function MatchPage({
     let cancelled = false
     unwrap(api.GET('/api/v1/matches/{match_id}', { params: { path: { match_id: matchId } } })).then(
       (found) => {
-        if (!cancelled) watch(found)
+        if (!cancelled) void watch(found)
       },
       (requestError: unknown) => {
         if (!cancelled) setError(messageOf(requestError))
@@ -467,6 +478,15 @@ export function MatchPage({
                       : `Game ${(current?.index ?? 0) + 1} of ${match.arena.games}`}
               </h2>
               {view.series && <SeriesScore series={view.series} duckName={duckName} />}
+              {news.length > 0 && (
+                <p className="news" role="status">
+                  {news.map((item, index) => (
+                    <span key={index}>
+                      {duckName(item.duckId)} {item.text}
+                    </span>
+                  ))}
+                </p>
+              )}
               <ul className="games">
                 {view.games.map((game) => (
                   <li key={game.id}>
