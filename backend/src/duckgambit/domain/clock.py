@@ -65,3 +65,16 @@ def charge(
     if spent >= remaining_ms:
         return ClockCharge(0, True)
     return ClockCharge(remaining_ms - spent + increment_ms, False)
+
+
+# A human's move always costs at least this much (ADR-0015), so a premove is not free.
+HUMAN_MOVE_FLOOR_MS = 100
+
+
+def charge_human(remaining_ms: int, elapsed_ms: int, increment_ms: int) -> ClockCharge:
+    """Charge a human's measured thinking time. The time is data: the service measures it
+    with a clock port and passes it in (ADR-0015); nothing here reads a clock."""
+    spent = max(HUMAN_MOVE_FLOOR_MS, elapsed_ms)
+    if spent >= remaining_ms:
+        return ClockCharge(0, True)
+    return ClockCharge(remaining_ms - spent + increment_ms, False)

@@ -29,6 +29,9 @@ from duckgambit.services.records import (
     MoveRecord,
     PositionMove,
     RatingRecord,
+    SparringGame,
+    SparringMove,
+    SparringSeries,
 )
 
 DEFAULT_PROFILE_ID = "prof_local"
@@ -562,6 +565,186 @@ class SqliteEngineProfiles(_Repository):
             )
 
 
+class SqliteSparring(_Repository):
+    """Games between the player and a duck, their moves, and "You play" series."""
+
+    @staticmethod
+    def _game(row: sqlite3.Row) -> SparringGame:
+        control = json.loads(row["time_control"]) if row["time_control"] else None
+        return SparringGame(
+            id=row["id"],
+            profile_id=row["profile_id"],
+            duck_id=row["duck_id"],
+            engine_id=row["engine_id"],
+            human_color=row["human_color"],
+            base_ms=control["base_ms"] if control else None,
+            increment_ms=control["increment_ms"] if control else 0,
+            seed=row["seed"],
+            initial_fen=row["initial_fen"],
+            state=row["state"],
+            white_clock_ms=row["white_clock_ms"],
+            black_clock_ms=row["black_clock_ms"],
+            turn_started_ms=row["turn_started_ms"],
+            created_at=row["created_at"],
+            series_id=row["series_id"],
+            series_index=row["series_index"],
+            result=row["result"],
+            termination=row["termination"],
+            finished_at=row["finished_at"],
+        )
+
+    def add_game(self, game: SparringGame) -> None:
+        control = (
+            _dump({"base_ms": game.base_ms, "increment_ms": game.increment_ms})
+            if game.base_ms is not None
+            else None
+        )
+        with self._db.tx() as tx:
+            tx.execute(
+                "INSERT INTO sparring_games (id, profile_id, duck_id, engine_id, human_color,"
+                " time_control, seed, initial_fen, state, white_clock_ms, black_clock_ms,"
+                " turn_started_ms, series_id, series_index, created_at)"
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    game.id,
+                    game.profile_id,
+                    game.duck_id,
+                    game.engine_id,
+                    game.human_color,
+                    control,
+                    game.seed,
+                    game.initial_fen,
+                    game.state,
+                    game.white_clock_ms,
+                    game.black_clock_ms,
+                    game.turn_started_ms,
+                    game.series_id,
+                    game.series_index,
+                    game.created_at,
+                ),
+            )
+
+    def save_game(self, game: SparringGame) -> None:
+        """Write the parts of a game that change while it is played."""
+        with self._db.tx() as tx:
+            tx.execute(
+                "UPDATE sparring_games SET state = ?, result = ?, termination = ?,"
+                " white_clock_ms = ?, black_clock_ms = ?, turn_started_ms = ?, finished_at = ?"
+                " WHERE id = ?",
+                (
+                    game.state,
+                    game.result,
+                    game.termination,
+                    game.white_clock_ms,
+                    game.black_clock_ms,
+                    game.turn_started_ms,
+                    game.finished_at,
+                    game.id,
+                ),
+            )
+
+    def get_game(self, game_id: str) -> SparringGame | None:
+        with self._db.tx() as tx:
+            row = tx.execute("SELECT * FROM sparring_games WHERE id = ?", (game_id,)).fetchone()
+        return self._game(row) if row else None
+
+    def recent_games(self, profile_id: str, limit: int) -> list[SparringGame]:
+        with self._db.tx() as tx:
+            rows = tx.execute(
+                "SELECT * FROM sparring_games WHERE profile_id = ? AND series_id IS NULL"
+                " ORDER BY created_at DESC, id DESC LIMIT ?",
+                (profile_id, limit),
+            ).fetchall()
+        return [self._game(row) for row in rows]
+
+    def add_move(self, move: SparringMove) -> None:
+        with self._db.tx() as tx:
+            tx.execute(
+                "INSERT INTO sparring_moves (game_id, ply, color, by, uci, san, source,"
+                " elapsed_ms, fen_after) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    move.game_id,
+                    move.ply,
+                    move.color,
+                    move.by,
+                    move.uci,
+                    move.san,
+                    move.source,
+                    move.elapsed_ms,
+                    move.fen_after,
+                ),
+            )
+
+    def list_moves(self, game_id: str) -> list[SparringMove]:
+        with self._db.tx() as tx:
+            rows = tx.execute(
+                "SELECT * FROM sparring_moves WHERE game_id = ? ORDER BY ply", (game_id,)
+            ).fetchall()
+        return [
+            SparringMove(
+                r["game_id"],
+                r["ply"],
+                r["color"],
+                r["by"],
+                r["uci"],
+                r["san"],
+                r["source"],
+                r["elapsed_ms"],
+                r["fen_after"],
+            )
+            for r in rows
+        ]
+
+    def add_series(self, series: SparringSeries) -> None:
+        with self._db.tx() as tx:
+            tx.execute(
+                "INSERT INTO sparring_series (id, profile_id, duck_id, engine_id, best_of, seed,"
+                " state, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    series.id,
+                    series.profile_id,
+                    series.duck_id,
+                    series.engine_id,
+                    series.best_of,
+                    series.seed,
+                    series.state,
+                    series.created_at,
+                ),
+            )
+
+    def get_series(self, series_id: str) -> SparringSeries | None:
+        with self._db.tx() as tx:
+            row = tx.execute("SELECT * FROM sparring_series WHERE id = ?", (series_id,)).fetchone()
+        if row is None:
+            return None
+        return SparringSeries(
+            id=row["id"],
+            profile_id=row["profile_id"],
+            duck_id=row["duck_id"],
+            engine_id=row["engine_id"],
+            best_of=row["best_of"],
+            seed=row["seed"],
+            state=row["state"],
+            created_at=row["created_at"],
+            finished_at=row["finished_at"],
+        )
+
+    def set_series_state(self, series_id: str, state: str, finished_at: str | None) -> None:
+        with self._db.tx() as tx:
+            tx.execute(
+                "UPDATE sparring_series SET state = ?, finished_at = ? WHERE id = ?",
+                (state, finished_at, series_id),
+            )
+
+    def series_games(self, series_id: str) -> list[SparringGame]:
+        with self._db.tx() as tx:
+            rows = tx.execute(
+                "SELECT * FROM sparring_games WHERE series_id = ? ORDER BY series_index",
+                (series_id,),
+            ).fetchall()
+        return [self._game(row) for row in rows]
+
+
 class SqliteStore:
     """The Store port backed by one SQLite file."""
 
@@ -574,6 +757,7 @@ class SqliteStore:
         self.jobs = SqliteJobs(self.database)
         self.ratings = SqliteRatings(self.database)
         self.engine_profiles = SqliteEngineProfiles(self.database)
+        self.sparring = SqliteSparring(self.database)
 
     def migrate(self, applied_at: str) -> list[int]:
         applied = self.database.migrate(applied_at)

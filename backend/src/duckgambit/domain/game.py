@@ -72,3 +72,15 @@ def points(result: str, color: str) -> float:
     if result == DRAW:
         return 0.5
     return 1.0 if (result == WHITE_WINS) == (color == "white") else 0.0
+
+
+def timeout(board: chess.Board, loser_is_white: bool) -> Outcome:
+    """Out of time: a loss, unless the opponent cannot possibly mate, which is a draw."""
+    winner = chess.BLACK if loser_is_white else chess.WHITE
+    if board.has_insufficient_material(winner):
+        return Outcome(DRAW, "timeout_vs_insufficient_material")
+    return time_forfeit(loser_is_white)
+
+
+def resignation(loser_is_white: bool) -> Outcome:
+    return Outcome(BLACK_WINS if loser_is_white else WHITE_WINS, "resignation")

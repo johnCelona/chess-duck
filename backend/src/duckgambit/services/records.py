@@ -136,3 +136,54 @@ class EngineProfile:
     nodes: int
     multipv: int
     hash_mb: int
+
+
+@dataclass(frozen=True)
+class SparringGame:
+    """A game between the player and one of their ducks (ADR-0015). Never rated."""
+
+    id: str
+    profile_id: str
+    duck_id: str
+    engine_id: str
+    human_color: str  # "white" | "black"
+    base_ms: int | None  # None: untimed
+    increment_ms: int
+    seed: int
+    initial_fen: str
+    state: str  # running | finished
+    white_clock_ms: int | None
+    black_clock_ms: int | None
+    turn_started_ms: int | None
+    created_at: str
+    series_id: str | None = None
+    series_index: int | None = None
+    result: str | None = None
+    termination: str | None = None
+    finished_at: str | None = None
+
+
+@dataclass(frozen=True)
+class SparringMove:
+    game_id: str
+    ply: int
+    color: str
+    by: str  # "human" | "duck"
+    uci: str
+    san: str
+    source: str | None
+    elapsed_ms: int
+    fen_after: str
+
+
+@dataclass(frozen=True)
+class SparringSeries:
+    id: str
+    profile_id: str
+    duck_id: str
+    engine_id: str
+    best_of: int
+    seed: int
+    state: str  # playing | decided
+    created_at: str
+    finished_at: str | None = None
