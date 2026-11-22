@@ -1558,6 +1558,334 @@
       "title": "SeriesUpdatedEvent",
       "type": "object"
     },
+    "SparringGameFinishedData": {
+      "properties": {
+        "gameId": {
+          "title": "Gameid",
+          "type": "string"
+        },
+        "plies": {
+          "title": "Plies",
+          "type": "integer"
+        },
+        "result": {
+          "enum": [
+            "1-0",
+            "0-1",
+            "1/2-1/2"
+          ],
+          "title": "Result",
+          "type": "string"
+        },
+        "termination": {
+          "title": "Termination",
+          "type": "string"
+        },
+        "winner": {
+          "anyOf": [
+            {
+              "enum": [
+                "human",
+                "duck"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Winner"
+        }
+      },
+      "required": [
+        "gameId",
+        "result",
+        "termination",
+        "winner",
+        "plies"
+      ],
+      "title": "SparringGameFinishedData",
+      "type": "object"
+    },
+    "SparringGameFinishedEvent": {
+      "properties": {
+        "cursor": {
+          "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+          "title": "Cursor",
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/$defs/SparringGameFinishedData"
+        },
+        "recordedAt": {
+          "title": "Recordedat",
+          "type": "string"
+        },
+        "seq": {
+          "description": "Position within the stream, starting at 1",
+          "title": "Seq",
+          "type": "integer"
+        },
+        "stream": {
+          "title": "Stream",
+          "type": "string"
+        },
+        "type": {
+          "const": "SparringGameFinished",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cursor",
+        "stream",
+        "seq",
+        "recordedAt",
+        "type",
+        "data"
+      ],
+      "title": "SparringGameFinishedEvent",
+      "type": "object"
+    },
+    "SparringGameStartedData": {
+      "properties": {
+        "blackClockMs": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Blackclockms"
+        },
+        "duckId": {
+          "title": "Duckid",
+          "type": "string"
+        },
+        "gameId": {
+          "title": "Gameid",
+          "type": "string"
+        },
+        "humanColor": {
+          "enum": [
+            "white",
+            "black"
+          ],
+          "title": "Humancolor",
+          "type": "string"
+        },
+        "initialFen": {
+          "title": "Initialfen",
+          "type": "string"
+        },
+        "seriesId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Seriesid"
+        },
+        "whiteClockMs": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Whiteclockms"
+        }
+      },
+      "required": [
+        "gameId",
+        "duckId",
+        "humanColor",
+        "initialFen",
+        "whiteClockMs",
+        "blackClockMs",
+        "seriesId"
+      ],
+      "title": "SparringGameStartedData",
+      "type": "object"
+    },
+    "SparringGameStartedEvent": {
+      "properties": {
+        "cursor": {
+          "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+          "title": "Cursor",
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/$defs/SparringGameStartedData"
+        },
+        "recordedAt": {
+          "title": "Recordedat",
+          "type": "string"
+        },
+        "seq": {
+          "description": "Position within the stream, starting at 1",
+          "title": "Seq",
+          "type": "integer"
+        },
+        "stream": {
+          "title": "Stream",
+          "type": "string"
+        },
+        "type": {
+          "const": "SparringGameStarted",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cursor",
+        "stream",
+        "seq",
+        "recordedAt",
+        "type",
+        "data"
+      ],
+      "title": "SparringGameStartedEvent",
+      "type": "object"
+    },
+    "SparringSeriesUpdatedData": {
+      "properties": {
+        "armageddonHumanColor": {
+          "anyOf": [
+            {
+              "enum": [
+                "white",
+                "black"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Armageddonhumancolor"
+        },
+        "bestOf": {
+          "title": "Bestof",
+          "type": "integer"
+        },
+        "decidedBy": {
+          "anyOf": [
+            {
+              "enum": [
+                "games",
+                "armageddon"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Decidedby"
+        },
+        "duckPoints": {
+          "title": "Duckpoints",
+          "type": "number"
+        },
+        "gamesPlayed": {
+          "title": "Gamesplayed",
+          "type": "integer"
+        },
+        "humanPoints": {
+          "title": "Humanpoints",
+          "type": "number"
+        },
+        "seriesId": {
+          "title": "Seriesid",
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "playing",
+            "armageddon",
+            "decided"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "winner": {
+          "anyOf": [
+            {
+              "enum": [
+                "human",
+                "duck"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Winner"
+        }
+      },
+      "required": [
+        "seriesId",
+        "bestOf",
+        "humanPoints",
+        "duckPoints",
+        "gamesPlayed",
+        "state",
+        "winner",
+        "decidedBy",
+        "armageddonHumanColor"
+      ],
+      "title": "SparringSeriesUpdatedData",
+      "type": "object"
+    },
+    "SparringSeriesUpdatedEvent": {
+      "properties": {
+        "cursor": {
+          "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+          "title": "Cursor",
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/$defs/SparringSeriesUpdatedData"
+        },
+        "recordedAt": {
+          "title": "Recordedat",
+          "type": "string"
+        },
+        "seq": {
+          "description": "Position within the stream, starting at 1",
+          "title": "Seq",
+          "type": "integer"
+        },
+        "stream": {
+          "title": "Stream",
+          "type": "string"
+        },
+        "type": {
+          "const": "SparringSeriesUpdated",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cursor",
+        "stream",
+        "seq",
+        "recordedAt",
+        "type",
+        "data"
+      ],
+      "title": "SparringSeriesUpdatedEvent",
+      "type": "object"
+    },
     "Wdl": {
       "description": "Win, draw and loss chances per mille, from the mover's point of view.",
       "properties": {
@@ -1688,6 +2016,9 @@
       "MoveMade": "#/$defs/MoveMadeEvent",
       "RatingUpdated": "#/$defs/RatingUpdatedEvent",
       "SeriesUpdated": "#/$defs/SeriesUpdatedEvent",
+      "SparringGameFinished": "#/$defs/SparringGameFinishedEvent",
+      "SparringGameStarted": "#/$defs/SparringGameStartedEvent",
+      "SparringSeriesUpdated": "#/$defs/SparringSeriesUpdatedEvent",
       "XpGained": "#/$defs/XpGainedEvent"
     },
     "propertyName": "type"
@@ -1740,6 +2071,15 @@
     },
     {
       "$ref": "#/$defs/DuckLeveledUpEvent"
+    },
+    {
+      "$ref": "#/$defs/SparringGameStartedEvent"
+    },
+    {
+      "$ref": "#/$defs/SparringGameFinishedEvent"
+    },
+    {
+      "$ref": "#/$defs/SparringSeriesUpdatedEvent"
     }
   ],
   "title": "Duck Gambit event envelope"

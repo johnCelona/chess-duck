@@ -1,6 +1,6 @@
 # ADR-0015 · Human players and real-time clocks
 
-Status: Proposed (needs John for the defaults marked ⚑) · 2026-11-21 · Source: `docs/design/01-training-minigames-and-bullet-battle.md` section 4.1
+Status: Accepted (defaults decided 2026-11-21) · 2026-11-21 · Source: `docs/design/01-training-minigames-and-bullet-battle.md` section 4.1
 
 ## Context
 
@@ -25,7 +25,16 @@ Option 3, with these limits:
 - **Contract (additive):** `MoveMade.by` already allows `human`; add `elapsedMs`. `GameFinished.termination` already reserves `resignation` and `abandoned`. Games gain `mode` and `rated` columns (migration with the session that builds this).
 - **Thinking panel** is hidden during a sparring game and shown afterwards (client behaviour; no enforcement needed locally).
 
-Open defaults for John ⚑: time odds for the human (3+0 against the duck's 1+0 proposed), relaxed clock (human cannot flag) on or off for new players, timeout against insufficient material scored as a draw (proposed yes, as in standard rules), and whether a disconnected game is abandoned or resumable.
+Defaults, decided 2026-11-21 (John, and built in `services/sparring.py`):
+- **Practice Pond:** untimed by default; the player may pick a time control for both sides (presets 30s to 10 min, plus increment).
+- **"You play" in Super Bullet Arena:** 30+0 for both sides, best of N with Armageddon (same rules as `domain/series.py`).
+- **Timeout:** if the opponent has insufficient mating material, running out of time is a draw, as in standard rules.
+- **Leaving:** an untimed game simply waits and can be resumed. In a timed game your clock keeps running; reopening it, or a timeout claim, ends it on time.
+- **The human's clock** starts when the duck's move is recorded. The client shows it at once, a simplification of the formula above.
+- **Promotion:** the client offers a choice when untimed and auto-queens when timed.
+- **Storage:** sparring games use their own tables (`sparring_games`, `sparring_moves`, `sparring_series`, migration 0005), not `games`, because their rows do not name two ducks.
+- **Not added:** `MoveMade.elapsedMs`. For a human move, `thinkMs` carries the measured time.
+- **No relaxed clock yet.**
 
 ## Consequences
 

@@ -469,6 +469,161 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/sparring": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Sparring
+         * @description Your recent games against your ducks, newest first (series games excluded).
+         */
+        get: operations["listSparring"];
+        put?: never;
+        /**
+         * Start Sparring
+         * @description Play one of your ducks. Untimed unless you give a time control. Never rated.
+         */
+        post: operations["startSparring"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sparring-series": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start Series
+         * @description You against your duck: best of N, 30 seconds each. The first game starts now.
+         */
+        post: operations["startSparringSeries"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sparring-series/{series_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Series */
+        get: operations["getSparringSeries"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sparring-series/{series_id}/games": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Next Game
+         * @description Start the next game of the series (an Armageddon game if it is tied).
+         */
+        post: operations["nextSparringSeriesGame"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sparring/{game_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Sparring */
+        get: operations["getSparring"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sparring/{game_id}/moves": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Play Move
+         * @description Your move. The duck's reply follows on the game's stream.
+         */
+        post: operations["playSparringMove"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sparring/{game_id}/resignation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Resign */
+        put: operations["resignSparring"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sparring/{game_id}/timeout-claim": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Claim Timeout
+         * @description Your clock reached zero on screen: the server checks and ends the game.
+         */
+        put: operations["claimSparringTimeout"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -905,7 +1060,7 @@ export interface components {
         /** EventPage */
         EventPage: {
             /** Events */
-            events: (components["schemas"]["DuckHatchedEvent"] | components["schemas"]["MatchCreatedEvent"] | components["schemas"]["MatchStartedEvent"] | components["schemas"]["GameStartedEvent"] | components["schemas"]["MoveChosenEvent"] | components["schemas"]["MoveMadeEvent"] | components["schemas"]["GameFinishedEvent"] | components["schemas"]["MatchFinishedEvent"] | components["schemas"]["SeriesUpdatedEvent"] | components["schemas"]["RatingUpdatedEvent"] | components["schemas"]["JobProgressedEvent"] | components["schemas"]["JobFinishedEvent"] | components["schemas"]["LessonCompletedEvent"] | components["schemas"]["KnowledgeAddedEvent"] | components["schemas"]["XpGainedEvent"] | components["schemas"]["DuckLeveledUpEvent"])[];
+            events: (components["schemas"]["DuckHatchedEvent"] | components["schemas"]["MatchCreatedEvent"] | components["schemas"]["MatchStartedEvent"] | components["schemas"]["GameStartedEvent"] | components["schemas"]["MoveChosenEvent"] | components["schemas"]["MoveMadeEvent"] | components["schemas"]["GameFinishedEvent"] | components["schemas"]["MatchFinishedEvent"] | components["schemas"]["SeriesUpdatedEvent"] | components["schemas"]["RatingUpdatedEvent"] | components["schemas"]["JobProgressedEvent"] | components["schemas"]["JobFinishedEvent"] | components["schemas"]["LessonCompletedEvent"] | components["schemas"]["KnowledgeAddedEvent"] | components["schemas"]["XpGainedEvent"] | components["schemas"]["DuckLeveledUpEvent"] | components["schemas"]["SparringGameStartedEvent"] | components["schemas"]["SparringGameFinishedEvent"] | components["schemas"]["SparringSeriesUpdatedEvent"])[];
             /**
              * Nextcursor
              * @description Pass as `after` to continue
@@ -1754,6 +1909,291 @@ export interface components {
              * @enum {string}
              */
             type: "SeriesUpdated";
+        };
+        /** SparringGameFinishedData */
+        SparringGameFinishedData: {
+            /** Gameid */
+            gameId: string;
+            /** Plies */
+            plies: number;
+            /**
+             * Result
+             * @enum {string}
+             */
+            result: "1-0" | "0-1" | "1/2-1/2";
+            /** Termination */
+            termination: string;
+            /** Winner */
+            winner: ("human" | "duck") | null;
+        };
+        /** SparringGameFinishedEvent */
+        SparringGameFinishedEvent: {
+            /**
+             * Cursor
+             * @description Global position; pass as `after` (or Last-Event-ID) to resume
+             */
+            cursor: number;
+            data: components["schemas"]["SparringGameFinishedData"];
+            /** Recordedat */
+            recordedAt: string;
+            /**
+             * Seq
+             * @description Position within the stream, starting at 1
+             */
+            seq: number;
+            /** Stream */
+            stream: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "SparringGameFinished";
+        };
+        /**
+         * SparringGameOut
+         * @description A game against your duck. Never rated.
+         */
+        SparringGameOut: {
+            /** Blackclockms */
+            blackClockMs: number | null;
+            /** Check */
+            check: boolean;
+            /** Createdat */
+            createdAt: string;
+            /** Duckid */
+            duckId: string;
+            /** Duckthinking */
+            duckThinking: boolean;
+            /** Engineid */
+            engineId: string;
+            /** Fen */
+            fen: string;
+            /**
+             * Humancolor
+             * @enum {string}
+             */
+            humanColor: "white" | "black";
+            /** Id */
+            id: string;
+            /** Initialfen */
+            initialFen: string;
+            /**
+             * Legalmoves
+             * @description Your legal moves in UCI when it is your turn; empty otherwise
+             */
+            legalMoves: string[];
+            /** Moves */
+            moves: components["schemas"]["SparringMoveOut"][];
+            /** Result */
+            result: ("1-0" | "0-1" | "1/2-1/2") | null;
+            /** Seriesid */
+            seriesId: string | null;
+            /** Seriesindex */
+            seriesIndex: number | null;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "running" | "finished";
+            /** Stream */
+            stream: string;
+            /** Termination */
+            termination: string | null;
+            timeControl: components["schemas"]["TimeControl"] | null;
+            /**
+             * Turn
+             * @enum {string}
+             */
+            turn: "white" | "black";
+            /**
+             * Whiteclockms
+             * @description Time left now; null when untimed
+             */
+            whiteClockMs: number | null;
+            /** Winner */
+            winner: ("human" | "duck") | null;
+        };
+        /** SparringGameStartedData */
+        SparringGameStartedData: {
+            /** Blackclockms */
+            blackClockMs: number | null;
+            /** Duckid */
+            duckId: string;
+            /** Gameid */
+            gameId: string;
+            /**
+             * Humancolor
+             * @enum {string}
+             */
+            humanColor: "white" | "black";
+            /** Initialfen */
+            initialFen: string;
+            /** Seriesid */
+            seriesId: string | null;
+            /** Whiteclockms */
+            whiteClockMs: number | null;
+        };
+        /** SparringGameStartedEvent */
+        SparringGameStartedEvent: {
+            /**
+             * Cursor
+             * @description Global position; pass as `after` (or Last-Event-ID) to resume
+             */
+            cursor: number;
+            data: components["schemas"]["SparringGameStartedData"];
+            /** Recordedat */
+            recordedAt: string;
+            /**
+             * Seq
+             * @description Position within the stream, starting at 1
+             */
+            seq: number;
+            /** Stream */
+            stream: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "SparringGameStarted";
+        };
+        /** SparringMoveIn */
+        SparringMoveIn: {
+            /**
+             * Uci
+             * @description Your move, e.g. e2e4 or e7e8q
+             */
+            uci: string;
+        };
+        /** SparringMoveOut */
+        SparringMoveOut: {
+            /**
+             * By
+             * @enum {string}
+             */
+            by: "human" | "duck";
+            /**
+             * Color
+             * @enum {string}
+             */
+            color: "white" | "black";
+            /** Fenafter */
+            fenAfter: string;
+            /** Ply */
+            ply: number;
+            /** San */
+            san: string;
+            /** Uci */
+            uci: string;
+        };
+        /**
+         * SparringSeriesOut
+         * @description A "You play" Super Bullet series: 30 seconds each, Armageddon if tied.
+         */
+        SparringSeriesOut: {
+            /** Armageddonhumancolor */
+            armageddonHumanColor: ("white" | "black") | null;
+            /** Bestof */
+            bestOf: number;
+            /**
+             * Currentgameid
+             * @description The latest game, running or finished
+             */
+            currentGameId: string | null;
+            /** Decidedby */
+            decidedBy: ("games" | "armageddon") | null;
+            /** Duckid */
+            duckId: string;
+            /** Duckpoints */
+            duckPoints: number;
+            /** Gameids */
+            gameIds: string[];
+            /** Humanpoints */
+            humanPoints: number;
+            /** Id */
+            id: string;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "playing" | "armageddon" | "decided";
+            /** Stream */
+            stream: string;
+            /** Winner */
+            winner: ("human" | "duck") | null;
+        };
+        /** SparringSeriesUpdatedData */
+        SparringSeriesUpdatedData: {
+            /** Armageddonhumancolor */
+            armageddonHumanColor: ("white" | "black") | null;
+            /** Bestof */
+            bestOf: number;
+            /** Decidedby */
+            decidedBy: ("games" | "armageddon") | null;
+            /** Duckpoints */
+            duckPoints: number;
+            /** Gamesplayed */
+            gamesPlayed: number;
+            /** Humanpoints */
+            humanPoints: number;
+            /** Seriesid */
+            seriesId: string;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "playing" | "armageddon" | "decided";
+            /** Winner */
+            winner: ("human" | "duck") | null;
+        };
+        /** SparringSeriesUpdatedEvent */
+        SparringSeriesUpdatedEvent: {
+            /**
+             * Cursor
+             * @description Global position; pass as `after` (or Last-Event-ID) to resume
+             */
+            cursor: number;
+            data: components["schemas"]["SparringSeriesUpdatedData"];
+            /** Recordedat */
+            recordedAt: string;
+            /**
+             * Seq
+             * @description Position within the stream, starting at 1
+             */
+            seq: number;
+            /** Stream */
+            stream: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "SparringSeriesUpdated";
+        };
+        /** StartSeriesRequest */
+        StartSeriesRequest: {
+            /**
+             * Bestof
+             * @description 3, 5, 7 or 15
+             */
+            bestOf: number;
+            /** Duckid */
+            duckId: string;
+            /** Engineid */
+            engineId: string;
+        };
+        /** StartSparringRequest */
+        StartSparringRequest: {
+            /** Duckid */
+            duckId: string;
+            /** Engineid */
+            engineId: string;
+            /**
+             * Humancolor
+             * @default random
+             * @enum {string}
+             */
+            humanColor?: "white" | "black" | "random";
+            /** @description Your clock and the duck's; null (the default) is untimed */
+            timeControl?: components["schemas"]["TimeControl"] | null;
         };
         /** StatsModel */
         StatsModel: {
@@ -2734,6 +3174,293 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProfileOut"];
+                };
+            };
+            /** @description Any error, as an RFC 9457 problem document */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    listSparring: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SparringGameOut"][];
+                };
+            };
+            /** @description Any error, as an RFC 9457 problem document */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    startSparring: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StartSparringRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SparringGameOut"];
+                };
+            };
+            /** @description Any error, as an RFC 9457 problem document */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    startSparringSeries: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StartSeriesRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SparringSeriesOut"];
+                };
+            };
+            /** @description Any error, as an RFC 9457 problem document */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    getSparringSeries: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                series_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SparringSeriesOut"];
+                };
+            };
+            /** @description Any error, as an RFC 9457 problem document */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    nextSparringSeriesGame: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                series_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SparringSeriesOut"];
+                };
+            };
+            /** @description Any error, as an RFC 9457 problem document */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    getSparring: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                game_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SparringGameOut"];
+                };
+            };
+            /** @description Any error, as an RFC 9457 problem document */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    playSparringMove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                game_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SparringMoveIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SparringGameOut"];
+                };
+            };
+            /** @description Any error, as an RFC 9457 problem document */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    resignSparring: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                game_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SparringGameOut"];
+                };
+            };
+            /** @description Any error, as an RFC 9457 problem document */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    claimSparringTimeout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                game_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SparringGameOut"];
                 };
             };
             /** @description Any error, as an RFC 9457 problem document */

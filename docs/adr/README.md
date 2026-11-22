@@ -20,5 +20,5 @@ To change a decision, add a new ADR that supersedes the old one; do not rewrite 
 | [0012](0012-quality-system.md) | Quality system | Accepted | |
 | [0013](0013-licensing-and-assets.md) | Licensing and assets | Accepted (GPL-3.0-or-later) | Art license before release |
 | [0014](0014-developer-experience.md) | Developer experience, configuration and data directory | Accepted | |
-| [0015](0015-human-players-and-real-time-clocks.md) | Human players and real-time clocks | Proposed | Defaults for sparring |
+| [0015](0015-human-players-and-real-time-clocks.md) | Human players and real-time clocks | Accepted | |
 | [0016](0016-trained-openings-and-pre-game-shortlist.md) | Trained openings and the pre-game shortlist | Proposed | Preference numbers (session 06) |

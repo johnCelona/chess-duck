@@ -203,6 +203,36 @@ class DuckLeveledUpData(Wire):
     stage_advanced: bool
 
 
+class SparringGameStartedData(Wire):
+    game_id: str
+    duck_id: str
+    human_color: Literal["white", "black"]
+    initial_fen: str
+    white_clock_ms: int | None
+    black_clock_ms: int | None
+    series_id: str | None
+
+
+class SparringGameFinishedData(Wire):
+    game_id: str
+    result: Literal["1-0", "0-1", "1/2-1/2"]
+    termination: str
+    winner: Literal["human", "duck"] | None
+    plies: int
+
+
+class SparringSeriesUpdatedData(Wire):
+    series_id: str
+    best_of: int
+    human_points: float
+    duck_points: float
+    games_played: int
+    state: Literal["playing", "armageddon", "decided"]
+    winner: Literal["human", "duck"] | None
+    decided_by: Literal["games", "armageddon"] | None
+    armageddon_human_color: Literal["white", "black"] | None
+
+
 class _Envelope(Wire):
     cursor: int = Field(description="Global position; pass as `after` (or Last-Event-ID) to resume")
     stream: str
@@ -290,6 +320,21 @@ class DuckLeveledUpEvent(_Envelope):
     data: DuckLeveledUpData
 
 
+class SparringGameStartedEvent(_Envelope):
+    type: Literal["SparringGameStarted"]
+    data: SparringGameStartedData
+
+
+class SparringGameFinishedEvent(_Envelope):
+    type: Literal["SparringGameFinished"]
+    data: SparringGameFinishedData
+
+
+class SparringSeriesUpdatedEvent(_Envelope):
+    type: Literal["SparringSeriesUpdated"]
+    data: SparringSeriesUpdatedData
+
+
 EventEnvelope = Annotated[
     DuckHatchedEvent
     | MatchCreatedEvent
@@ -306,7 +351,10 @@ EventEnvelope = Annotated[
     | LessonCompletedEvent
     | KnowledgeAddedEvent
     | XpGainedEvent
-    | DuckLeveledUpEvent,
+    | DuckLeveledUpEvent
+    | SparringGameStartedEvent
+    | SparringGameFinishedEvent
+    | SparringSeriesUpdatedEvent,
     Field(discriminator="type"),
 ]
 

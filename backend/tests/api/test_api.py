@@ -384,3 +384,49 @@ def test_a_series_must_be_one_of_the_offered_lengths(client, best_of):
     body = {"duckIds": [a["id"], b["id"]], "arena": BULLET_ARENA, "series": {"bestOf": best_of}}
 
     assert_problem(client.post(f"{V1}/matches", json=body), 422, "series.best_of")
+
+
+# ----- Practice Pond ----------------------------------------------------------------------
+
+
+def test_you_can_play_your_duck_over_the_api(client):
+    duck = hatch(client, "Sparring Partner")
+
+    started = client.post(
+        f"{V1}/sparring", json={"duckId": duck["id"], "engineId": "fake", "humanColor": "white"}
+    )
+
+    assert started.status_code == 201, started.text
+    game = started.json()
+    assert game["timeControl"] is None and game["whiteClockMs"] is None
+    assert "e2e4" in game["legalMoves"] and game["stream"] == f"sparring:{game['id']}"
+    after = client.post(f"{V1}/sparring/{game['id']}/moves", json={"uci": "e2e4"}).json()
+    assert after["moves"][0] == {
+        "ply": 1, "color": "white", "by": "human", "uci": "e2e4", "san": "e4",
+        "fenAfter": after["moves"][0]["fenAfter"],
+    }  # fmt: skip
+    assert after["duckThinking"] and after["legalMoves"] == []  # the duck replies on the stream
+    resigned = client.put(f"{V1}/sparring/{game['id']}/resignation", json={}).json()
+    assert (resigned["result"], resigned["winner"]) == ("0-1", "duck")
+    assert client.get(f"{V1}/sparring").json()[0]["id"] == game["id"]
+
+
+def test_sparring_requests_are_validated(client):
+    duck = hatch(client, "Picky")
+
+    bad_move = client.post(f"{V1}/sparring", json={"duckId": duck["id"], "engineId": "fake"}).json()
+    response = client.post(f"{V1}/sparring/{bad_move['id']}/moves", json={"uci": "castle!"})
+    assert response.status_code == 422
+    challenger = client.get(f"{V1}/challengers").json()[0]["duck"]["id"]
+    assert_problem(
+        client.post(f"{V1}/sparring", json={"duckId": challenger, "engineId": "fake"}),
+        404,
+        "duck.not_found",
+    )
+    assert_problem(
+        client.post(
+            f"{V1}/sparring-series", json={"duckId": duck["id"], "engineId": "fake", "bestOf": 4}
+        ),
+        422,
+        "series.best_of",
+    )

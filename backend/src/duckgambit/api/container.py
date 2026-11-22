@@ -18,6 +18,7 @@ from duckgambit.services.events import EventLog, iso
 from duckgambit.services.jobs import JobRunner
 from duckgambit.services.matches import MatchService
 from duckgambit.services.ports import Clock, EnginePool, IdGenerator
+from duckgambit.services.sparring import SparringService
 from duckgambit.settings import Settings
 
 
@@ -33,12 +34,14 @@ class Container:
     ducks: DuckService
     matches: MatchService
     engines: EngineService
+    sparring: SparringService
 
     async def startup(self) -> None:
         await self.jobs.recover()
 
     async def shutdown(self) -> None:
         self.events.close()
+        await self.sparring.close()
         await self.jobs.shutdown()
         await self.pool.close()
         self.store.close()
@@ -90,4 +93,7 @@ def build_container(
         ducks=DuckService(store, events, clock, ids, profile_id),
         matches=MatchService(store, events, jobs, pool, clock, ids, profile_id, caps=caps),
         engines=EngineService(admin, pool, store, clock),
+        sparring=SparringService(
+            store, events, pool, clock, ids, profile_id, max_nodes=caps.max_nodes
+        ),
     )

@@ -73,7 +73,15 @@ def test_real_event_streams_validate_against_the_published_event_schema(client):
     body = {"duckIds": [a["id"], b["id"]], "arena": BULLET_ARENA, "series": {"bestOf": 3}}
     match = client.post(f"{V1}/matches", json=body).json()  # a series emits every match event
     wait_for_job(client, match["jobId"])
+    # A "You play" series against duck A: you resign the first game.
+    series = client.post(
+        f"{V1}/sparring-series", json={"duckId": a["id"], "engineId": "fake", "bestOf": 3}
+    ).json()
+    game = client.get(f"{V1}/sparring/{series['currentGameId']}").json()
+    client.post(f"{V1}/sparring/{game['id']}/moves", json={"uci": game["legalMoves"][0]})
+    client.put(f"{V1}/sparring/{game['id']}/resignation", json={})
     streams = [match["stream"], a["stream"], b["stream"], f"job:{match['jobId']}"]
+    streams += [series["stream"], game["stream"]]
 
     events = client.get(f"{V1}/events", params={"stream": streams, "limit": 500}).json()["events"]
 

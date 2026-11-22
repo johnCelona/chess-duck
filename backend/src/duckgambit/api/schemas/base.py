@@ -8,7 +8,7 @@ from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, StringConstr
 from pydantic.alias_generators import to_camel
 
 ID_PATTERN = r"^[a-z0-9][a-z0-9_-]{0,63}$"
-STREAM_PATTERN = r"^(match|duck|job):[a-z0-9][a-z0-9_-]{0,63}$"
+STREAM_PATTERN = r"^(match|duck|job|sparring|sparring-series):[a-z0-9][a-z0-9_-]{0,63}$"
 
 Id = Annotated[str, StringConstraints(pattern=ID_PATTERN)]
 StreamName = Annotated[str, StringConstraints(pattern=STREAM_PATTERN)]

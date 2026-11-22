@@ -10,6 +10,7 @@ from duckgambit.services.engines import EngineService
 from duckgambit.services.events import EventLog
 from duckgambit.services.jobs import JobRunner
 from duckgambit.services.matches import MatchService
+from duckgambit.services.sparring import SparringService
 
 
 class Services:
@@ -25,6 +26,10 @@ class Services:
     @property
     def matches(self) -> MatchService:
         return self.container.matches
+
+    @property
+    def sparring(self) -> SparringService:
+        return self.container.sparring
 
     @property
     def engines(self) -> EngineService:

@@ -1058,6 +1058,9 @@
                   "MoveMade": "#/components/schemas/MoveMadeEvent",
                   "RatingUpdated": "#/components/schemas/RatingUpdatedEvent",
                   "SeriesUpdated": "#/components/schemas/SeriesUpdatedEvent",
+                  "SparringGameFinished": "#/components/schemas/SparringGameFinishedEvent",
+                  "SparringGameStarted": "#/components/schemas/SparringGameStartedEvent",
+                  "SparringSeriesUpdated": "#/components/schemas/SparringSeriesUpdatedEvent",
                   "XpGained": "#/components/schemas/XpGainedEvent"
                 },
                 "propertyName": "type"
@@ -1110,6 +1113,15 @@
                 },
                 {
                   "$ref": "#/components/schemas/DuckLeveledUpEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/SparringGameStartedEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/SparringGameFinishedEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/SparringSeriesUpdatedEvent"
                 }
               ]
             },
@@ -3140,6 +3152,786 @@
         "title": "SeriesUpdatedEvent",
         "type": "object"
       },
+      "SparringGameFinishedData": {
+        "properties": {
+          "gameId": {
+            "title": "Gameid",
+            "type": "string"
+          },
+          "plies": {
+            "title": "Plies",
+            "type": "integer"
+          },
+          "result": {
+            "enum": [
+              "1-0",
+              "0-1",
+              "1/2-1/2"
+            ],
+            "title": "Result",
+            "type": "string"
+          },
+          "termination": {
+            "title": "Termination",
+            "type": "string"
+          },
+          "winner": {
+            "anyOf": [
+              {
+                "enum": [
+                  "human",
+                  "duck"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Winner"
+          }
+        },
+        "required": [
+          "gameId",
+          "result",
+          "termination",
+          "winner",
+          "plies"
+        ],
+        "title": "SparringGameFinishedData",
+        "type": "object"
+      },
+      "SparringGameFinishedEvent": {
+        "properties": {
+          "cursor": {
+            "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+            "title": "Cursor",
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SparringGameFinishedData"
+          },
+          "recordedAt": {
+            "title": "Recordedat",
+            "type": "string"
+          },
+          "seq": {
+            "description": "Position within the stream, starting at 1",
+            "title": "Seq",
+            "type": "integer"
+          },
+          "stream": {
+            "title": "Stream",
+            "type": "string"
+          },
+          "type": {
+            "const": "SparringGameFinished",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cursor",
+          "stream",
+          "seq",
+          "recordedAt",
+          "type",
+          "data"
+        ],
+        "title": "SparringGameFinishedEvent",
+        "type": "object"
+      },
+      "SparringGameOut": {
+        "description": "A game against your duck. Never rated.",
+        "properties": {
+          "blackClockMs": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blackclockms"
+          },
+          "check": {
+            "title": "Check",
+            "type": "boolean"
+          },
+          "createdAt": {
+            "title": "Createdat",
+            "type": "string"
+          },
+          "duckId": {
+            "title": "Duckid",
+            "type": "string"
+          },
+          "duckThinking": {
+            "title": "Duckthinking",
+            "type": "boolean"
+          },
+          "engineId": {
+            "title": "Engineid",
+            "type": "string"
+          },
+          "fen": {
+            "title": "Fen",
+            "type": "string"
+          },
+          "humanColor": {
+            "enum": [
+              "white",
+              "black"
+            ],
+            "title": "Humancolor",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "initialFen": {
+            "title": "Initialfen",
+            "type": "string"
+          },
+          "legalMoves": {
+            "description": "Your legal moves in UCI when it is your turn; empty otherwise",
+            "items": {
+              "type": "string"
+            },
+            "title": "Legalmoves",
+            "type": "array"
+          },
+          "moves": {
+            "items": {
+              "$ref": "#/components/schemas/SparringMoveOut"
+            },
+            "title": "Moves",
+            "type": "array"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "enum": [
+                  "1-0",
+                  "0-1",
+                  "1/2-1/2"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          },
+          "seriesId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seriesid"
+          },
+          "seriesIndex": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seriesindex"
+          },
+          "state": {
+            "enum": [
+              "running",
+              "finished"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "stream": {
+            "title": "Stream",
+            "type": "string"
+          },
+          "termination": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Termination"
+          },
+          "timeControl": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TimeControl"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "turn": {
+            "enum": [
+              "white",
+              "black"
+            ],
+            "title": "Turn",
+            "type": "string"
+          },
+          "whiteClockMs": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Time left now; null when untimed",
+            "title": "Whiteclockms"
+          },
+          "winner": {
+            "anyOf": [
+              {
+                "enum": [
+                  "human",
+                  "duck"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Winner"
+          }
+        },
+        "required": [
+          "id",
+          "duckId",
+          "engineId",
+          "humanColor",
+          "timeControl",
+          "state",
+          "result",
+          "termination",
+          "winner",
+          "initialFen",
+          "fen",
+          "turn",
+          "check",
+          "moves",
+          "legalMoves",
+          "duckThinking",
+          "whiteClockMs",
+          "blackClockMs",
+          "seriesId",
+          "seriesIndex",
+          "createdAt",
+          "stream"
+        ],
+        "title": "SparringGameOut",
+        "type": "object"
+      },
+      "SparringGameStartedData": {
+        "properties": {
+          "blackClockMs": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blackclockms"
+          },
+          "duckId": {
+            "title": "Duckid",
+            "type": "string"
+          },
+          "gameId": {
+            "title": "Gameid",
+            "type": "string"
+          },
+          "humanColor": {
+            "enum": [
+              "white",
+              "black"
+            ],
+            "title": "Humancolor",
+            "type": "string"
+          },
+          "initialFen": {
+            "title": "Initialfen",
+            "type": "string"
+          },
+          "seriesId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seriesid"
+          },
+          "whiteClockMs": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Whiteclockms"
+          }
+        },
+        "required": [
+          "gameId",
+          "duckId",
+          "humanColor",
+          "initialFen",
+          "whiteClockMs",
+          "blackClockMs",
+          "seriesId"
+        ],
+        "title": "SparringGameStartedData",
+        "type": "object"
+      },
+      "SparringGameStartedEvent": {
+        "properties": {
+          "cursor": {
+            "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+            "title": "Cursor",
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SparringGameStartedData"
+          },
+          "recordedAt": {
+            "title": "Recordedat",
+            "type": "string"
+          },
+          "seq": {
+            "description": "Position within the stream, starting at 1",
+            "title": "Seq",
+            "type": "integer"
+          },
+          "stream": {
+            "title": "Stream",
+            "type": "string"
+          },
+          "type": {
+            "const": "SparringGameStarted",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cursor",
+          "stream",
+          "seq",
+          "recordedAt",
+          "type",
+          "data"
+        ],
+        "title": "SparringGameStartedEvent",
+        "type": "object"
+      },
+      "SparringMoveIn": {
+        "additionalProperties": false,
+        "properties": {
+          "uci": {
+            "description": "Your move, e.g. e2e4 or e7e8q",
+            "pattern": "^[a-h][1-8][a-h][1-8][qrbn]?$",
+            "title": "Uci",
+            "type": "string"
+          }
+        },
+        "required": [
+          "uci"
+        ],
+        "title": "SparringMoveIn",
+        "type": "object"
+      },
+      "SparringMoveOut": {
+        "properties": {
+          "by": {
+            "enum": [
+              "human",
+              "duck"
+            ],
+            "title": "By",
+            "type": "string"
+          },
+          "color": {
+            "enum": [
+              "white",
+              "black"
+            ],
+            "title": "Color",
+            "type": "string"
+          },
+          "fenAfter": {
+            "title": "Fenafter",
+            "type": "string"
+          },
+          "ply": {
+            "title": "Ply",
+            "type": "integer"
+          },
+          "san": {
+            "title": "San",
+            "type": "string"
+          },
+          "uci": {
+            "title": "Uci",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ply",
+          "color",
+          "by",
+          "uci",
+          "san",
+          "fenAfter"
+        ],
+        "title": "SparringMoveOut",
+        "type": "object"
+      },
+      "SparringSeriesOut": {
+        "description": "A \"You play\" Super Bullet series: 30 seconds each, Armageddon if tied.",
+        "properties": {
+          "armageddonHumanColor": {
+            "anyOf": [
+              {
+                "enum": [
+                  "white",
+                  "black"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Armageddonhumancolor"
+          },
+          "bestOf": {
+            "title": "Bestof",
+            "type": "integer"
+          },
+          "currentGameId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The latest game, running or finished",
+            "title": "Currentgameid"
+          },
+          "decidedBy": {
+            "anyOf": [
+              {
+                "enum": [
+                  "games",
+                  "armageddon"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decidedby"
+          },
+          "duckId": {
+            "title": "Duckid",
+            "type": "string"
+          },
+          "duckPoints": {
+            "title": "Duckpoints",
+            "type": "number"
+          },
+          "gameIds": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Gameids",
+            "type": "array"
+          },
+          "humanPoints": {
+            "title": "Humanpoints",
+            "type": "number"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "playing",
+              "armageddon",
+              "decided"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "stream": {
+            "title": "Stream",
+            "type": "string"
+          },
+          "winner": {
+            "anyOf": [
+              {
+                "enum": [
+                  "human",
+                  "duck"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Winner"
+          }
+        },
+        "required": [
+          "id",
+          "duckId",
+          "bestOf",
+          "state",
+          "humanPoints",
+          "duckPoints",
+          "winner",
+          "decidedBy",
+          "armageddonHumanColor",
+          "gameIds",
+          "currentGameId",
+          "stream"
+        ],
+        "title": "SparringSeriesOut",
+        "type": "object"
+      },
+      "SparringSeriesUpdatedData": {
+        "properties": {
+          "armageddonHumanColor": {
+            "anyOf": [
+              {
+                "enum": [
+                  "white",
+                  "black"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Armageddonhumancolor"
+          },
+          "bestOf": {
+            "title": "Bestof",
+            "type": "integer"
+          },
+          "decidedBy": {
+            "anyOf": [
+              {
+                "enum": [
+                  "games",
+                  "armageddon"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decidedby"
+          },
+          "duckPoints": {
+            "title": "Duckpoints",
+            "type": "number"
+          },
+          "gamesPlayed": {
+            "title": "Gamesplayed",
+            "type": "integer"
+          },
+          "humanPoints": {
+            "title": "Humanpoints",
+            "type": "number"
+          },
+          "seriesId": {
+            "title": "Seriesid",
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "playing",
+              "armageddon",
+              "decided"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "winner": {
+            "anyOf": [
+              {
+                "enum": [
+                  "human",
+                  "duck"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Winner"
+          }
+        },
+        "required": [
+          "seriesId",
+          "bestOf",
+          "humanPoints",
+          "duckPoints",
+          "gamesPlayed",
+          "state",
+          "winner",
+          "decidedBy",
+          "armageddonHumanColor"
+        ],
+        "title": "SparringSeriesUpdatedData",
+        "type": "object"
+      },
+      "SparringSeriesUpdatedEvent": {
+        "properties": {
+          "cursor": {
+            "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+            "title": "Cursor",
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SparringSeriesUpdatedData"
+          },
+          "recordedAt": {
+            "title": "Recordedat",
+            "type": "string"
+          },
+          "seq": {
+            "description": "Position within the stream, starting at 1",
+            "title": "Seq",
+            "type": "integer"
+          },
+          "stream": {
+            "title": "Stream",
+            "type": "string"
+          },
+          "type": {
+            "const": "SparringSeriesUpdated",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cursor",
+          "stream",
+          "seq",
+          "recordedAt",
+          "type",
+          "data"
+        ],
+        "title": "SparringSeriesUpdatedEvent",
+        "type": "object"
+      },
+      "StartSeriesRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "bestOf": {
+            "description": "3, 5, 7 or 15",
+            "title": "Bestof",
+            "type": "integer"
+          },
+          "duckId": {
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+            "title": "Duckid",
+            "type": "string"
+          },
+          "engineId": {
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+            "title": "Engineid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "duckId",
+          "engineId",
+          "bestOf"
+        ],
+        "title": "StartSeriesRequest",
+        "type": "object"
+      },
+      "StartSparringRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "duckId": {
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+            "title": "Duckid",
+            "type": "string"
+          },
+          "engineId": {
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+            "title": "Engineid",
+            "type": "string"
+          },
+          "humanColor": {
+            "default": "random",
+            "enum": [
+              "white",
+              "black",
+              "random"
+            ],
+            "title": "Humancolor",
+            "type": "string"
+          },
+          "timeControl": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TimeControl"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Your clock and the duck's; null (the default) is untimed"
+          }
+        },
+        "required": [
+          "duckId",
+          "engineId"
+        ],
+        "title": "StartSparringRequest",
+        "type": "object"
+      },
       "StatsModel": {
         "additionalProperties": false,
         "properties": {
@@ -3945,7 +4737,7 @@
             "schema": {
               "description": "e.g. match:mat_123",
               "items": {
-                "pattern": "^(match|duck|job):[a-z0-9][a-z0-9_-]{0,63}$",
+                "pattern": "^(match|duck|job|sparring|sparring-series):[a-z0-9][a-z0-9_-]{0,63}$",
                 "type": "string"
               },
               "maxItems": 20,
@@ -4021,7 +4813,7 @@
             "schema": {
               "description": "e.g. match:mat_123",
               "items": {
-                "pattern": "^(match|duck|job):[a-z0-9][a-z0-9_-]{0,63}$",
+                "pattern": "^(match|duck|job|sparring|sparring-series):[a-z0-9][a-z0-9_-]{0,63}$",
                 "type": "string"
               },
               "maxItems": 20,
@@ -4650,6 +5442,409 @@
         "summary": "Set Active Duck",
         "tags": [
           "profile"
+        ]
+      }
+    },
+    "/api/v1/sparring": {
+      "get": {
+        "description": "Your recent games against your ducks, newest first (series games excluded).",
+        "operationId": "listSparring",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "maximum": 50,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SparringGameOut"
+                  },
+                  "title": "Response Listsparring",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "List Sparring",
+        "tags": [
+          "sparring"
+        ]
+      },
+      "post": {
+        "description": "Play one of your ducks. Untimed unless you give a time control. Never rated.",
+        "operationId": "startSparring",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartSparringRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SparringGameOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Start Sparring",
+        "tags": [
+          "sparring"
+        ]
+      }
+    },
+    "/api/v1/sparring-series": {
+      "post": {
+        "description": "You against your duck: best of N, 30 seconds each. The first game starts now.",
+        "operationId": "startSparringSeries",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartSeriesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SparringSeriesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Start Series",
+        "tags": [
+          "sparring"
+        ]
+      }
+    },
+    "/api/v1/sparring-series/{series_id}": {
+      "get": {
+        "operationId": "getSparringSeries",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "series_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "title": "Series Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SparringSeriesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Get Series",
+        "tags": [
+          "sparring"
+        ]
+      }
+    },
+    "/api/v1/sparring-series/{series_id}/games": {
+      "post": {
+        "description": "Start the next game of the series (an Armageddon game if it is tied).",
+        "operationId": "nextSparringSeriesGame",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "series_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "title": "Series Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SparringSeriesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Next Game",
+        "tags": [
+          "sparring"
+        ]
+      }
+    },
+    "/api/v1/sparring/{game_id}": {
+      "get": {
+        "operationId": "getSparring",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "game_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "title": "Game Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SparringGameOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Get Sparring",
+        "tags": [
+          "sparring"
+        ]
+      }
+    },
+    "/api/v1/sparring/{game_id}/moves": {
+      "post": {
+        "description": "Your move. The duck's reply follows on the game's stream.",
+        "operationId": "playSparringMove",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "game_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "title": "Game Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SparringMoveIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SparringGameOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Play Move",
+        "tags": [
+          "sparring"
+        ]
+      }
+    },
+    "/api/v1/sparring/{game_id}/resignation": {
+      "put": {
+        "operationId": "resignSparring",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "game_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "title": "Game Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SparringGameOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Resign",
+        "tags": [
+          "sparring"
+        ]
+      }
+    },
+    "/api/v1/sparring/{game_id}/timeout-claim": {
+      "put": {
+        "description": "Your clock reached zero on screen: the server checks and ends the game.",
+        "operationId": "claimSparringTimeout",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "game_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "title": "Game Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SparringGameOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Claim Timeout",
+        "tags": [
+          "sparring"
         ]
       }
     }

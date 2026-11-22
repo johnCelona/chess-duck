@@ -219,3 +219,44 @@ class DuckLeveledUp(Event):
     stage: str
     stat_budget: int
     stage_advanced: bool
+
+
+# ----- Games against a human (Practice Pond, "You play"; ADR-0015) --------------------
+
+
+@dataclass(frozen=True)
+class SparringGameStarted(Event):
+    type: ClassVar[str] = "SparringGameStarted"
+    game_id: str
+    duck_id: str
+    human_color: str
+    initial_fen: str
+    white_clock_ms: int | None
+    black_clock_ms: int | None
+    series_id: str | None
+
+
+@dataclass(frozen=True)
+class SparringGameFinished(Event):
+    type: ClassVar[str] = "SparringGameFinished"
+    game_id: str
+    result: str
+    termination: str
+    winner: str | None  # "human" | "duck" | None for a draw
+    plies: int
+
+
+@dataclass(frozen=True)
+class SparringSeriesUpdated(Event):
+    """Where a "You play" series stands, from the player's side."""
+
+    type: ClassVar[str] = "SparringSeriesUpdated"
+    series_id: str
+    best_of: int
+    human_points: float
+    duck_points: float
+    games_played: int
+    state: str  # "playing" | "armageddon" | "decided"
+    winner: str | None  # "human" | "duck"
+    decided_by: str | None
+    armageddon_human_color: str | None
