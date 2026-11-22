@@ -31,6 +31,8 @@ dist-ssr
 # Local-only notes (never committed). See "Tracked vs local notes" in CLAUDE.md.
 # Investigation and working notes: audits, research dumps, scratch.
 docs/architecture/
+# John's private notebook: the story, future plans, ideas and memories.
+/vision/
 # Personal Claude context, at the root or in any folder.
 CLAUDE.local.md
 *.local.md

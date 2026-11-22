@@ -233,6 +233,8 @@ A `StatTrained` event lets the top bar animate the change. The Lab editor stays 
 
 ## 7. Suggested build order
 
+> **Update 2026-11-22:** John is writing a story that walks a beginner through the basics of chess. The story now decides the order: each chapter names one idea to learn and a challenge that teaches it, and the matching mode is built when the chapter needs it. The table below is the fallback order when no chapter is pending. The story will likely need small "basics" challenges that no mode covers yet, such as how the pieces move, getting out of check and mate in one.
+
 | Step | What | Size | Why this order |
 | --- | --- | --- | --- |
 | 1 | Review Room v1a | 2 sessions | Closest to done; it is the core promise (the duck learns from your fixes) |

@@ -2,7 +2,7 @@
 
 A chess training game. Players hatch a duck, teach it chess, and battle other ducks; the player learns as the duck does. Every duck runs on the same base engine (Stockfish). Stockfish does not learn, so "training" shapes a **decision layer** on top of it: opening book, principles, tactic motifs, blunder tolerance, style.
 
-Status (2026-11-21, branch `m1-minigames`): M0 foundation, plus the player journey (title, egg, hatch, the Pond hub), Super Bullet Arena (duck vs house challengers, best of N with Armageddon), Practice Pond and "You play" (live games against a duck, ADR-0015), and XP from games. Review Room, Opening School, Rules of the Pond and Tactics Dojo have a rough v1 design in `docs/design/04-minigames-v1.md`; lessons, review, puzzles, tournaments and Lichess otherwise exist as tested contracts only. Product intent: `docs/duck-gambit-spec.md`. Decisions: `docs/adr/`. Game design: `docs/design/` (start with 03 and 04). Next work: `docs/sessions/`.
+Status (2026-11-21, branch `m1-minigames`): M0 foundation, plus the player journey (title, egg, hatch, the Pond hub), Super Bullet Arena (duck vs house challengers, best of N with Armageddon), Practice Pond and "You play" (live games against a duck, ADR-0015), and XP from games. Review Room, Opening School, Rules of the Pond and Tactics Dojo have a rough v1 design in `docs/design/04-minigames-v1.md`; lessons, review, puzzles, tournaments and Lichess otherwise exist as tested contracts only. Product intent: `docs/duck-gambit-spec.md`. Decisions: `docs/adr/`. Game design: `docs/design/` (start with 03 and 04). Next work: `docs/sessions/`. Direction (2026-11-22): John is writing a story that teaches the basics of chess. Its chapters decide which minigames and challenges come next and what each one teaches. Long-term: the art is made with real artists, and the full game is built in Unity.
 
 ## Commands
 
@@ -35,7 +35,7 @@ If this file and the repo disagree, say so and fix whichever is wrong.
 ## Tracked vs local notes
 
 - **Tracked (committed, changed by commits):** `CLAUDE.md` here and in any folder, the spec, ADRs (`docs/adr/`), session briefs (`docs/sessions/`). Anything a future session must rely on goes here.
-- **Local (gitignored, stays on this PC):** `docs/architecture/` (investigation and working notes such as audits and research), `CLAUDE.local.md` in any folder, any `*.local.md`.
+- **Local (gitignored, stays on this PC):** `docs/architecture/` (investigation and working notes such as audits and research), `CLAUDE.local.md` in any folder, any `*.local.md`, and `vision/` (John's notebook: the story script, roadmap, ideas and memories; read it before planning a minigame, never rewrite John's writing).
 - A tracked file must stand on its own: never make it depend on a local note. Copy the conclusion into the ADR instead of linking to the note.
 
 ## Architecture rules
