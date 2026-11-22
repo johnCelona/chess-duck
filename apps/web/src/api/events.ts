@@ -11,6 +11,7 @@ export const EVENT_TYPES = [
   'MoveMade',
   'GameFinished',
   'MatchFinished',
+  'SeriesUpdated',
   'RatingUpdated',
   'JobProgressed',
   'JobFinished',

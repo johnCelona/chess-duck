@@ -247,12 +247,12 @@ test('the pond sends a player without ducks to the egg', async () => {
 
 // ----- arena -------------------------------------------------------------------------
 
-test('the Arena preselects the active duck and offers every duck on both sides', async () => {
+test('a custom match preselects the active duck and offers every duck on both sides', async () => {
   pond([quackers, dotty], 'duck_2')
-  window.location.hash = '#/arena'
+  window.location.hash = '#/arena/custom'
   render(<App />)
 
-  expect(await screen.findByRole('heading', { name: 'Arena' })).toBeInTheDocument()
+  expect(await screen.findByRole('heading', { name: 'Custom match' })).toBeInTheDocument()
   const white = screen.getByLabelText('White in game 1') as HTMLSelectElement
   const black = screen.getByLabelText('Black in game 1') as HTMLSelectElement
   await waitFor(() => expect(white.value).toBe('duck_2'))

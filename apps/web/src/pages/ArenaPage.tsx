@@ -6,17 +6,17 @@ import { MatchPage } from './MatchPage'
 
 const loadProfile = () => unwrap(api.GET('/api/v1/profile'))
 
-/** Duck vs duck from the Pond: the match flow with the active duck preselected as White. */
+/** A custom match between any two ducks, with the active duck preselected as White. */
 export function ArenaPage() {
   const { matchId = null } = useParams()
   const { data: profile } = useResource(loadProfile)
   return (
     <div className="arena">
-      <GameHeader back={{ to: '/pond', label: 'Pond' }} />
+      <GameHeader back={{ to: '/arena', label: 'Arena' }} />
       <MatchPage
         matchId={matchId}
-        basePath="/arena"
-        title="Arena"
+        basePath="/arena/custom"
+        title="Custom match"
         initialWhiteId={profile?.activeDuckId ?? null}
       />
     </div>

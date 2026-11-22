@@ -14,7 +14,7 @@ export const TILES: readonly Tile[] = [
   {
     id: 'arena',
     title: 'Arena',
-    blurb: 'Pick two of your ducks and watch them battle at one-minute bullet.',
+    blurb: 'Super Bullet Arena against challengers, or a custom match between your ducks.',
     to: '/arena',
   },
   {

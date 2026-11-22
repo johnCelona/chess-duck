@@ -19,6 +19,7 @@ import {
   type Cursor,
   type MatchView,
   type Player,
+  type Series,
 } from '../match/playback'
 
 type PresetKey = 'bullet' | 'casual' | 'serious'
@@ -49,12 +50,19 @@ function randomSeed(): number {
 }
 
 async function loadSetup() {
-  const [ducks, engines, recent] = await Promise.all([
+  const [ducks, challengers, engines, recent] = await Promise.all([
     unwrap(api.GET('/api/v1/ducks')),
+    unwrap(api.GET('/api/v1/challengers')),
     unwrap(api.GET('/api/v1/engines')),
     unwrap(api.GET('/api/v1/matches', { params: { query: { limit: 10 } } })),
   ])
-  return { ducks, engines: engines.filter((engine) => engine.status === 'installed'), recent }
+  return {
+    ducks,
+    // Everyone who can appear in a match: your ducks and the house challengers.
+    everyone: [...ducks, ...challengers.map((challenger) => challenger.duck)],
+    engines: engines.filter((engine) => engine.status === 'installed'),
+    recent,
+  }
 }
 
 type MatchPageProps = {
@@ -64,6 +72,8 @@ type MatchPageProps = {
   title?: string
   /** Preselected White duck, e.g. the Pond's active duck. */
   initialWhiteId?: string | null
+  /** Show the custom-match form and recent matches (false when only watching). */
+  showSetup?: boolean
 }
 
 export function MatchPage({
@@ -71,10 +81,12 @@ export function MatchPage({
   basePath = '/lab/match',
   title = 'Match',
   initialWhiteId = null,
+  showSetup = true,
 }: MatchPageProps) {
   const navigate = useNavigate()
   const setup = useResource(loadSetup)
   const ducks = setup.data?.ducks ?? []
+  const everyone = setup.data?.everyone ?? []
   const engines = setup.data?.engines ?? []
   const recent = setup.data?.recent ?? []
 
@@ -246,9 +258,9 @@ export function MatchPage({
   }
 
   const duckName = (id: string | null | undefined) =>
-    ducks.find((duck) => duck.id === id)?.name ?? 'Unknown duck'
+    everyone.find((duck) => duck.id === id)?.name ?? 'Unknown duck'
   const duckSkin = (id: string | null | undefined) =>
-    ducks.find((duck) => duck.id === id)?.avatar.skin
+    everyone.find((duck) => duck.id === id)?.avatar.skin
   const position = positionAt(view, cursor)
   const current = position?.game
   const atStart = !position || (position.gameIndex === 0 && position.ply === 0)
@@ -266,90 +278,92 @@ export function MatchPage({
         </div>
       )}
 
-      <form className="panel match-form" onSubmit={start}>
-        {!ready && (
+      {showSetup && (
+        <form className="panel match-form" onSubmit={start}>
+          {!ready && (
+            <p className="hint">
+              A match needs two ducks and an installed engine. Hatch another egg from the Pond, and
+              install Stockfish in the Lab (Engines).
+            </p>
+          )}
+          <div className="field-grid">
+            <label>
+              White in game 1
+              <select value={whiteId} onChange={(e) => setWhiteId(e.target.value)}>
+                {ducks.map((duck) => (
+                  <option key={duck.id} value={duck.id}>
+                    {duck.name} ({ratingLabel(duck)})
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Black in game 1
+              <select value={blackId} onChange={(e) => setBlackId(e.target.value)}>
+                {ducks.map((duck) => (
+                  <option key={duck.id} value={duck.id}>
+                    {duck.name} ({ratingLabel(duck)})
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Engine (same for both ducks)
+              <select value={engineId} onChange={(e) => setEngineId(e.target.value)}>
+                {engines.map((engine) => (
+                  <option key={engine.id} value={engine.id}>
+                    {engine.name} {engine.version}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Arena
+              <select value={preset} onChange={(e) => setPreset(e.target.value as PresetKey)}>
+                {Object.entries(PRESETS).map(([key, value]) => (
+                  <option key={key} value={key}>
+                    {value.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Games
+              <input
+                type="number"
+                min={1}
+                max={20}
+                value={games}
+                onChange={(e) => setGames(Number(e.target.value))}
+              />
+            </label>
+            <label>
+              Seed
+              <input
+                type="number"
+                min={0}
+                value={seed}
+                onChange={(e) => setSeed(Number(e.target.value))}
+              />
+            </label>
+          </div>
+          <div className="actions">
+            <button type="button" onClick={() => setSeed(randomSeed())}>
+              New seed
+            </button>
+            <button
+              className="primary"
+              type="submit"
+              disabled={busy || !ready || whiteId === blackId}
+            >
+              Start match
+            </button>
+          </div>
           <p className="hint">
-            A match needs two ducks and an installed engine. Hatch another egg from the Pond, and
-            install Stockfish in the Lab (Engines).
+            The same ducks, arena and seed always produce the same games, on any computer.
           </p>
-        )}
-        <div className="field-grid">
-          <label>
-            White in game 1
-            <select value={whiteId} onChange={(e) => setWhiteId(e.target.value)}>
-              {ducks.map((duck) => (
-                <option key={duck.id} value={duck.id}>
-                  {duck.name} ({ratingLabel(duck)})
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Black in game 1
-            <select value={blackId} onChange={(e) => setBlackId(e.target.value)}>
-              {ducks.map((duck) => (
-                <option key={duck.id} value={duck.id}>
-                  {duck.name} ({ratingLabel(duck)})
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Engine (same for both ducks)
-            <select value={engineId} onChange={(e) => setEngineId(e.target.value)}>
-              {engines.map((engine) => (
-                <option key={engine.id} value={engine.id}>
-                  {engine.name} {engine.version}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Arena
-            <select value={preset} onChange={(e) => setPreset(e.target.value as PresetKey)}>
-              {Object.entries(PRESETS).map(([key, value]) => (
-                <option key={key} value={key}>
-                  {value.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Games
-            <input
-              type="number"
-              min={1}
-              max={20}
-              value={games}
-              onChange={(e) => setGames(Number(e.target.value))}
-            />
-          </label>
-          <label>
-            Seed
-            <input
-              type="number"
-              min={0}
-              value={seed}
-              onChange={(e) => setSeed(Number(e.target.value))}
-            />
-          </label>
-        </div>
-        <div className="actions">
-          <button type="button" onClick={() => setSeed(randomSeed())}>
-            New seed
-          </button>
-          <button
-            className="primary"
-            type="submit"
-            disabled={busy || !ready || whiteId === blackId}
-          >
-            Start match
-          </button>
-        </div>
-        <p className="hint">
-          The same ducks, arena and seed always produce the same games, on any computer.
-        </p>
-      </form>
+        </form>
+      )}
 
       {match && (
         <div className="watch">
@@ -452,6 +466,7 @@ export function MatchPage({
                       ? 'Waiting for the match to start…'
                       : `Game ${(current?.index ?? 0) + 1} of ${match.arena.games}`}
               </h2>
+              {view.series && <SeriesScore series={view.series} duckName={duckName} />}
               <ul className="games">
                 {view.games.map((game) => (
                   <li key={game.id}>
@@ -500,7 +515,7 @@ export function MatchPage({
         </div>
       )}
 
-      {recent.length > 0 && (
+      {showSetup && recent.length > 0 && (
         <div className="panel">
           <h2>Recent matches</h2>
           <ul className="games">
@@ -516,6 +531,41 @@ export function MatchPage({
         </div>
       )}
     </section>
+  )
+}
+
+function SeriesScore({
+  series,
+  duckName,
+}: {
+  series: Series
+  duckName: (id: string | null | undefined) => string
+}) {
+  const [first, second] = series.scores
+  const points = (value: number) => (value % 1 === 0 ? String(value) : value.toFixed(1))
+  return (
+    <div className="series" aria-label="Series score">
+      <p className="series-score">
+        <span>{duckName(first?.duckId)}</span>
+        <strong>
+          {points(first?.points ?? 0)} – {points(second?.points ?? 0)}
+        </strong>
+        <span>{duckName(second?.duckId)}</span>
+      </p>
+      <p className="hint">
+        Best of {series.bestOf}
+        {series.state === 'decided' &&
+          ` · ${duckName(series.winnerDuckId)} wins the series${
+            series.decidedBy === 'armageddon' ? ' in Armageddon' : ''
+          }`}
+      </p>
+      {series.state === 'armageddon' && (
+        <p className="armageddon" role="status">
+          Armageddon! {duckName(series.armageddonWhiteDuckId)} has White. A draw wins the series for
+          Black.
+        </p>
+      )}
+    </div>
   )
 }
 

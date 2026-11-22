@@ -41,6 +41,8 @@ export type GameView = {
   termination: string | null
 }
 
+export type Series = EventOf<'SeriesUpdated'>['data']
+
 export type MatchView = {
   status: 'waiting' | 'running' | 'finished'
   games: GameView[]
@@ -48,6 +50,8 @@ export type MatchView = {
   thinking: Decision | null
   scores: Record<string, number>
   winnerDuckId: string | null
+  /** Where a best-of series stands; null for a plain match. */
+  series: Series | null
   jobState: string | null
   lastCursor: number
 }
@@ -58,6 +62,7 @@ export const emptyMatchView: MatchView = {
   thinking: null,
   scores: {},
   winnerDuckId: null,
+  series: null,
   jobState: null,
   lastCursor: 0,
 }
@@ -154,6 +159,8 @@ export function applyEvent(view: MatchView, event: EventEnvelope): MatchView {
         })),
       }
     }
+    case 'SeriesUpdated':
+      return { ...next, series: event.data }
     case 'MatchFinished': {
       const scores = Object.fromEntries(event.data.scores.map((s) => [s.duckId, s.points]))
       return { ...next, status: 'finished', scores, winnerDuckId: event.data.winnerDuckId }
