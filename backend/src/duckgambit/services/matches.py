@@ -26,9 +26,9 @@ from duckgambit.domain.arena import (
 )
 from duckgambit.domain.balance import DEFAULT_BALANCE, Balance
 from duckgambit.domain.challengers import HOUSE_PROFILE_ID
-from duckgambit.domain.chessutil import board_from, move_flags, parse_move, position_key
-from duckgambit.domain.clock import charge, nodes_for, scale_nodes, think_budget_ms
-from duckgambit.domain.decision import DECISION_LAYER_VERSION, SearchBudget, choose, plan
+from duckgambit.domain.chessutil import board_from, move_flags, parse_move
+from duckgambit.domain.clock import charge
+from duckgambit.domain.decision import DECISION_LAYER_VERSION
 from duckgambit.domain.duck import Duck, grant_xp
 from duckgambit.domain.engine_types import EngineIdentity
 from duckgambit.domain.events import (
@@ -56,6 +56,7 @@ from duckgambit.domain.series import (
     series_status,
     validate_format,
 )
+from duckgambit.services.duck_turn import decide_duck_move
 from duckgambit.services.ducks import duck_stream
 from duckgambit.services.errors import ServiceError, not_found
 from duckgambit.services.events import EventLog, iso
@@ -359,40 +360,26 @@ class MatchService:
 
                 color = "white" if board.turn else "black"
                 duck = ducks[game.white_duck_id if color == "white" else game.black_duck_id]
-                mind = duck.mind(self._balance)
-                multiplier = 1000 if arena.equal_engine else mind.node_multiplier_milli
                 remaining = clocks[color]
-                if isinstance(limit, VirtualClockLimit) and remaining is not None:
-                    think_ms = think_budget_ms(
-                        remaining, limit.increment_ms, board.fullmove_number, mind, self._policy
-                    )
-                    nodes = nodes_for(
-                        think_ms, limit.virtual_nps, multiplier, self._caps.max_nodes, self._policy
-                    )
-                else:
-                    think_ms = 0
-                    nodes = scale_nodes(
-                        getattr(limit, "nodes", 0), multiplier, self._caps.max_nodes, self._policy
-                    )
-
-                key = position_key(board)
-                planned = plan(
+                turn = await decide_duck_move(
+                    engine,
                     board,
-                    mind,
-                    duck.knowledge.book_moves(color, key),
-                    SearchBudget(nodes, arena.multipv),
-                    game.seed,
-                    duck.knowledge.taught_move(key),
+                    duck,
+                    color=color,
+                    limit=limit,
+                    remaining_ms=remaining,
+                    multipv=arena.multipv,
+                    equal_engine=arena.equal_engine,
+                    seed=game.seed,
+                    balance=self._balance,
+                    max_nodes=self._caps.max_nodes,
                 )
-                if planned.decision is not None:
-                    decision = planned.decision
-                    nodes = 0
-                    if isinstance(limit, VirtualClockLimit):
-                        think_ms = self._policy.instant_move_ms
-                else:
-                    assert planned.request is not None
-                    result = await engine.search(planned.request)
-                    decision = choose(board, mind, result, game.seed, planned.notes)
+                decision, think_ms, nodes, key = (
+                    turn.decision,
+                    turn.think_ms,
+                    turn.nodes_budget,
+                    turn.position_key,
+                )
 
                 if isinstance(limit, VirtualClockLimit) and remaining is not None:
                     charged = charge(remaining, think_ms, limit.increment_ms, self._policy)
