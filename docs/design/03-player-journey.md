@@ -2,6 +2,8 @@
 
 *2026-11-21 · From John's end-to-end vision and his answers to the open questions · Status: Proposed. Decisions in §7 are John's and settled; everything else is a proposal. Place names (Pond, Dojo, School…) are placeholders.*
 
+> **Progress (2026-11-21):** the first slice (§9) is built. Super Bullet Arena, Practice Pond, "You play" and XP from games are also built. Rough v1 designs for the remaining modes are in `04-minigames-v1.md`.
+
 This document is the map. The details of each activity live elsewhere and are linked, not copied:
 - Design 01: training minigames, Blunder Training and Bullet Battle.
 - Design 02: position memory at scale.

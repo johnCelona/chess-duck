@@ -22,6 +22,7 @@ The domain never reads a clock, an environment variable, a file, or global rando
 ## Data
 
 - SQLite through `adapters/sqlite/`. Schema changes are new numbered files in `adapters/sqlite/migrations/`, forward-only; never edit a shipped migration. Nested values live in versioned JSON `doc` columns with upcasters.
+- Live games against a human (ADR-0015): `services/sparring.py`. They are not jobs: the human's time is measured there and passed in as data. The duck replies in a task through `services/duck_turn.py`, shared with the match runner. Best-of series rules: `domain/series.py`. House challengers: `domain/challengers.py`, profile `prof_house`. They never gain XP.
 - One local profile (`prof_local`) owns every duck and remembers the active duck (`GET /profile`, `PUT /profile/active-duck`). A duck's `egg_seed` sets its starting stats only (`domain/duck.stats_from_egg`).
 - All mutable files go under the data directory (`adapters/system.DataPaths`), never the source tree. Paths built from input go through `safe_child`.
 

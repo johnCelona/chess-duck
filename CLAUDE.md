@@ -2,7 +2,7 @@
 
 A chess training game. Players hatch a duck, teach it chess, and battle other ducks; the player learns as the duck does. Every duck runs on the same base engine (Stockfish). Stockfish does not learn, so "training" shapes a **decision layer** on top of it: opening book, principles, tactic motifs, blunder tolerance, style.
 
-Status: M0 foundation done (branch `m0-foundation`). Built: layered backend (pure domain, services, adapters, `/api/v1`), SQLite persistence, a deterministic duck-vs-duck match runner on a virtual clock, SSE event streams, and a rough web UI to hatch ducks, watch a bullet match and download its PGN. Lessons, review, puzzles, tournaments and Lichess exist as tested contracts only. Product intent: `docs/duck-gambit-spec.md`. Decisions: `docs/adr/`. Game design: `docs/design/`. Next work: `docs/sessions/`.
+Status (2026-11-21, branch `m1-minigames`): M0 foundation, plus the player journey (title, egg, hatch, the Pond hub), Super Bullet Arena (duck vs house challengers, best of N with Armageddon), Practice Pond and "You play" (live games against a duck, ADR-0015), and XP from games. Review Room, Opening School, Rules of the Pond and Tactics Dojo have a rough v1 design in `docs/design/04-minigames-v1.md`; lessons, review, puzzles, tournaments and Lichess otherwise exist as tested contracts only. Product intent: `docs/duck-gambit-spec.md`. Decisions: `docs/adr/`. Game design: `docs/design/` (start with 03 and 04). Next work: `docs/sessions/`.
 
 ## Commands
 
