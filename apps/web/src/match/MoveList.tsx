@@ -1,8 +1,11 @@
 import { useEffect, useRef } from 'react'
 import type { MoveRow } from './playback'
 
+/** A move as the list needs it; `source` (book, memory...) is marked, a human's has none. */
+export type ListedMove = Pick<MoveRow, 'ply' | 'color' | 'san'> & { source?: string | null }
+
 type Props = {
-  moves: MoveRow[]
+  moves: ListedMove[]
   /** The ply on screen (0 is the start position). */
   selectedPly: number
   onSelect: (ply: number) => void
@@ -33,11 +36,11 @@ export function MoveList({ moves, selectedPly, onSelect }: Props) {
             type="button"
             className="move"
             aria-current={move.ply === selectedPly ? 'true' : undefined}
-            title={move.source === 'engine' ? undefined : `from ${move.source}`}
+            title={!move.source || move.source === 'engine' ? undefined : `from ${move.source}`}
             onClick={() => onSelect(move.ply)}
           >
             {move.san}
-            {move.source !== 'engine' && <sup>{move.source[0]}</sup>}
+            {move.source && move.source !== 'engine' && <sup>{move.source[0]}</sup>}
           </button>
         </li>
       ))}

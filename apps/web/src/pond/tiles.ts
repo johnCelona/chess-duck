@@ -20,9 +20,8 @@ export const TILES: readonly Tile[] = [
   {
     id: 'practice',
     title: 'Practice Pond',
-    blurb: 'Play your own duck on your own clock.',
+    blurb: 'Play your own duck, untimed or on a clock you choose.',
     to: '/pond/practice',
-    soon: 'Bullet against your duck, with you on a real clock and your duck thinking on its own.',
   },
   {
     id: 'school',

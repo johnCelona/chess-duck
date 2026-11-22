@@ -9,8 +9,10 @@ import { HatchPage } from './pages/HatchPage'
 import { LabLayout, LabMatchPage } from './pages/LabLayout'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { PondPage } from './pages/PondPage'
+import { PracticePage } from './pages/PracticePage'
 import { SuperBulletPage } from './pages/SuperBulletPage'
 import { TitlePage } from './pages/TitlePage'
+import { YouPlaySeriesPage } from './pages/YouPlaySeriesPage'
 
 /** Custom matches moved under /arena/custom; older links keep working. */
 function OldArenaLink() {
@@ -35,9 +37,11 @@ export function AppRoutes() {
       <Route path="/" element={<TitlePage />} />
       <Route path="/hatch" element={<HatchPage />} />
       <Route path="/pond" element={<PondPage />} />
+      <Route path="/pond/practice/:gameId?" element={<PracticePage />} />
       <Route path="/pond/:tile" element={<ComingSoonPage />} />
       <Route path="/arena" element={<ArenaHubPage />} />
       <Route path="/arena/super-bullet/:matchId?" element={<SuperBulletPage />} />
+      <Route path="/arena/super-bullet/you/:seriesId" element={<YouPlaySeriesPage />} />
       <Route path="/arena/custom/:matchId?" element={<ArenaPage />} />
       <Route path="/arena/:matchId" element={<OldArenaLink />} />
       <Route path="/lab" element={<LabLayout />}>

@@ -152,9 +152,7 @@ class SparringService:
         series: SparringSeries | None = None,
         series_index: int | None = None,
     ) -> SparringView:
-        duck = await asyncio.to_thread(self._store.ducks.get, duck_id)
-        if duck is None or duck.profile_id != self._profile_id:
-            raise not_found("duck")
+        await self._opponent(duck_id)
         if await self._pool.identity(engine_id) is None:
             raise ServiceError("engine.not_installed", "Install the engine before playing", 409)
         if human_color not in ("white", "black", "random"):
@@ -298,9 +296,7 @@ class SparringService:
             created_at=iso(self._clock),
         )
         series = replace(series, seed=derive_seed(0, "sparring-series", series.id))
-        duck = await asyncio.to_thread(self._store.ducks.get, duck_id)
-        if duck is None or duck.profile_id != self._profile_id:
-            raise not_found("duck")
+        await self._opponent(duck_id)
         await asyncio.to_thread(self._store.sparring.add_series, series)
         await self._events.publish(
             series_stream(series.id), [self._series_event(self._series_view(series, []))]
@@ -370,6 +366,12 @@ class SparringService:
         )
 
     # ----- internals ---------------------------------------------------------------
+
+    async def _opponent(self, duck_id: str) -> None:
+        """You can play any of your ducks, or a house challenger."""
+        duck = await asyncio.to_thread(self._store.ducks.get, duck_id)
+        if duck is None or duck.profile_id not in (self._profile_id, HOUSE_PROFILE_ID):
+            raise not_found("duck")
 
     def _now_ms(self) -> int:
         return int(self._clock.now().timestamp() * 1000)

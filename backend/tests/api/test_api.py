@@ -418,8 +418,10 @@ def test_sparring_requests_are_validated(client):
     response = client.post(f"{V1}/sparring/{bad_move['id']}/moves", json={"uci": "castle!"})
     assert response.status_code == 422
     challenger = client.get(f"{V1}/challengers").json()[0]["duck"]["id"]
+    vs_house = client.post(f"{V1}/sparring", json={"duckId": challenger, "engineId": "fake"})
+    assert vs_house.status_code == 201  # you may play a challenger too
     assert_problem(
-        client.post(f"{V1}/sparring", json={"duckId": challenger, "engineId": "fake"}),
+        client.post(f"{V1}/sparring", json={"duckId": "duck_missing", "engineId": "fake"}),
         404,
         "duck.not_found",
     )

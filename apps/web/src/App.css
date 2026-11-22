@@ -1063,3 +1063,24 @@ nav.tiles {
   background: none;
   padding: 0 4px;
 }
+
+/* Practice Pond: playing a duck */
+.typed-move label {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+
+.typed-move input {
+  width: 80px;
+}
+
+.typed-move .danger {
+  margin-left: auto;
+}
+
+.promotion {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}

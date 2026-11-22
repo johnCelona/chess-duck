@@ -56,6 +56,7 @@ function SeriesSetup() {
   const { data, error: loadError } = useResource(loadSetup)
   const [opponentId, setOpponentId] = useState<string | null>(null)
   const [bestOf, setBestOf] = useState<number>(5)
+  const [who, setWho] = useState<'duck' | 'you'>('duck')
   const [busy, setBusy] = useState(false)
   const [actionError, setError] = useState('')
   const error = actionError || loadError
@@ -71,14 +72,25 @@ function SeriesSetup() {
   }
 
   const you = data.ducks.find((duck) => duck.id === data.profile.activeDuckId) ?? null
-  const yourOthers = data.ducks.filter((duck) => duck.id !== you?.id)
+  // When you play, any of your ducks can be your opponent, the active one included.
+  const yourOthers = data.ducks.filter((duck) => who === 'you' || duck.id !== you?.id)
   const opponent = opponentId ?? data.challengers[0]?.duck.id ?? null
 
   const start = async () => {
-    if (!you || !opponent || !data.engine) return
+    if (!opponent || !data.engine || (who === 'duck' && !you)) return
     setBusy(true)
     setError('')
     try {
+      if (who === 'you') {
+        const series = await unwrap(
+          api.POST('/api/v1/sparring-series', {
+            body: { duckId: opponent, engineId: data.engine.id, bestOf },
+          }),
+        )
+        navigate(`/arena/super-bullet/you/${series.id}`)
+        return
+      }
+      if (!you) return
       const match = await unwrap(
         api.POST('/api/v1/matches', {
           body: {
@@ -123,8 +135,13 @@ function SeriesSetup() {
       <div className="panel">
         <h2>Who plays</h2>
         <div className="who-plays" role="radiogroup" aria-label="Who plays">
-          <label className="choice selected">
-            <input type="radio" name="who" checked readOnly />
+          <label className={who === 'duck' ? 'choice selected' : 'choice'}>
+            <input
+              type="radio"
+              name="who"
+              checked={who === 'duck'}
+              onChange={() => setWho('duck')}
+            />
             {you ? (
               <>
                 <DuckSprite skin={you.avatar.skin} size={36} /> {you.name} ({ratingLabel(you)})
@@ -133,9 +150,9 @@ function SeriesSetup() {
               'Your duck'
             )}
           </label>
-          <label className="choice" aria-disabled="true">
-            <input type="radio" name="who" disabled />
-            You play <small>Coming with Practice Pond</small>
+          <label className={who === 'you' ? 'choice selected' : 'choice'}>
+            <input type="radio" name="who" checked={who === 'you'} onChange={() => setWho('you')} />
+            You play <small>30 seconds each, never rated</small>
           </label>
         </div>
       </div>
@@ -206,7 +223,7 @@ function SeriesSetup() {
           <button
             type="button"
             className="primary big"
-            disabled={busy || !you || !opponent || !data.engine}
+            disabled={busy || (who === 'duck' && !you) || !opponent || !data.engine}
             onClick={() => void start()}
           >
             Start the series

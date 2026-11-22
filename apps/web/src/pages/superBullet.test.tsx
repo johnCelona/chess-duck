@@ -107,7 +107,6 @@ test('your duck challenges a house duck to a rated 30-second best of 7', async (
 
   await user.click(await screen.findByRole('radio', { name: /The Wall/ }))
   await user.click(screen.getByRole('radio', { name: 'Best of 7' }))
-  expect(screen.getByRole('radio', { name: /You play/ })).toBeDisabled()
   await user.click(screen.getByRole('button', { name: 'Start the series' }))
 
   await waitFor(() => expect(window.location.hash).toBe('#/arena/super-bullet/mat_1'))
