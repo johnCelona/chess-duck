@@ -24,7 +24,7 @@ from duckgambit.domain.seeds import draw_below, rng_for
 Tone = Literal["good", "bad", "info"]
 MarkKind = Literal["crumb", "pad", "danger", "good", "bad", "hint", "target"]
 Phase = Literal["play", "review", "done"]
-ActionType = Literal["move", "choice", "next", "hint", "timeout"]
+ActionType = Literal["move", "square", "choice", "next", "hint", "timeout"]
 Squares = tuple[str, str]
 
 VALUE = {
@@ -93,6 +93,7 @@ class BoardView:
     orientation: Literal["white", "black"] = "white"
     check: bool = False
     last_move: Squares | None = None
+    coordinates: bool = True
 
 
 @dataclass
@@ -102,6 +103,7 @@ class View:
     prompt: str
     board: BoardView
     moves: list[str] = field(default_factory=list)
+    squares: list[str] = field(default_factory=list)  # squares the player may tap
     marks: list[Mark] = field(default_factory=list)
     arrows: list[Arrow] = field(default_factory=list)
     choices: list[Choice] = field(default_factory=list)
@@ -154,6 +156,9 @@ class Minigame(ABC):
     def on_move(self, uci: str) -> None:
         raise DomainError("minigame.action", "There is no move to play now")
 
+    def on_square(self, square: str) -> None:
+        raise DomainError("minigame.action", "There is no square to tap now")
+
     def on_choice(self, choice: str) -> None:
         raise DomainError("minigame.action", "There is nothing to choose now")
 
@@ -187,6 +192,9 @@ class Minigame(ABC):
         if action.type == "move":
             self._require(action.value, open_now.moves)
             self.on_move(action.value)
+        elif action.type == "square":
+            self._require(action.value, open_now.squares)
+            self.on_square(action.value)
         elif action.type == "choice":
             self._require(action.value, [choice.id for choice in open_now.choices])
             self.on_choice(action.value)
@@ -202,7 +210,7 @@ class Minigame(ABC):
             remaining = max(0, self.time_limit_ms - self.used_ms)
         view = self.view()
         if self.phase != "play":
-            view.moves, view.choices, view.can_hint = [], [], False
+            view.moves, view.squares, view.choices, view.can_hint = [], [], [], False
         return Snapshot(
             self.version,
             self.phase,

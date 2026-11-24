@@ -68,6 +68,7 @@ class MinigameBoardOut(Wire):
     orientation: Literal["white", "black"]
     check: bool
     last_move: MinigameSquares | None
+    coordinates: bool
 
 
 class MinigameRunOut(Wire):
@@ -86,6 +87,7 @@ class MinigameRunOut(Wire):
     prompt: str
     board: MinigameBoardOut
     moves: list[str] = Field(description="Moves the player may try (UCI)")
+    squares: list[str] = Field(description="Squares the player may tap")
     marks: list[MinigameMarkOut]
     arrows: list[MinigameArrowOut]
     choices: list[MinigameChoiceOut]
@@ -119,8 +121,10 @@ class MinigameRunOut(Wire):
                 orientation=view.board.orientation,
                 check=view.board.check,
                 last_move=_squares(view.board.last_move),
+                coordinates=view.board.coordinates,
             ),
             moves=view.moves,
+            squares=view.squares,
             marks=[MinigameMarkOut.model_validate(mark) for mark in view.marks],
             arrows=[MinigameArrowOut.model_validate(arrow) for arrow in view.arrows],
             choices=[MinigameChoiceOut.model_validate(choice) for choice in view.choices],

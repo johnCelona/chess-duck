@@ -1637,7 +1637,7 @@ export interface components {
              * Type
              * @enum {string}
              */
-            type: "move" | "choice" | "next" | "hint" | "timeout";
+            type: "move" | "square" | "choice" | "next" | "hint" | "timeout";
             /**
              * Value
              * @default
@@ -1660,6 +1660,8 @@ export interface components {
         MinigameBoardOut: {
             /** Check */
             check: boolean;
+            /** Coordinates */
+            coordinates: boolean;
             /** Fen */
             fen: string;
             lastMove: components["schemas"]["MinigameSquares"] | null;
@@ -1767,6 +1769,11 @@ export interface components {
             score: number;
             /** Seed */
             seed: number;
+            /**
+             * Squares
+             * @description Squares the player may tap
+             */
+            squares: string[];
             /**
              * Version
              * @description Grows with every action

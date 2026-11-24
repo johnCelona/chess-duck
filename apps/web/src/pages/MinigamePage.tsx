@@ -53,6 +53,10 @@ function Minigame({ kind }: { kind: string }) {
             orientation={run.board.orientation}
             legalMoves={open ? run.moves : []}
             movableColor={run.board.orientation}
+            coordinates={run.board.coordinates}
+            onSquare={(square) => {
+              if (open && run.squares.includes(square)) act('square', square)
+            }}
             marks={frame ? [] : run.marks}
             arrows={frame ? [] : run.arrows}
             resetKey={run}

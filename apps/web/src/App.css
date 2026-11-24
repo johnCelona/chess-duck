@@ -1086,6 +1086,10 @@ nav.tiles {
 }
 
 /* Minigame tests */
+.board-frame.no-coordinates .board coords {
+  display: none;
+}
+
 .game-header .gear + .gear {
   margin-left: 0;
 }

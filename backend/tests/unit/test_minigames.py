@@ -5,13 +5,16 @@ import pytest
 
 from duckgambit.domain.errors import DomainError
 from duckgambit.domain.minigames import content
-from duckgambit.domain.minigames.base import Action
+from duckgambit.domain.minigames.base import Action, moved
 from duckgambit.domain.minigames.catalog import MINIGAMES, start
 from duckgambit.domain.minigames.fair_trade import FairTrade, capture_value
 from duckgambit.domain.minigames.goose_chase import GooseChase, free_squares, runaway
 from duckgambit.domain.minigames.lily_pads import LilyPads
+from duckgambit.domain.minigames.loose_feathers import loose
+from duckgambit.domain.minigames.pawn_race import LEVELS, race_over, rival_move, search
 from duckgambit.domain.minigames.quack_back import LINES
 from duckgambit.domain.minigames.rules_of_the_pond import CARDS
+from duckgambit.domain.minigames.stuck_or_mated import verdict
 from duckgambit.domain.minigames.three_ways_out import ThreeWaysOut, way_out
 from duckgambit.domain.minigames.tuck_in import TuckIn
 from duckgambit.domain.seeds import draw_below, rng_for
@@ -29,6 +32,7 @@ def mash(kind, seed, steps=120):
             break
         view = shot.view
         options = [Action("move", m) for m in view.moves]
+        options += [Action("square", s) for s in view.squares]
         options += [Action("choice", c.id) for c in view.choices]
         if view.can_hint:
             options.append(Action("hint"))
@@ -78,12 +82,18 @@ PERFECT = {
     "quack-back": lambda g: Action("move", g.line[g.at]),
     "tactics-dojo": lambda g: Action("move", g.card["best"]),
     "oops-pile": lambda g: Action("move", g.best),
+    "loose-feathers": lambda g: Action(
+        "square", next(chess.square_name(s) for s in g.targets if s not in g.found)
+    ),
+    "square-dash": lambda g: Action("square", chess.square_name(g.target)),
+    "pond-memory": lambda g: Action("square", chess.square_name(g.todo[0])),
+    "stuck-or-mated": lambda g: Action("choice", g.answer),
     "candidate-showdown": lambda g: Action("move", best_unpicked(g)),
 }
 
 
 def test_every_minigame_has_a_winning_way_checked():
-    assert set(PERFECT) | {"goose-chase"} == set(KINDS)
+    assert set(PERFECT) | {"goose-chase", "pawn-race"} == set(KINDS)
 
 
 @pytest.mark.parametrize("kind", PERFECT)
@@ -134,6 +144,61 @@ def test_the_goose_can_be_caught():
 def test_goose_chase_marks_exactly_where_the_king_may_step():
     board = chess.Board("8/8/8/4k3/8/8/R7/4K3 b - - 0 1")
     assert set(free_squares(board)) == {m.to_square for m in board.legal_moves}
+
+
+def test_a_pawn_race_rival_takes_a_win_and_blocks_a_loss():
+    board = chess.Board("8/8/8/8/8/8/1p5P/8 b - - 0 1")
+    assert rival_move(board).uci() == "b2b1q"
+    # Only taking the runner stops it from queening.
+    board = chess.Board("8/p1p5/1P6/8/8/8/7P/8 b - - 0 1")
+    assert rival_move(board).uci() in {"a7b6", "c7b6"}
+
+
+def test_a_pawn_race_ends_on_arrival_capture_or_no_moves():
+    assert race_over(chess.Board("Q7/p7/8/8/8/8/8/8 b - - 0 1")) == "white"
+    assert race_over(chess.Board("8/p7/8/8/8/8/8/8 w - - 0 1")) == "black"
+    assert race_over(chess.Board("8/8/8/p7/P7/8/8/8 w - - 0 1")) == "stuck"
+
+
+def test_a_pawn_race_can_be_won():
+    game = start("pawn-race", 1)
+    for level in range(game.rounds):
+        for _ in range(300):
+            if game.phase != "play":
+                break
+            # A player who looks one move further than the rival.
+            game.hearts = 3
+            best = max(
+                game.view().moves,
+                key=lambda u: (-search(moved(game.board, u), 3, -20_000, 20_000), u),
+            )
+            before = game.board
+            game.act(Action("move", best))
+            if game.phase == "play" and game.board == chess.Board(LEVELS[level]) != before:
+                break  # lost or tied: this player repeats itself
+        if game.phase == "review" and game.feedback.tone == "good":
+            return
+        game.round, game.phase = level + 1, "play"
+        if game.round < game.rounds:
+            game._begin()
+    raise AssertionError("no race won")
+
+
+def test_loose_means_undefended():
+    board = chess.Board("4k3/8/2p5/3n4/8/7b/8/4K3 w - - 0 1")
+    assert {chess.square_name(s) for s in loose(board)} == {"c6", "h3"}
+
+
+def test_stuck_or_mated_asks_every_kind():
+    seen = set()
+    for seed in range(4):
+        game = start("stuck-or-mated", seed)
+        for index in range(game.rounds):
+            game.round = index
+            game._begin()
+            assert verdict(game.board) == game.answer
+            seen.add(game.answer)
+    assert seen == {"mate", "stalemate", "check", "free"}
 
 
 def test_an_exchange_counts_the_recapture():

@@ -2370,6 +2370,7 @@
           "type": {
             "enum": [
               "move",
+              "square",
               "choice",
               "next",
               "hint",
@@ -2425,6 +2426,10 @@
             "title": "Check",
             "type": "boolean"
           },
+          "coordinates": {
+            "title": "Coordinates",
+            "type": "boolean"
+          },
           "fen": {
             "title": "Fen",
             "type": "string"
@@ -2452,7 +2457,8 @@
           "fen",
           "orientation",
           "check",
-          "lastMove"
+          "lastMove",
+          "coordinates"
         ],
         "title": "MinigameBoardOut",
         "type": "object"
@@ -2715,6 +2721,14 @@
             "title": "Seed",
             "type": "integer"
           },
+          "squares": {
+            "description": "Squares the player may tap",
+            "items": {
+              "type": "string"
+            },
+            "title": "Squares",
+            "type": "array"
+          },
           "version": {
             "description": "Grows with every action",
             "title": "Version",
@@ -2737,6 +2751,7 @@
           "prompt",
           "board",
           "moves",
+          "squares",
           "marks",
           "arrows",
           "choices",

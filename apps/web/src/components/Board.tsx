@@ -18,6 +18,9 @@ type Props = {
   /** Called with every legal UCI move from the dragged square to the dropped square:
    * one move normally, four for a promotion (the caller picks the piece). */
   onMove?: (candidates: string[]) => void
+  /** Called with any square the player taps, for screens that ask for squares. */
+  onSquare?: (square: string) => void
+  coordinates?: boolean
   /** Squares to highlight, by kind (`.mark-*` in App.css). */
   marks?: { square: string; kind: string }[]
   arrows?: { origin: string; target: string; kind: 'good' | 'bad' | 'info' }[]
@@ -39,17 +42,19 @@ export function Board({
   legalMoves,
   movableColor,
   onMove,
+  onSquare,
+  coordinates = true,
   marks,
   arrows,
   resetKey,
 }: Props) {
   const element = useRef<HTMLDivElement>(null)
   const board = useRef<Api | null>(null)
-  const latest = useRef({ legalMoves, onMove })
+  const latest = useRef({ legalMoves, onMove, onSquare })
 
   useEffect(() => {
-    latest.current = { legalMoves, onMove }
-  }, [legalMoves, onMove])
+    latest.current = { legalMoves, onMove, onSquare }
+  }, [legalMoves, onMove, onSquare])
 
   // Chessground attaches its input listeners only when a board is created, so a board
   // that can ever be played is created interactive; `legalMoves` decides what may move.
@@ -62,6 +67,7 @@ export function Board({
       movable: { free: false, color: undefined },
       draggable: { enabled: interactive },
       selectable: { enabled: interactive },
+      events: { select: (square) => latest.current.onSquare?.(square) },
     })
     return () => {
       board.current?.destroy()
@@ -114,7 +120,7 @@ export function Board({
   }, [marks, arrows, interactive])
 
   return (
-    <div className="board-frame">
+    <div className={coordinates ? 'board-frame' : 'board-frame no-coordinates'}>
       <div ref={element} className="board" data-testid="board" data-fen={fen} />
     </div>
   )

@@ -11,12 +11,10 @@ def test_minigames_list_start_and_play(client):
         first, again = (client.post(f"{V1}/minigame-runs", json=body).json() for _ in range(2))
         assert {**first, "id": ""} == {**again, "id": ""}
 
-        moves, choices = first["moves"], first["choices"]
-        action = (
-            {"type": "move", "value": moves[0]}
-            if moves
-            else {"type": "choice", "value": choices[0]["id"]}
-        )
+        options = [("move", m) for m in first["moves"]]
+        options += [("square", s) for s in first["squares"]]
+        options += [("choice", c["id"]) for c in first["choices"]]
+        action = {"type": options[0][0], "value": options[0][1]}
         after = client.post(f"{V1}/minigame-runs/{first['id']}/actions", json=action)
         assert after.status_code == 200, after.text
         assert after.json()["version"] == 1

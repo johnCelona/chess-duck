@@ -4,7 +4,7 @@
 
 A separate page (`#/minigame-tests`) holds rough minigames. They change no duck and save nothing (ADR-0017). John plays them, says what to keep, and official versions are designed afterwards.
 
-## The eleven
+## The sixteen
 
 | Minigame | The player does | Teaches | Comes from |
 | --- | --- | --- | --- |
@@ -19,6 +19,11 @@ A separate page (`#/minigame-tests`) holds rough minigames. They change no duck 
 | Goose Chase | Mates a lone king with two rooks, a queen, then one rook | Basic mates; avoiding stalemate | Convert the win |
 | Oops Pile | Watches a blunder punished, rewinds, fixes it | Blunder checking | Review Room (design 04 §3) |
 | Candidate Showdown | Names three moves against three simple ducks | Candidate moves | Design 03 §2.3 |
+| Pawn Race | Races pawns to the far side against a simple rival | Pawn moves, blocking, passed pawns | The basics |
+| Loose Feathers | Taps every undefended black piece, 90 seconds | Loose pieces | Research |
+| Square Dash | Taps the named square on an unlabelled board, 45 seconds | Square names, both sides | Research |
+| Pond Memory | Remembers where the pieces stood | Board memory | Research |
+| Stuck or Mated? | Sorts checkmate, stalemate, check and neither, 60 seconds | Checkmate against stalemate | The basics |
 
 ## Tricks worth keeping
 
@@ -33,6 +38,8 @@ A separate page (`#/minigame-tests`) holds rough minigames. They change no duck 
 
 - The Showdown's rivals are fixed rules (takes the most, pushes forward, random but safe), not real ducks.
 - Goose Chase's king follows a fixed rule, not an engine.
+- Pawn Race's rival looks three moves ahead with a simple pawn count; it is not an engine.
+- Loose Feathers counts a pinned defender as a defender.
 - The Dojo has no duck answering beside you. Positions are engine self-play, so they can look messy.
 - Oops Pile's blunders come from the pack, not from your own games.
 
@@ -43,10 +50,6 @@ A separate page (`#/minigame-tests`) holds rough minigames. They change no duck 
 3. Hearts: three and out, or free retries everywhere (design 01's "never punish")?
 4. Rush (clock) or calm?
 5. What should the duck do or gain in the official version?
-
-## Candidates for the next five
-
-Pawn race (pawns and kings only), loose-piece hunt (tap every undefended piece), square names against the clock, remember-the-position, and stalemate-or-checkmate sorting.
 
 ## Research notes
 
