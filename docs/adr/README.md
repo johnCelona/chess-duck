@@ -22,3 +22,4 @@ To change a decision, add a new ADR that supersedes the old one; do not rewrite 
 | [0014](0014-developer-experience.md) | Developer experience, configuration and data directory | Accepted | |
 | [0015](0015-human-players-and-real-time-clocks.md) | Human players and real-time clocks | Accepted | |
 | [0016](0016-trained-openings-and-pre-game-shortlist.md) | Trained openings and the pre-game shortlist | Proposed | Preference numbers (session 06) |
+| [0017](0017-minigame-tests.md) | Minigame tests: a sandbox apart from the Pond | Accepted | Which to keep |
