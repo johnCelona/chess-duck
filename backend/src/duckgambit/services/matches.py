@@ -25,6 +25,7 @@ from duckgambit.domain.arena import (
     validate_arena,
 )
 from duckgambit.domain.balance import DEFAULT_BALANCE, Balance
+from duckgambit.domain.brand import APP_NAME
 from duckgambit.domain.challengers import HOUSE_PROFILE_ID
 from duckgambit.domain.chessutil import board_from, move_flags, parse_move
 from duckgambit.domain.clock import charge
@@ -480,8 +481,8 @@ class MatchService:
         moves = await asyncio.to_thread(self._store.matches.list_moves, game.id)
         pgn = export_pgn(
             PgnGame(
-                event="Duck Gambit match",
-                site="Duck Gambit",
+                event=f"{APP_NAME} match",
+                site=APP_NAME,
                 date=game.started_at[:10].replace("-", "."),
                 round=str(game.index + 1),
                 white=white.name,

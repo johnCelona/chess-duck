@@ -1,11 +1,12 @@
 import { Link } from 'react-router'
+import { APP_NAME } from '../brand'
 
 /** The thin bar above game screens: the title link, an optional way back, and the Lab gear. */
 export function GameHeader({ back }: { back?: { to: string; label: string } }) {
   return (
     <header className="game-header">
       <Link to="/" className="brand">
-        Duck Gambit
+        {APP_NAME}
       </Link>
       {back && (
         <Link to={back.to} className="back">

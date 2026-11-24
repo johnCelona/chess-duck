@@ -1,4 +1,6 @@
-# Duck Gambit
+# Chess Duck (codename: Duck Gambit)
+
+**Two names, a design choice (John, 2026-11-24).** **Chess Duck** is the front-facing name: anything a player sees or exports (screens, browser tab, PGN headers, messages, README title). Use `APP_NAME` (`apps/web/src/brand.ts`, `backend/src/duckgambit/domain/brand.py`). **Duck Gambit** stays the codename: the `duckgambit` package, `DG_` settings, database, data folder, duck-file and pack formats, API title and older docs. Do not rename those. Not to be confused with Duck Chess, an existing variant.
 
 A chess training game. Players hatch a duck, teach it chess, and battle other ducks; the player learns as the duck does. Every duck runs on the same base engine (Stockfish). Stockfish does not learn, so "training" shapes a **decision layer** on top of it: opening book, principles, tactic motifs, blunder tolerance, style.
 

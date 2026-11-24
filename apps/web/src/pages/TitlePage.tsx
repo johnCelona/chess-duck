@@ -1,4 +1,5 @@
 import { Link, useNavigate } from 'react-router'
+import { APP_NAME } from '../brand'
 import { api, unwrap } from '../api/client'
 import { useResource } from '../api/useResource'
 import { DuckSprite } from '../components/DuckSprite'
@@ -20,7 +21,7 @@ export function TitlePage() {
         <DuckSprite pose="idle" size={140} />
       </div>
       <h1 id="title" className="logo">
-        Duck Gambit
+        {APP_NAME}
       </h1>
       <p className="tagline">Raise a duck. Teach it chess. Get better together.</p>
       {error && (

@@ -1,4 +1,6 @@
-# Duck Gambit
+# Chess Duck
+
+*Codename: Duck Gambit. The code, paths and packages keep that name.*
 
 Hatch a duck, teach it chess, and send it into battle against other ducks. As your duck learns, you learn too.
 
@@ -38,4 +40,4 @@ uv run --project backend pytest backend/tests/real   # extra checks against an i
 
 ## Licenses
 
-Duck Gambit's code is GPL-3.0-or-later (`LICENSE`). Stockfish (GPL-3.0) runs as a separate program downloaded from its official release; its license and a link to its source are shown on the Engines page. Third-party components are listed in `THIRD_PARTY_LICENSES.md`. Original art is licensed separately (`assets/LICENSE.md`).
+Chess Duck's code is GPL-3.0-or-later (`LICENSE`). Stockfish (GPL-3.0) runs as a separate program downloaded from its official release; its license and a link to its source are shown on the Engines page. Third-party components are listed in `THIRD_PARTY_LICENSES.md`. Original art is licensed separately (`assets/LICENSE.md`).

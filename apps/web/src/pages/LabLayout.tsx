@@ -1,4 +1,5 @@
 import { Link, NavLink, Outlet, useParams } from 'react-router'
+import { APP_NAME } from '../brand'
 import { MatchPage } from './MatchPage'
 
 const LAB_PAGES = [
@@ -13,7 +14,7 @@ export function LabLayout() {
     <div className="lab">
       <header className="app-header">
         <p className="brand">
-          <Link to="/">Duck Gambit</Link> · Lab
+          <Link to="/">{APP_NAME}</Link> · Lab
         </p>
         <nav aria-label="Lab">
           {LAB_PAGES.map((item) => (

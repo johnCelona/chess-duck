@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import Any
 
 from duckgambit.domain.balance import DEFAULT_BALANCE, Balance
+from duckgambit.domain.brand import APP_NAME
 from duckgambit.domain.chessutil import UCI_MOVE
 from duckgambit.domain.duck import (
     EGG_SEED_MAX,
@@ -118,7 +119,7 @@ def import_duck(
     balance: Balance = DEFAULT_BALANCE,
 ) -> Duck:
     """Validate a duck file and build a local duck from it."""
-    _require(isinstance(data, dict) and data.get("format") == FORMAT, "Not a Duck Gambit duck file")
+    _require(isinstance(data, dict) and data.get("format") == FORMAT, f"Not a {APP_NAME} duck file")
     data = upcast(data)
     body = data.get("duck")
     _require(isinstance(body, dict), "The file has no duck")
