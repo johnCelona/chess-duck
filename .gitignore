@@ -13,9 +13,6 @@ dist
 # Mutable state: database, installed engines, logs, exports (ADR-0014). Never commit.
 /data/
 .env
-# Pre-M0 locations of the same things.
-backend/engines/
-backend/config/
 
 # Python
 __pycache__/

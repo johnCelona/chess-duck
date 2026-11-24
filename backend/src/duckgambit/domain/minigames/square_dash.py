@@ -28,7 +28,10 @@ class SquareDash(Minigame):
 
     def __init__(self, seed: int, level: str = "") -> None:
         self.hits = [0] * len(SIDES)
+        self.started = True
         super().__init__(seed, level)
+        self.phase = "review"  # no clock until the player presses Start
+        self.started = False
 
     def start_round(self, rng: random.Random) -> None:
         self.used_ms = 0  # each side has its own clock
@@ -54,6 +57,12 @@ class SquareDash(Minigame):
         self.say("good", f"Yes! Streak {self.streak}.")
         self._ask()
 
+    def _advance(self) -> None:
+        if self.started:
+            super()._advance()
+        else:
+            self.started, self.phase = True, "play"
+
     def on_time_up(self) -> None:
         if self.round + 1 < self.rounds:
             self.phase = "review"
@@ -64,7 +73,14 @@ class SquareDash(Minigame):
         shown = self.round + 1 if self.phase == "done" else self.round
         notes = [f"{side}'s side: {self.hits[i]}" for i, side in enumerate(SIDES[: shown + 1])]
         banner = None
-        if self.phase == "review":
+        if not self.started:
+            notes = []
+            banner = Banner(
+                "Ready?",
+                "Tap the named squares. You start from White's side: 45 seconds.",
+                "Start",
+            )
+        elif self.phase == "review":
             banner = Banner(
                 "Switching to Black",
                 f"You found {self.hits[0]} from White's side. Now the board turns around.",
@@ -74,7 +90,8 @@ class SquareDash(Minigame):
         if self.phase == "play":
             notes.append(f"Streak: {self.streak}")
         return View(
-            f"Tap {chess.square_name(self.target)}",
+            # The next square stays secret until its clock runs.
+            f"Tap {chess.square_name(self.target)}" if self.phase == "play" else "Square Dash",
             BoardView(
                 "8/8/8/8/8/8/8/8 w - - 0 1",
                 "black" if self.round == 1 else "white",

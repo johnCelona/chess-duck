@@ -219,7 +219,8 @@ function Interlude({
   banner: NonNullable<MinigameRun['banner']>
   onNext: () => void
 }) {
-  const [ready, setReady] = useState(false)
+  // Only a switch can interrupt fast tapping; a start screen can be pressed at once.
+  const [ready, setReady] = useState(!banner.turnsBoard)
   useEffect(() => {
     const timer = setTimeout(() => setReady(true), PAUSE_MS)
     return () => clearTimeout(timer)

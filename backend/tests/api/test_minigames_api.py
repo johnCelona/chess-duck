@@ -14,6 +14,8 @@ def test_minigames_list_start_and_play(client):
         options = [("move", m) for m in first["moves"]]
         options += [("square", s) for s in first["squares"]]
         options += [("choice", c["id"]) for c in first["choices"]]
+        if first["phase"] == "review":  # a start screen waits for the player
+            options = [("next", "")]
         action = {"type": options[0][0], "value": options[0][1]}
         after = client.post(f"{V1}/minigame-runs/{first['id']}/actions", json=action)
         assert after.status_code == 200, after.text

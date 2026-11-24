@@ -326,6 +326,13 @@ def test_the_beginner_duck_explains_itself_only_when_asked():
 
 def test_square_dash_gives_each_side_its_own_full_clock():
     game = start("square-dash", 1)
+    shot = game.snapshot()
+    assert (shot.phase, shot.view.banner.button, shot.view.squares) == ("review", "Start", [])
+    assert chess.square_name(game.target) not in shot.view.prompt
+
+    # Waiting on the start screen costs nothing.
+    shot = game.act(Action("next"), 30_000)
+    assert (shot.phase, shot.round, shot.remaining_ms) == ("play", 1, 45_000)
     shot = game.act(Action("square", chess.square_name(game.target)), 1_000)
     assert (shot.view.board.orientation, shot.score, shot.remaining_ms) == ("white", 1, 44_000)
 
