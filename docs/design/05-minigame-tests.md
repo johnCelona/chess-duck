@@ -49,7 +49,8 @@ A separate page (`#/minigame-tests`) holds rough minigames. They change no duck 
 - **Pawn Race.** Good for thinking about endgames and forcing an unwanted move. Two changes, both made:
   - *Responsive:* the rival's reply no longer locks the board. Same fix in Goose Chase and Quack-Back.
   - *Easy, Medium, Hard.* Easy: positions proven winnable with many good first moves. Medium: the original three races. Hard: dealt positions, two of five proven losing, where a tie counts as a win. Losing starts are checked to be holdable against the hard rival. Positions come from `scripts/build_pawn_races.py`, which solves each one exactly.
-  - Open: the game says up front that a start is losing. Should finding that out be part of the challenge?
+  - Decided: the game says when a start is losing and that a tie is the goal.
+- **Difficulty.** Only some games have it (Pawn Race for now). Picking such a game opens a menu first.
 
 ## Questions for John, per game
 

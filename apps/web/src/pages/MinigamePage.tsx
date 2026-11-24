@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router'
-import { api, unwrap } from '../api/client'
+import { Link, useParams } from 'react-router'
+import { api, unwrap, type Schemas } from '../api/client'
 import { useResource } from '../api/useResource'
 import { Board } from '../components/Board'
 import { DuckSprite } from '../components/DuckSprite'
@@ -16,16 +16,21 @@ export function MinigamePage() {
 }
 
 function Minigame({ kind }: { kind: string }) {
-  const { data: all } = useResource(loadMinigames)
+  const { data: all, error: listError } = useResource(loadMinigames)
   const { run, error, start, act, frame, skip } = useMinigame(kind)
   // A promotion question belongs to the position it was asked in.
   const [asked, setAsked] = useState<{ run: MinigameRun | null; moves: string[] } | null>(null)
   const left = useCountdown(run, () => act('timeout'))
   const info = all?.find((item) => item.id === kind)
 
+  // Games with difficulties ask first; the others start at once.
+  const [reopened, setReopened] = useState(false)
+  const hasLevels = !!info && info.levels.length > 0
+  const choosing = hasLevels && (reopened || (!run && !error))
+  const startsAtOnce = !!info && !hasLevels
   useEffect(() => {
-    void start()
-  }, [start])
+    if (startsAtOnce) void start()
+  }, [startsAtOnce, start])
 
   const squares = (pair: { origin: string; target: string } | null): [string, string] | null =>
     pair && [pair.origin, pair.target]
@@ -36,31 +41,29 @@ function Minigame({ kind }: { kind: string }) {
     <section className="minigame" aria-labelledby="minigame-title">
       <GameHeader back={{ to: '/minigame-tests', label: 'Minigame tests' }} />
       <h1 id="minigame-title">{info?.title ?? 'Minigame'}</h1>
+      {listError && (
+        <div className="alert" role="alert">
+          {listError}
+        </div>
+      )}
+      {all && !info && <p className="empty">There is no such minigame.</p>}
       {error && (
         <div className="alert" role="alert">
           {error}{' '}
-          <button type="button" onClick={() => void start()}>
+          <button type="button" onClick={() => void start(undefined, run?.level)}>
             Start again
           </button>
         </div>
       )}
-      {run && info && info.levels.length > 0 && (
-        <div className="actions" role="group" aria-label="Difficulty">
-          {info.levels.map((level) => (
-            <button
-              key={level.id}
-              type="button"
-              className={level.id === run.level ? 'selected' : ''}
-              aria-pressed={level.id === run.level}
-              onClick={() => void start(undefined, level.id)}
-            >
-              {level.label}
-            </button>
-          ))}
-          <span className="hint">
-            {info.levels.find((level) => level.id === run.level)?.detail}
-          </span>
-        </div>
+      {choosing && (
+        <DifficultyMenu
+          levels={info?.levels ?? []}
+          onChoose={(level) => {
+            setReopened(false)
+            void start(undefined, level)
+          }}
+          onCancel={run ? () => setReopened(false) : undefined}
+        />
       )}
       {run && (
         <div className="watch">
@@ -116,6 +119,11 @@ function Minigame({ kind }: { kind: string }) {
                 )}
               </div>
               <div className="actions">
+                {hasLevels && (
+                  <button type="button" onClick={() => setReopened(true)}>
+                    Difficulty: {info.levels.find((level) => level.id === run.level)?.label}
+                  </button>
+                )}
                 {frame && (
                   <button type="button" onClick={skip}>
                     Skip
@@ -179,6 +187,46 @@ function Minigame({ kind }: { kind: string }) {
         </div>
       )}
     </section>
+  )
+}
+
+function DifficultyMenu({
+  levels,
+  onChoose,
+  onCancel,
+}: {
+  levels: Schemas['MinigameLevelOut'][]
+  onChoose: (level: string) => void
+  /** Back to the run in progress; without one, back to the list. */
+  onCancel?: () => void
+}) {
+  return (
+    <div className="menu-backdrop">
+      <div className="panel menu" role="dialog" aria-modal="true" aria-labelledby="difficulty">
+        <h2 id="difficulty">Choose a difficulty</h2>
+        {levels.map((level, index) => (
+          <button
+            key={level.id}
+            type="button"
+            autoFocus={index === 0}
+            onClick={() => onChoose(level.id)}
+          >
+            <strong>{level.label}</strong>
+            <br />
+            <small>{level.detail}</small>
+          </button>
+        ))}
+        {onCancel ? (
+          <button type="button" onClick={onCancel}>
+            Keep playing
+          </button>
+        ) : (
+          <Link className="button" to="/minigame-tests">
+            Back
+          </Link>
+        )}
+      </div>
+    </div>
   )
 }
 

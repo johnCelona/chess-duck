@@ -115,17 +115,27 @@ test('a timed run claims the timeout when its clock reaches zero', async () => {
   await waitFor(() => expect(done).toHaveBeenCalledTimes(1))
 })
 
-test('a game with difficulties starts a new run on the one picked', async () => {
-  const levels = [
-    { id: 'easy', label: 'Easy', detail: 'Gentle' },
-    { id: 'hard', label: 'Hard', detail: 'Fierce' },
-  ]
+const levels = [
+  { id: 'easy', label: 'Easy', detail: 'Gentle' },
+  { id: 'hard', label: 'Hard', detail: 'Fierce' },
+]
+
+test('a game with difficulties asks first, and the menu can be opened again', async () => {
   const calls = stubApi({
     'GET /api/v1/minigames': () => Response.json([{ ...info, levels }]),
-    'POST /api/v1/minigame-runs': () => Response.json(aRun({ level: 'easy' }), { status: 201 }),
+    'POST /api/v1/minigame-runs': () => Response.json(aRun({ level: 'hard' }), { status: 201 }),
   })
+  const started = () => calls.filter((call) => call.method === 'POST')
   window.location.hash = '#/minigame-tests/tuck-in'
   render(<App />)
-  await userEvent.click(await screen.findByRole('button', { name: 'Hard' }))
-  await waitFor(() => expect(calls.at(-1)?.body).toEqual({ kind: 'tuck-in', level: 'hard' }))
+  expect(await screen.findByRole('dialog', { name: 'Choose a difficulty' })).toBeInTheDocument()
+  expect(started()).toHaveLength(0)
+
+  await userEvent.click(screen.getByRole('button', { name: /Hard/ }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Difficulty: Hard' }))
+  expect(started().map((call) => call.body)).toEqual([{ kind: 'tuck-in', level: 'hard' }])
+
+  await userEvent.click(screen.getByRole('button', { name: 'Keep playing' }))
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  expect(started()).toHaveLength(1)
 })
