@@ -129,6 +129,7 @@ class View:
     notes: list[str] = field(default_factory=list)
     can_hint: bool = False
     banner: Banner | None = None
+    headline: str = ""  # the one thing to look at, shown in bold beside the title
 
 
 @dataclass(frozen=True)
@@ -166,7 +167,11 @@ class Minigame(ABC):
         self.phase: Phase = "play"
         self.feedback: Feedback | None = None
         self.frames: list[Frame] = []
+        # A timed game waits for the player to press Start before its clock runs.
+        self.started = self.time_limit_ms is None
         self._begin()
+        if not self.started:
+            self.phase = "review"
 
     # What a game defines.
 
@@ -211,7 +216,10 @@ class Minigame(ABC):
         if action.type == "next":
             if self.phase != "review":
                 raise DomainError("minigame.action", "Finish this round first")
-            self._advance()
+            if self.started:
+                self._advance()
+            else:
+                self.started, self.phase = True, "play"
             return self._bump()
         if self.phase != "play":
             raise DomainError("minigame.action", "The round is over: go on to the next one")
@@ -235,7 +243,7 @@ class Minigame(ABC):
         remaining = None
         if self.time_limit_ms is not None:
             remaining = max(0, self.time_limit_ms - self.used_ms)
-        view = self.view()
+        view = self.view() if self.started else self._start_screen()
         if self.phase != "play":
             view.moves, view.squares, view.choices, view.can_hint = [], [], [], False
         return Snapshot(
@@ -249,6 +257,16 @@ class Minigame(ABC):
             self.feedback,
             tuple(self.frames),
             view,
+        )
+
+    def _start_screen(self) -> View:
+        """Nothing of the first round shows yet: no head start."""
+        seconds = (self.time_limit_ms or 0) // 1000
+        text = f"You have {seconds} seconds. The clock starts when you press Start."
+        return View(
+            self.info.title,
+            BoardView("8/8/8/8/8/8/8/8 w - - 0 1", coordinates=False),
+            banner=Banner("Ready?", text, "Start"),
         )
 
     def say(self, tone: Tone, text: str) -> None:

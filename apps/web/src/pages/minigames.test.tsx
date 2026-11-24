@@ -30,6 +30,7 @@ function aRun(overrides: Partial<MinigameRun> = {}): MinigameRun {
     remainingMs: null,
     timeLimitMs: null,
     banner: null,
+    headline: '',
     feedback: null,
     frames: [],
     prompt: 'Where may the king castle?',
@@ -156,7 +157,7 @@ test('the timer is above the board, and a switch screen waits for the player', a
         status: 201,
       }),
     'POST /api/v1/minigame-runs/mini_1/actions': () =>
-      Response.json(aRun({ version: 1, remainingMs: 45000, timeLimitMs: 45000 })),
+      Response.json(aRun({ version: 1, remainingMs: 45000, timeLimitMs: 45000, headline: 'h2' })),
   })
   window.location.hash = '#/minigame-tests/tuck-in'
   render(<App />)
@@ -167,5 +168,6 @@ test('the timer is above the board, and a switch screen waits for the player', a
   await userEvent.click(go)
   expect(await screen.findByRole('timer')).toHaveTextContent('45')
   expect(calls.at(-1)?.body).toEqual({ type: 'next', value: '' })
+  expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('h2')
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
 })

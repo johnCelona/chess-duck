@@ -40,7 +40,10 @@ function Minigame({ kind }: { kind: string }) {
   return (
     <section className="minigame" aria-labelledby="minigame-title">
       <GameHeader back={{ to: '/minigame-tests', label: 'Minigame tests' }} />
-      <h1 id="minigame-title">{info?.title ?? 'Minigame'}</h1>
+      <h1 className="minigame-title">
+        <span id="minigame-title">{info?.title ?? 'Minigame'}</span>
+        {run?.headline && <strong className="minigame-headline">{run.headline}</strong>}
+      </h1>
       {listError && (
         <div className="alert" role="alert">
           {listError}

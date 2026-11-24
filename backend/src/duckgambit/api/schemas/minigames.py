@@ -110,6 +110,7 @@ class MinigameRunOut(Wire):
     choices: list[MinigameChoiceOut]
     notes: list[str]
     can_hint: bool
+    headline: str = Field(description="Shown in bold beside the title; often empty")
     banner: MinigameBannerOut | None = Field(
         description="Show over the board; its button sends `next`"
     )
@@ -152,6 +153,7 @@ class MinigameRunOut(Wire):
             choices=[MinigameChoiceOut.model_validate(choice) for choice in view.choices],
             notes=view.notes,
             can_hint=view.can_hint,
+            headline=view.headline,
             banner=MinigameBannerOut.model_validate(view.banner) if view.banner else None,
         )
 

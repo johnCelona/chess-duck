@@ -1766,6 +1766,11 @@ export interface components {
              * @description Play these before showing the board
              */
             frames: components["schemas"]["MinigameFrameOut"][];
+            /**
+             * Headline
+             * @description Shown in bold beside the title; often empty
+             */
+            headline: string;
             /** Hearts */
             hearts: number | null;
             /** Id */

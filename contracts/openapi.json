@@ -2711,6 +2711,11 @@
             "title": "Frames",
             "type": "array"
           },
+          "headline": {
+            "description": "Shown in bold beside the title; often empty",
+            "title": "Headline",
+            "type": "string"
+          },
           "hearts": {
             "anyOf": [
               {
@@ -2846,6 +2851,7 @@
           "choices",
           "notes",
           "canHint",
+          "headline",
           "banner"
         ],
         "title": "MinigameRunOut",

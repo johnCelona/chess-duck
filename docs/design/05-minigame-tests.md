@@ -51,7 +51,7 @@ A separate page (`#/minigame-tests`) holds rough minigames. They change no duck 
   - *Responsive:* the rival's reply no longer locks the board. Same fix in Goose Chase and Quack-Back.
   - *Easy, Medium, Hard.* Easy: positions proven winnable with many good first moves. Medium: the original three races. Hard: dealt positions, two of five proven losing, where a tie counts as a win. Losing starts are checked to be holdable against the hard rival. Positions come from `scripts/build_pawn_races.py`, which solves each one exactly.
   - Decided: the game says when a start is losing and that a tie is the goal.
-- **Square Dash.** Really liked; keeping the name for now. Timer moved above the board (for every timed game), a start screen, 45 seconds as White, a switch screen, then 45 as Black.
+- **Square Dash.** Really liked; keeping the name for now. Timer moved above the board (for every timed game), a start screen, 45 seconds as White, a switch screen, then 45 as Black. The square to tap also shows in bold beside the title. Every timed game now opens with a Start screen.
 - **The Beginner Duck.** Still feels fairly strong. Leave it alone until we work out an idea together.
 - **Difficulty.** Only some games have it (Pawn Race for now). Picking such a game opens a menu first.
 

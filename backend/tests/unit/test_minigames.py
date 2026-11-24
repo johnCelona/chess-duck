@@ -111,7 +111,9 @@ def test_perfect_play_wins_every_round_without_losing_a_heart(kind):
         for _ in range(300):
             if game.phase == "done":
                 break
-            if game.phase == "review":
+            if not game.started:
+                game.act(Action("next"))
+            elif game.phase == "review":
                 assert game.feedback.tone == "good"
                 game.act(Action("next"))
             else:
@@ -324,6 +326,22 @@ def test_the_beginner_duck_explains_itself_only_when_asked():
     assert game.act(Action("hint")).view.notes[0].startswith("Why ")
 
 
+@pytest.mark.parametrize("kind", ["fair-trade", "loose-feathers", "square-dash", "stuck-or-mated"])
+def test_a_timed_game_shows_nothing_and_runs_no_clock_until_start(kind):
+    game = start(kind, 1)
+    shot = game.snapshot()
+    view = shot.view
+    assert (shot.phase, view.banner.button) == ("review", "Start")
+    assert not (view.marks or view.arrows or view.notes or view.headline)
+    assert view.board.fen.startswith("8/8/8/8/8/8/8/8")
+    assert game.act(Action("next"), 99_000).remaining_ms == game.time_limit_ms
+
+
+def test_every_timed_game_has_the_start_screen():
+    timed = {game.info.id for game in MINIGAMES if game.time_limit_ms is not None}
+    assert timed == {"fair-trade", "loose-feathers", "square-dash", "stuck-or-mated"}
+
+
 def test_square_dash_gives_each_side_its_own_full_clock():
     game = start("square-dash", 1)
     shot = game.snapshot()
@@ -333,6 +351,7 @@ def test_square_dash_gives_each_side_its_own_full_clock():
     # Waiting on the start screen costs nothing.
     shot = game.act(Action("next"), 30_000)
     assert (shot.phase, shot.round, shot.remaining_ms) == ("play", 1, 45_000)
+    assert shot.view.headline == chess.square_name(game.target)
     shot = game.act(Action("square", chess.square_name(game.target)), 1_000)
     assert (shot.view.board.orientation, shot.score, shot.remaining_ms) == ("white", 1, 44_000)
 
@@ -378,6 +397,7 @@ def test_an_exchange_counts_the_recapture():
 
 def test_the_clock_ends_the_run_and_stops_while_reading():
     game = FairTrade(1)
+    game.act(Action("next"), 30_000)
     game.act(Action("choice", game.answer), 20_000)
     game.act(Action("next"), 500_000)
     assert game.snapshot().remaining_ms == 40_000
