@@ -78,10 +78,8 @@ class QuackBack(Minigame):
             self.lose_heart(f"Not {san(self.board, uci)}. The right piece is marked.")
             return
         self.missed = False
-        before, at = self.board, self.at
         self._push()
         self._reply()
-        self.add_frames(before, self.line[at : self.at])
         if self.at == len(self.line):
             praise = "Got there!" if self.misses else "Perfect recall!"
             self.win_round(max(1, 4 - self.misses), f"{praise} That is the {self.name}.")

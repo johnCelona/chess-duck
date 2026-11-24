@@ -31,11 +31,11 @@ class MinigameService:
     def all(self) -> list[Info]:
         return [game.info for game in MINIGAMES]
 
-    def start(self, kind: str, seed: int | None) -> tuple[Run, Snapshot]:
+    def start(self, kind: str, seed: int | None, level: str = "") -> tuple[Run, Snapshot]:
         run_id = self._ids.new("mini")
         if seed is None:
             seed = derive_seed(0, run_id)
-        run = Run(run_id, start(kind, seed), self._now_ms())
+        run = Run(run_id, start(kind, seed, level), self._now_ms())
         self._runs[run_id] = run
         while len(self._runs) > MAX_RUNS:
             self._runs.popitem(last=False)

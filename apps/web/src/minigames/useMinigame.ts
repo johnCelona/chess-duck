@@ -31,8 +31,8 @@ export function useMinigame(kind: string) {
   }, [])
 
   const start = useCallback(
-    (seed?: number) =>
-      send(() => unwrap(api.POST('/api/v1/minigame-runs', { body: { kind, seed } }))),
+    (seed?: number, level = '') =>
+      send(() => unwrap(api.POST('/api/v1/minigame-runs', { body: { kind, seed, level } }))),
     [kind, send],
   )
 

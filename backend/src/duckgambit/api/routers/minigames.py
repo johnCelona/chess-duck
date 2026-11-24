@@ -30,7 +30,7 @@ async def list_minigames(services: Deps) -> list[MinigameInfoOut]:
 @runs.post("", status_code=201, operation_id="startMinigame")
 async def start_minigame(body: StartMinigameRequest, services: Deps) -> MinigameRunOut:
     """Start a run. The same seed deals the same run."""
-    return MinigameRunOut.of(*services.minigames.start(body.kind, body.seed))
+    return MinigameRunOut.of(*services.minigames.start(body.kind, body.seed, body.level))
 
 
 @runs.post("/{run_id}/actions", operation_id="playMinigame")

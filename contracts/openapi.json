@@ -2552,6 +2552,14 @@
             "title": "Id",
             "type": "string"
           },
+          "levels": {
+            "description": "Difficulties; empty when there is one",
+            "items": {
+              "$ref": "#/components/schemas/MinigameLevelOut"
+            },
+            "title": "Levels",
+            "type": "array"
+          },
           "teaches": {
             "title": "Teaches",
             "type": "string"
@@ -2566,9 +2574,33 @@
           "title",
           "blurb",
           "teaches",
-          "howTo"
+          "howTo",
+          "levels"
         ],
         "title": "MinigameInfoOut",
+        "type": "object"
+      },
+      "MinigameLevelOut": {
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "detail"
+        ],
+        "title": "MinigameLevelOut",
         "type": "object"
       },
       "MinigameMarkOut": {
@@ -2658,6 +2690,10 @@
             "title": "Kind",
             "type": "string"
           },
+          "level": {
+            "title": "Level",
+            "type": "string"
+          },
           "marks": {
             "items": {
               "$ref": "#/components/schemas/MinigameMarkOut"
@@ -2739,6 +2775,7 @@
           "id",
           "kind",
           "seed",
+          "level",
           "version",
           "phase",
           "round",
@@ -4284,6 +4321,13 @@
           "kind": {
             "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
             "title": "Kind",
+            "type": "string"
+          },
+          "level": {
+            "default": "",
+            "description": "Empty: the usual one",
+            "maxLength": 32,
+            "title": "Level",
             "type": "string"
           },
           "seed": {

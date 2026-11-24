@@ -38,10 +38,18 @@ A separate page (`#/minigame-tests`) holds rough minigames. They change no duck 
 
 - The Showdown's rivals are fixed rules (takes the most, pushes forward, random but safe), not real ducks.
 - Goose Chase's king follows a fixed rule, not an engine.
-- Pawn Race's rival looks three moves ahead with a simple pawn count; it is not an engine.
+- Pawn Race's rival is a short look-ahead with a simple pawn count (1, 3 or 5 moves by difficulty); it is not an engine.
 - Loose Feathers counts a pinned defender as a defender.
 - The Dojo has no duck answering beside you. Positions are engine self-play, so they can look messy.
 - Oops Pile's blunders come from the pack, not from your own games.
+
+## Feedback so far (John, 2026-11-24)
+
+- **Stuck or Mated?** Liked.
+- **Pawn Race.** Good for thinking about endgames and forcing an unwanted move. Two changes, both made:
+  - *Responsive:* the rival's reply no longer locks the board. Same fix in Goose Chase and Quack-Back.
+  - *Easy, Medium, Hard.* Easy: positions proven winnable with many good first moves. Medium: the original three races. Hard: dealt positions, two of five proven losing, where a tie counts as a win. Losing starts are checked to be holdable against the hard rival. Positions come from `scripts/build_pawn_races.py`, which solves each one exactly.
+  - Open: the game says up front that a start is losing. Should finding that out be part of the challenge?
 
 ## Questions for John, per game
 

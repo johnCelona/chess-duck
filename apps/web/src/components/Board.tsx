@@ -119,8 +119,16 @@ export function Board({
     })
   }, [marks, arrows, interactive])
 
+  // Chessground remembers where the board is on screen. Anything that appeared above it
+  // since has moved it, so measure again before each press.
+  const remeasure = () => board.current?.state.dom.bounds.clear()
+
   return (
-    <div className={coordinates ? 'board-frame' : 'board-frame no-coordinates'}>
+    <div
+      onMouseDownCapture={remeasure}
+      onTouchStartCapture={remeasure}
+      className={coordinates ? 'board-frame' : 'board-frame no-coordinates'}
+    >
       <div ref={element} className="board" data-testid="board" data-fen={fen} />
     </div>
   )

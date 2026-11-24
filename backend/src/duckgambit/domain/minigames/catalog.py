@@ -41,8 +41,8 @@ MINIGAMES: tuple[type[Minigame], ...] = (
 )
 
 
-def start(kind: str, seed: int) -> Minigame:
+def start(kind: str, seed: int, level: str = "") -> Minigame:
     for game in MINIGAMES:
         if game.info.id == kind:
-            return game(seed)
+            return game(seed, level)
     raise DomainError("minigame.unknown", "No such minigame")

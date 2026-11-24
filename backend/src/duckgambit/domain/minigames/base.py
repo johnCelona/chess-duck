@@ -38,12 +38,21 @@ VALUE = {
 
 
 @dataclass(frozen=True)
+class Level:
+    id: str
+    label: str
+    detail: str
+
+
+@dataclass(frozen=True)
 class Info:
     id: str
     title: str
     blurb: str
     teaches: str
     how_to: str
+    levels: tuple[Level, ...] = ()  # difficulties, easiest first; empty when there is only one
+    level: str = ""  # the one to start with
 
 
 @dataclass(frozen=True)
@@ -129,12 +138,15 @@ class Minigame(ABC):
     """Subclasses fill `start_round`, `view` and the `on_*` handlers they use."""
 
     info: ClassVar[Info]
-    rounds: ClassVar[int] = 5
+    rounds: int = 5
     start_hearts: ClassVar[int | None] = 3
     time_limit_ms: ClassVar[int | None] = None
 
-    def __init__(self, seed: int) -> None:
+    def __init__(self, seed: int, level: str = "") -> None:
         self.seed = seed
+        self.level = level or self.info.level
+        if self.level and self.level not in [item.id for item in self.info.levels]:
+            raise DomainError("minigame.level", "No such difficulty")
         self.round = 0
         self.score = 0
         self.hearts = self.start_hearts

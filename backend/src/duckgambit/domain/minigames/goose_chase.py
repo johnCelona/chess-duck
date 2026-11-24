@@ -9,6 +9,7 @@ import chess
 from duckgambit.domain.minigames.base import (
     BoardView,
     Choice,
+    Frame,
     Info,
     Mark,
     Minigame,
@@ -88,7 +89,6 @@ class GooseChase(Minigame):
         else:
             reply = runaway(self.board)
             eaten = self.board.is_capture(reply)
-            self.add_frames(self.board, [reply.uci()])
             self.board, self.last = moved(self.board, reply.uci()), reply.uci()
             if eaten:
                 self._fail("It ate your piece!")
@@ -98,6 +98,8 @@ class GooseChase(Minigame):
     def _fail(self, text: str) -> None:
         self.lose_heart(text)
         if self.phase == "play":
+            if self.last:  # show how it ended before the board resets
+                self.frames.append(Frame(self.board.fen(), squares(self.last), text))
             self.board, self.used, self.last = self.start, 0, ""
             self.say("bad", f"{text} Try the same chase again.")
 

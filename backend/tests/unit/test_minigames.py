@@ -4,14 +4,15 @@ import chess
 import pytest
 
 from duckgambit.domain.errors import DomainError
-from duckgambit.domain.minigames import content
+from duckgambit.domain.minigames import content, pawn_races
 from duckgambit.domain.minigames.base import Action, moved
 from duckgambit.domain.minigames.catalog import MINIGAMES, start
 from duckgambit.domain.minigames.fair_trade import FairTrade, capture_value
 from duckgambit.domain.minigames.goose_chase import GooseChase, free_squares, runaway
 from duckgambit.domain.minigames.lily_pads import LilyPads
 from duckgambit.domain.minigames.loose_feathers import loose
-from duckgambit.domain.minigames.pawn_race import LEVELS, race_over, rival_move, search
+from duckgambit.domain.minigames.pawn_race import LEVELS, race_moves, race_over, rival_move, search
+from duckgambit.domain.minigames.pawn_solver import race_of, solve
 from duckgambit.domain.minigames.quack_back import LINES
 from duckgambit.domain.minigames.rules_of_the_pond import CARDS
 from duckgambit.domain.minigames.stuck_or_mated import verdict
@@ -22,9 +23,9 @@ from duckgambit.domain.seeds import draw_below, rng_for
 KINDS = [game.info.id for game in MINIGAMES]
 
 
-def mash(kind, seed, steps=120):
+def mash(kind, seed, steps=120, level=""):
     """Press random open inputs; every snapshot must be sane. Returns them all."""
-    game, rng, seen = start(kind, seed), rng_for(seed, "player"), []
+    game, rng, seen = start(kind, seed, level), rng_for(seed, "player"), []
     shot = game.snapshot()
     for _ in range(steps):
         seen.append(shot)
@@ -182,6 +183,76 @@ def test_a_pawn_race_can_be_won():
         if game.round < game.rounds:
             game._begin()
     raise AssertionError("no race won")
+
+
+def brute(board, known):
+    key = board.epd(en_passant="fen")
+    if key not in known:
+        over = race_over(board)
+        if over:
+            known[key] = 0 if over == "stuck" else 1 if (over == "white") == board.turn else -1
+        else:
+            known[key] = max(-brute(moved(board, m.uci()), known) for m in race_moves(board))
+    return known[key]
+
+
+def small(fens):
+    return [fen for fen in fens if fen.count("p") <= 3]
+
+
+def test_the_pawn_solver_agrees_with_brute_force():
+    packs = (pawn_races.EASY, pawn_races.HARD_WINNING, pawn_races.HARD_LOSING)
+    for fen in [fen for pack in packs for fen in small(pack)[:3]]:
+        board = chess.Board(fen)
+        assert solve(race_of(board), {}) == brute(board, {})
+
+
+def test_pawn_race_positions_are_what_they_claim():
+    for pack, value in (
+        (pawn_races.EASY, 1),
+        (pawn_races.HARD_WINNING, 1),
+        (pawn_races.HARD_LOSING, -1),
+    ):
+        assert small(pack)
+        assert all(solve(race_of(chess.Board(fen)), {}) == value for fen in small(pack))
+
+
+def test_hard_pawn_races_mix_winning_and_losing_starts():
+    game, kinds = start("pawn-race", 5, "hard"), []
+    for index in range(game.rounds):
+        game.round = index
+        game._begin()
+        kinds.append(game.losing)
+    assert sorted(kinds) == [False, False, False, True, True]
+
+
+def test_a_tie_from_a_losing_start_wins_and_any_other_tie_is_replayed():
+    for losing, phase in ((True, "review"), (False, "play")):
+        game = start("pawn-race", 5, "hard")
+        game.losing = losing
+        game.board = game.start = chess.Board("8/8/8/p7/8/8/P7/8 w - - 0 1")
+        game.act(Action("move", "a2a4"))  # both pawns are blocked
+        assert (game.phase, game.hearts) == (phase, 3)
+
+
+def test_the_rival_replies_at_once_without_locking_the_board():
+    for level in ("easy", "medium", "hard"):
+        game = start("pawn-race", 2, level)
+        shot = game.act(Action("move", game.view().moves[-1]))
+        assert shot.frames == ()
+        assert shot.view.moves
+
+
+def test_an_unknown_difficulty_is_refused():
+    with pytest.raises(DomainError):
+        start("pawn-race", 1, "impossible")
+    with pytest.raises(DomainError):
+        start("lily-pads", 1, "hard")
+
+
+def test_every_difficulty_can_be_mashed_through():
+    for level in ("easy", "hard"):
+        assert mash("pawn-race", 3, level=level) == mash("pawn-race", 3, level=level)
 
 
 def test_loose_means_undefended():

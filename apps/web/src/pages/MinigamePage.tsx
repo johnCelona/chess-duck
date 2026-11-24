@@ -44,6 +44,24 @@ function Minigame({ kind }: { kind: string }) {
           </button>
         </div>
       )}
+      {run && info && info.levels.length > 0 && (
+        <div className="actions" role="group" aria-label="Difficulty">
+          {info.levels.map((level) => (
+            <button
+              key={level.id}
+              type="button"
+              className={level.id === run.level ? 'selected' : ''}
+              aria-pressed={level.id === run.level}
+              onClick={() => void start(undefined, level.id)}
+            >
+              {level.label}
+            </button>
+          ))}
+          <span className="hint">
+            {info.levels.find((level) => level.id === run.level)?.detail}
+          </span>
+        </div>
+      )}
       {run && (
         <div className="watch">
           <Board
@@ -132,10 +150,14 @@ function Minigame({ kind }: { kind: string }) {
                 )}
                 {run.phase === 'done' && (
                   <>
-                    <button type="button" className="primary" onClick={() => void start()}>
+                    <button
+                      type="button"
+                      className="primary"
+                      onClick={() => void start(undefined, run.level)}
+                    >
                       Play again
                     </button>
-                    <button type="button" onClick={() => void start(run.seed)}>
+                    <button type="button" onClick={() => void start(run.seed, run.level)}>
                       Same puzzles again
                     </button>
                   </>

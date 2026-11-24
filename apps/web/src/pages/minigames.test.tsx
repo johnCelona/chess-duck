@@ -12,6 +12,7 @@ const info = {
   blurb: 'Can the king castle?',
   teaches: 'Castling',
   howTo: 'Pick a side.',
+  levels: [],
 }
 
 function aRun(overrides: Partial<MinigameRun> = {}): MinigameRun {
@@ -19,6 +20,7 @@ function aRun(overrides: Partial<MinigameRun> = {}): MinigameRun {
     id: 'mini_1',
     kind: 'tuck-in',
     seed: 7,
+    level: '',
     version: 0,
     phase: 'play',
     round: 1,
@@ -111,4 +113,19 @@ test('a timed run claims the timeout when its clock reaches zero', async () => {
   render(<App />)
   expect(await screen.findByText(/Run over/)).toBeInTheDocument()
   await waitFor(() => expect(done).toHaveBeenCalledTimes(1))
+})
+
+test('a game with difficulties starts a new run on the one picked', async () => {
+  const levels = [
+    { id: 'easy', label: 'Easy', detail: 'Gentle' },
+    { id: 'hard', label: 'Hard', detail: 'Fierce' },
+  ]
+  const calls = stubApi({
+    'GET /api/v1/minigames': () => Response.json([{ ...info, levels }]),
+    'POST /api/v1/minigame-runs': () => Response.json(aRun({ level: 'easy' }), { status: 201 }),
+  })
+  window.location.hash = '#/minigame-tests/tuck-in'
+  render(<App />)
+  await userEvent.click(await screen.findByRole('button', { name: 'Hard' }))
+  await waitFor(() => expect(calls.at(-1)?.body).toEqual({ kind: 'tuck-in', level: 'hard' }))
 })

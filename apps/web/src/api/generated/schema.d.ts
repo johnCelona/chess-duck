@@ -1706,10 +1706,24 @@ export interface components {
             howTo: string;
             /** Id */
             id: string;
+            /**
+             * Levels
+             * @description Difficulties; empty when there is one
+             */
+            levels: components["schemas"]["MinigameLevelOut"][];
             /** Teaches */
             teaches: string;
             /** Title */
             title: string;
+        };
+        /** MinigameLevelOut */
+        MinigameLevelOut: {
+            /** Detail */
+            detail: string;
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
         };
         /** MinigameMarkOut */
         MinigameMarkOut: {
@@ -1742,6 +1756,8 @@ export interface components {
             id: string;
             /** Kind */
             kind: string;
+            /** Level */
+            level: string;
             /** Marks */
             marks: components["schemas"]["MinigameMarkOut"][];
             /**
@@ -2388,6 +2404,12 @@ export interface components {
         StartMinigameRequest: {
             /** Kind */
             kind: string;
+            /**
+             * Level
+             * @description Empty: the usual one
+             * @default
+             */
+            level?: string;
             /** Seed */
             seed?: number | null;
         };

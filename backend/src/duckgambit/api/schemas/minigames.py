@@ -12,17 +12,25 @@ from duckgambit.domain.minigames.base import ActionType, MarkKind, Phase, Snapsh
 from duckgambit.services.minigames import Run
 
 
+class MinigameLevelOut(Wire):
+    id: str
+    label: str
+    detail: str
+
+
 class MinigameInfoOut(Wire):
     id: str
     title: str
     blurb: str
     teaches: str
     how_to: str
+    levels: list[MinigameLevelOut] = Field(description="Difficulties; empty when there is one")
 
 
 class StartMinigameRequest(WireIn):
     kind: Id
     seed: int | None = Field(default=None, ge=0, le=MAX_SEED)
+    level: str = Field(default="", max_length=32, description="Empty: the usual one")
 
 
 class MinigameActionIn(WireIn):
@@ -75,6 +83,7 @@ class MinigameRunOut(Wire):
     id: str
     kind: str
     seed: int
+    level: str
     version: int = Field(description="Grows with every action")
     phase: Phase = Field(description="play: input is open; review: send `next`; done: run over")
     round: int
@@ -101,6 +110,7 @@ class MinigameRunOut(Wire):
             id=run.id,
             kind=run.game.info.id,
             seed=run.game.seed,
+            level=run.game.level,
             version=shot.version,
             phase=shot.phase,
             round=shot.round,
