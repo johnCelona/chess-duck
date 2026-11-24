@@ -67,26 +67,32 @@ function Minigame({ kind }: { kind: string }) {
       )}
       {run && (
         <div className="watch">
-          <Board
-            fen={frame?.fen ?? run.board.fen}
-            lastMove={squares(frame ? frame.lastMove : run.board.lastMove)}
-            check={!frame && run.board.check}
-            orientation={run.board.orientation}
-            legalMoves={open ? run.moves : []}
-            movableColor={run.board.orientation}
-            coordinates={run.board.coordinates}
-            onSquare={(square) => {
-              if (open && run.squares.includes(square)) act('square', square)
-            }}
-            marks={frame ? [] : run.marks}
-            arrows={frame ? [] : run.arrows}
-            resetKey={run}
-            onMove={(candidates) =>
-              candidates.length > 1
-                ? setAsked({ run, moves: candidates })
-                : act('move', candidates[0])
-            }
-          />
+          <div className="minigame-board">
+            {left !== null && <Timer left={left} limit={run.timeLimitMs} />}
+            <Board
+              fen={frame?.fen ?? run.board.fen}
+              lastMove={squares(frame ? frame.lastMove : run.board.lastMove)}
+              check={!frame && run.board.check}
+              orientation={run.board.orientation}
+              legalMoves={open ? run.moves : []}
+              movableColor={run.board.orientation}
+              coordinates={run.board.coordinates}
+              onSquare={(square) => {
+                if (open && run.squares.includes(square)) act('square', square)
+              }}
+              marks={frame ? [] : run.marks}
+              arrows={frame ? [] : run.arrows}
+              resetKey={run}
+              onMove={(candidates) =>
+                candidates.length > 1
+                  ? setAsked({ run, moves: candidates })
+                  : act('move', candidates[0])
+              }
+            />
+            {run.banner && (
+              <Interlude key={run.version} banner={run.banner} onNext={() => act('next')} />
+            )}
+          </div>
           <div>
             <div className="panel">
               <p className="minigame-status">
@@ -99,7 +105,6 @@ function Minigame({ kind }: { kind: string }) {
                     {'♥'.repeat(run.hearts) || 'no hearts'}
                   </span>
                 )}
-                {left !== null && <span className="clock">{Math.ceil(left / 1000)}s</span>}
               </p>
               <p className="minigame-prompt">{run.prompt}</p>
               {run.notes.map((note) => (
@@ -151,7 +156,7 @@ function Minigame({ kind }: { kind: string }) {
                     Hint
                   </button>
                 )}
-                {!frame && run.phase === 'review' && (
+                {!frame && run.phase === 'review' && !run.banner && (
                   <button type="button" className="primary" onClick={() => act('next')}>
                     Next
                   </button>
@@ -187,6 +192,52 @@ function Minigame({ kind }: { kind: string }) {
         </div>
       )}
     </section>
+  )
+}
+
+const LAST_MS = 10_000
+
+function Timer({ left, limit }: { left: number; limit: number | null }) {
+  const share = limit ? Math.min(1, left / limit) : 0
+  return (
+    <div className={`minigame-timer ${left <= LAST_MS ? 'low' : ''}`} role="timer">
+      <span>{Math.ceil(left / 1000)}</span>
+      <div className="bar">
+        <div style={{ width: `${share * 100}%` }} />
+      </div>
+    </div>
+  )
+}
+
+/** A moment before the button works, so a fast tap meant for the board does not skip it. */
+const PAUSE_MS = 1200
+
+function Interlude({
+  banner,
+  onNext,
+}: {
+  banner: NonNullable<MinigameRun['banner']>
+  onNext: () => void
+}) {
+  const [ready, setReady] = useState(false)
+  useEffect(() => {
+    const timer = setTimeout(() => setReady(true), PAUSE_MS)
+    return () => clearTimeout(timer)
+  }, [])
+  return (
+    <div className="interlude" role="dialog" aria-labelledby="interlude-title">
+      {banner.turnsBoard && (
+        <div className="turning-board" aria-hidden="true">
+          <span>♟</span>
+          <span>♙</span>
+        </div>
+      )}
+      <h2 id="interlude-title">{banner.title}</h2>
+      <p>{banner.text}</p>
+      <button type="button" className="primary big" disabled={!ready} onClick={onNext}>
+        {banner.button}
+      </button>
+    </div>
   )
 }
 

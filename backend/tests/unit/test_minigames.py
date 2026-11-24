@@ -94,7 +94,6 @@ PERFECT = {
     "loose-feathers": lambda g: Action(
         "square", next(chess.square_name(s) for s in g.targets if s not in g.found)
     ),
-    "square-dash": lambda g: Action("square", chess.square_name(g.target)),
     "pond-memory": lambda g: Action("square", chess.square_name(g.todo[0])),
     "stuck-or-mated": lambda g: Action("choice", g.answer),
     "candidate-showdown": lambda g: Action("move", best_unpicked(g)),
@@ -102,7 +101,7 @@ PERFECT = {
 
 
 def test_every_minigame_has_a_winning_way_checked():
-    assert set(PERFECT) | {"goose-chase", "pawn-race", "beginner-duck"} == set(KINDS)
+    assert set(PERFECT) | {"goose-chase", "pawn-race", "beginner-duck", "square-dash"} == set(KINDS)
 
 
 @pytest.mark.parametrize("kind", PERFECT)
@@ -323,6 +322,27 @@ def test_the_beginner_duck_explains_itself_only_when_asked():
     shot = game.act(Action("move", "e2e4"))
     assert shot.view.notes == []
     assert game.act(Action("hint")).view.notes[0].startswith("Why ")
+
+
+def test_square_dash_gives_each_side_its_own_full_clock():
+    game = start("square-dash", 1)
+    shot = game.act(Action("square", chess.square_name(game.target)), 1_000)
+    assert (shot.view.board.orientation, shot.score, shot.remaining_ms) == ("white", 1, 44_000)
+
+    # White's time is up: a screen announces the switch, and no clock runs behind it.
+    shot = game.act(Action("timeout"), 44_000)
+    assert shot.phase == "review"
+    assert shot.view.banner.title == "Switching to Black"
+    assert shot.view.squares == []
+    shot = game.act(Action("next"), 60_000)
+    assert (shot.phase, shot.remaining_ms) == ("play", 45_000)
+    assert (shot.view.board.orientation, shot.view.banner) == ("black", None)
+
+    for _ in range(2):
+        game.act(Action("square", chess.square_name(game.target)), 1_000)
+    shot = game.act(Action("timeout"), 43_000)
+    assert (shot.phase, shot.score) == ("done", 3)
+    assert shot.view.notes == ["White's side: 1", "Black's side: 2"]
 
 
 def test_loose_means_undefended():

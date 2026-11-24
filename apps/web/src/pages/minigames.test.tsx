@@ -28,6 +28,8 @@ function aRun(overrides: Partial<MinigameRun> = {}): MinigameRun {
     score: 0,
     hearts: 3,
     remainingMs: null,
+    timeLimitMs: null,
+    banner: null,
     feedback: null,
     frames: [],
     prompt: 'Where may the king castle?',
@@ -138,4 +140,32 @@ test('a game with difficulties asks first, and the menu can be opened again', as
   await userEvent.click(screen.getByRole('button', { name: 'Keep playing' }))
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   expect(started()).toHaveLength(1)
+})
+
+test('the timer is above the board, and a switch screen waits for the player', async () => {
+  const banner = {
+    title: 'Switching to Black',
+    text: 'You found 5.',
+    button: 'Go',
+    turnsBoard: true,
+  }
+  const calls = stubApi({
+    'GET /api/v1/minigames': () => Response.json([info]),
+    'POST /api/v1/minigame-runs': () =>
+      Response.json(aRun({ phase: 'review', banner, remainingMs: 0, timeLimitMs: 45000 }), {
+        status: 201,
+      }),
+    'POST /api/v1/minigame-runs/mini_1/actions': () =>
+      Response.json(aRun({ version: 1, remainingMs: 45000, timeLimitMs: 45000 })),
+  })
+  window.location.hash = '#/minigame-tests/tuck-in'
+  render(<App />)
+  expect(await screen.findByRole('dialog', { name: 'Switching to Black' })).toBeInTheDocument()
+  const go = screen.getByRole('button', { name: 'Go' })
+  expect(go).toBeDisabled()
+  await waitFor(() => expect(go).toBeEnabled(), { timeout: 3000 })
+  await userEvent.click(go)
+  expect(await screen.findByRole('timer')).toHaveTextContent('45')
+  expect(calls.at(-1)?.body).toEqual({ type: 'next', value: '' })
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
 })

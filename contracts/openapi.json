@@ -2420,6 +2420,35 @@
         "title": "MinigameArrowOut",
         "type": "object"
       },
+      "MinigameBannerOut": {
+        "properties": {
+          "button": {
+            "title": "Button",
+            "type": "string"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "turnsBoard": {
+            "description": "Show the board turning around",
+            "title": "Turnsboard",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "title",
+          "text",
+          "button",
+          "turnsBoard"
+        ],
+        "title": "MinigameBannerOut",
+        "type": "object"
+      },
       "MinigameBoardOut": {
         "properties": {
           "check": {
@@ -2639,6 +2668,17 @@
             "title": "Arrows",
             "type": "array"
           },
+          "banner": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MinigameBannerOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Show over the board; its button sends `next`"
+          },
           "board": {
             "$ref": "#/components/schemas/MinigameBoardOut"
           },
@@ -2765,6 +2805,17 @@
             "title": "Squares",
             "type": "array"
           },
+          "timeLimitMs": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timelimitms"
+          },
           "version": {
             "description": "Grows with every action",
             "title": "Version",
@@ -2783,6 +2834,7 @@
           "score",
           "hearts",
           "remainingMs",
+          "timeLimitMs",
           "feedback",
           "frames",
           "prompt",
@@ -2793,7 +2845,8 @@
           "arrows",
           "choices",
           "notes",
-          "canHint"
+          "canHint",
+          "banner"
         ],
         "title": "MinigameRunOut",
         "type": "object"

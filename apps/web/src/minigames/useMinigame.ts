@@ -72,7 +72,7 @@ export function useMinigame(kind: string) {
 
 /** Counts down on screen; the server measures the real time and has the last word. */
 export function useCountdown(run: MinigameRun | null, onZero: () => void): number | null {
-  const [left, setLeft] = useState<number | null>(null)
+  const [left, setLeft] = useState<{ run: MinigameRun | null; ms: number } | null>(null)
   const zero = useRef(onZero)
   useEffect(() => {
     zero.current = onZero
@@ -84,12 +84,12 @@ export function useCountdown(run: MinigameRun | null, onZero: () => void): numbe
     const began = Date.now()
     const tick = () => {
       const now = run?.phase === 'play' ? Math.max(0, remaining - (Date.now() - began)) : remaining
-      setLeft(now)
+      setLeft({ run, ms: now })
       if (now === 0 && run?.phase === 'play') zero.current()
     }
     const timer = setInterval(tick, 200)
     return () => clearInterval(timer)
   }, [run])
 
-  return run?.remainingMs == null ? null : (left ?? run.remainingMs)
+  return run?.remainingMs == null ? null : left?.run === run ? left.ms : run.remainingMs
 }

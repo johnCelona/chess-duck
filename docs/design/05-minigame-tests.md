@@ -21,7 +21,7 @@ A separate page (`#/minigame-tests`) holds rough minigames. They change no duck 
 | Candidate Showdown | Names three moves against three simple ducks | Candidate moves | Design 03 §2.3 |
 | Pawn Race | Races pawns to the far side against a simple rival | Pawn moves, blocking, passed pawns | The basics |
 | Loose Feathers | Taps every undefended black piece, 90 seconds | Loose pieces | Research |
-| Square Dash | Taps the named square on an unlabelled board, 45 seconds | Square names, both sides | Research |
+| Square Dash | Taps the named square on an unlabelled board, 45 seconds from each side | Square names, both sides | Research |
 | Pond Memory | Remembers where the pieces stood | Board memory | Research |
 | Stuck or Mated? | Sorts checkmate, stalemate, check and neither, 60 seconds | Checkmate against stalemate | The basics |
 | The Beginner Duck | Plays a whole game against a duck with blind spots | Nothing: an experiment | Design 06 |
@@ -51,6 +51,8 @@ A separate page (`#/minigame-tests`) holds rough minigames. They change no duck 
   - *Responsive:* the rival's reply no longer locks the board. Same fix in Goose Chase and Quack-Back.
   - *Easy, Medium, Hard.* Easy: positions proven winnable with many good first moves. Medium: the original three races. Hard: dealt positions, two of five proven losing, where a tie counts as a win. Losing starts are checked to be holdable against the hard rival. Positions come from `scripts/build_pawn_races.py`, which solves each one exactly.
   - Decided: the game says when a start is losing and that a tie is the goal.
+- **Square Dash.** Really liked; keeping the name for now. Timer moved above the board (for every timed game), 45 seconds as White, a switch screen, then 45 as Black.
+- **The Beginner Duck.** Still feels fairly strong. Leave it alone until we work out an idea together.
 - **Difficulty.** Only some games have it (Pawn Race for now). Picking such a game opens a menu first.
 
 ## Questions for John, per game

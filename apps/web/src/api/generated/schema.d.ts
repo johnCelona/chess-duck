@@ -1656,6 +1656,20 @@ export interface components {
             /** Target */
             target: string;
         };
+        /** MinigameBannerOut */
+        MinigameBannerOut: {
+            /** Button */
+            button: string;
+            /** Text */
+            text: string;
+            /** Title */
+            title: string;
+            /**
+             * Turnsboard
+             * @description Show the board turning around
+             */
+            turnsBoard: boolean;
+        };
         /** MinigameBoardOut */
         MinigameBoardOut: {
             /** Check */
@@ -1739,6 +1753,8 @@ export interface components {
         MinigameRunOut: {
             /** Arrows */
             arrows: components["schemas"]["MinigameArrowOut"][];
+            /** @description Show over the board; its button sends `next` */
+            banner: components["schemas"]["MinigameBannerOut"] | null;
             board: components["schemas"]["MinigameBoardOut"];
             /** Canhint */
             canHint: boolean;
@@ -1790,6 +1806,8 @@ export interface components {
              * @description Squares the player may tap
              */
             squares: string[];
+            /** Timelimitms */
+            timeLimitMs: number | null;
             /**
              * Version
              * @description Grows with every action

@@ -105,6 +105,16 @@ class BoardView:
     coordinates: bool = True
 
 
+@dataclass(frozen=True)
+class Banner:
+    """A screen between two parts of a run. The client shows it over the board until `next`."""
+
+    title: str
+    text: str
+    button: str
+    turns_board: bool = False
+
+
 @dataclass
 class View:
     """What the player sees now, and what they may do."""
@@ -118,6 +128,7 @@ class View:
     choices: list[Choice] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
     can_hint: bool = False
+    banner: Banner | None = None
 
 
 @dataclass(frozen=True)
@@ -177,6 +188,11 @@ class Minigame(ABC):
     def on_hint(self) -> None:
         raise DomainError("minigame.action", "There is no hint here")
 
+    def on_time_up(self) -> None:
+        """The clock ran out: the run is over, unless a game has another part to play."""
+        self.say("info", "Time!")
+        self.phase = "done"
+
     # What every game shares.
 
     def act(self, action: Action, spent_ms: int = 0) -> Snapshot:
@@ -188,8 +204,7 @@ class Minigame(ABC):
         if self.phase == "play" and self.time_limit_ms is not None:
             self.used_ms += max(0, spent_ms)
             if self.used_ms >= self.time_limit_ms:
-                self.say("info", "Time!")
-                self.phase = "done"
+                self.on_time_up()
                 return self._bump()
         if action.type == "timeout":
             return self._bump()  # claimed early: there is still time on the clock

@@ -1162,3 +1162,93 @@ nav.tiles {
   gap: 8px;
   width: min(420px, 90vw);
 }
+
+.minigame-board {
+  position: relative;
+}
+
+.minigame-timer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.minigame-timer span {
+  min-width: 64px;
+  font-size: 40px;
+  line-height: 1;
+  font-weight: 700;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.minigame-timer .bar {
+  flex: 1;
+  height: 14px;
+  border-radius: 7px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+.minigame-timer .bar div {
+  height: 100%;
+  background: #1d4ed8;
+  transition: width 0.2s linear;
+}
+
+.minigame-timer.low span {
+  color: #dc2626;
+}
+
+.minigame-timer.low .bar div {
+  background: #dc2626;
+}
+
+.interlude {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  text-align: center;
+  border-radius: 8px;
+  background: rgba(23, 32, 51, 0.94);
+  color: white;
+}
+
+.turning-board {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  width: 120px;
+  height: 120px;
+  margin-bottom: 32px;
+  border-radius: 6px;
+  font-size: 40px;
+  line-height: 1.3;
+  color: #172033;
+  background: repeating-conic-gradient(#b58863 0 25%, #f0d9b5 0 50%) 0 0 / 30px 30px;
+  animation: turn-board 1.2s ease-in-out both;
+}
+
+@keyframes turn-board {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(180deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .turning-board {
+    animation: none;
+    transform: rotate(180deg);
+  }
+}

@@ -66,6 +66,13 @@ class MinigameChoiceOut(Wire):
     detail: str
 
 
+class MinigameBannerOut(Wire):
+    title: str
+    text: str
+    button: str
+    turns_board: bool = Field(description="Show the board turning around")
+
+
 class MinigameFeedbackOut(Wire):
     tone: Tone
     text: str
@@ -91,6 +98,7 @@ class MinigameRunOut(Wire):
     score: int
     hearts: int | None
     remaining_ms: int | None
+    time_limit_ms: int | None
     feedback: MinigameFeedbackOut | None
     frames: list[MinigameFrameOut] = Field(description="Play these before showing the board")
     prompt: str
@@ -102,6 +110,9 @@ class MinigameRunOut(Wire):
     choices: list[MinigameChoiceOut]
     notes: list[str]
     can_hint: bool
+    banner: MinigameBannerOut | None = Field(
+        description="Show over the board; its button sends `next`"
+    )
 
     @classmethod
     def of(cls, run: Run, shot: Snapshot) -> MinigameRunOut:
@@ -118,6 +129,7 @@ class MinigameRunOut(Wire):
             score=shot.score,
             hearts=shot.hearts,
             remaining_ms=shot.remaining_ms,
+            time_limit_ms=run.game.time_limit_ms,
             feedback=MinigameFeedbackOut.model_validate(shot.feedback) if shot.feedback else None,
             frames=[
                 MinigameFrameOut(
@@ -140,6 +152,7 @@ class MinigameRunOut(Wire):
             choices=[MinigameChoiceOut.model_validate(choice) for choice in view.choices],
             notes=view.notes,
             can_hint=view.can_hint,
+            banner=MinigameBannerOut.model_validate(view.banner) if view.banner else None,
         )
 
 
