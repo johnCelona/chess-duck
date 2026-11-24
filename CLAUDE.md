@@ -8,6 +8,8 @@ Status (2026-11-21, branch `m1-minigames`): M0 foundation, plus the player journ
 
 Minigame tests (2026-11-23): sixteen rough minigames on their own page (`/minigame-tests`), apart from ducks and the Pond (ADR-0017, `docs/design/05-minigame-tests.md`). John plays them and decides what the official versions become. Experiments live on the branch `experimental-game-logic`; `main` is meant for finalized engine and UI work (John's initial idea, 2026-11-23).
 
+Beginner duck (John, 2026-11-24): a new duck must feel like a beginner without random moves, and grasp a concept only after its training; today it is too strong. A Beginner or Experienced start is being considered. Unity/Steam extras and multiplayer are far-off scope. Read `docs/design/06-beginner-duck-and-starting-point.md` before touching duck strength, story or onboarding.
+
 ## Commands
 
 Prerequisites: Node 26 (`.nvmrc`), [uv](https://docs.astral.sh/uv/) (it installs Python 3.12 itself).
