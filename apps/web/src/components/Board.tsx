@@ -18,7 +18,14 @@ type Props = {
   /** Called with every legal UCI move from the dragged square to the dropped square:
    * one move normally, four for a promotion (the caller picks the piece). */
   onMove?: (candidates: string[]) => void
+  /** Squares to highlight, by kind (`.mark-*` in App.css). */
+  marks?: { square: string; kind: string }[]
+  arrows?: { origin: string; target: string; kind: 'good' | 'bad' | 'info' }[]
+  /** A new value redraws the position: a move the server refused snaps back. */
+  resetKey?: unknown
 }
+
+const BRUSHES = { good: 'green', bad: 'red', info: 'blue' }
 
 /**
  * Shows whatever position the server sent. When `legalMoves` and `onMove` are given, the
@@ -32,6 +39,9 @@ export function Board({
   legalMoves,
   movableColor,
   onMove,
+  marks,
+  arrows,
+  resetKey,
 }: Props) {
   const element = useRef<HTMLDivElement>(null)
   const board = useRef<Api | null>(null)
@@ -65,7 +75,8 @@ export function Board({
       fen,
       orientation,
       lastMove: lastMove ? (lastMove as Key[]) : undefined,
-      check,
+      // The FEN says whose turn it is, so whose king is in check.
+      check: check && (fen.split(' ')[1] === 'b' ? 'black' : 'white'),
       turnColor: movableColor,
       movable: {
         free: false,
@@ -82,7 +93,25 @@ export function Board({
         },
       },
     })
-  }, [fen, lastMove, check, orientation, playable, legalMoves, movableColor, interactive])
+  }, [fen, lastMove, check, orientation, playable, legalMoves, movableColor, interactive, resetKey])
+
+  useEffect(() => {
+    const classes = new Map<Key, string>()
+    for (const { square, kind } of marks ?? []) {
+      const key = square as Key
+      classes.set(key, `${classes.get(key) ?? ''} mark-${kind}`.trim())
+    }
+    board.current?.set({
+      highlight: { custom: classes },
+      drawable: {
+        autoShapes: (arrows ?? []).map(({ origin, target, kind }) => ({
+          orig: origin as Key,
+          dest: target as Key,
+          brush: BRUSHES[kind],
+        })),
+      },
+    })
+  }, [marks, arrows, interactive])
 
   return (
     <div className="board-frame">

@@ -40,6 +40,9 @@ export function TitlePage() {
         <Link className="button big" to="/hatch">
           Hatch a new egg
         </Link>
+        <Link className="button big" to="/minigame-tests">
+          Minigame tests
+        </Link>
       </div>
       <Link to="/lab" className="gear title-gear">
         ⚙ Lab

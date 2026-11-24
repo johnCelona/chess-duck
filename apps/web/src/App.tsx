@@ -7,6 +7,8 @@ import { DucksPage } from './pages/DucksPage'
 import { EnginesPage } from './pages/EnginesPage'
 import { HatchPage } from './pages/HatchPage'
 import { LabLayout, LabMatchPage } from './pages/LabLayout'
+import { MinigamePage } from './pages/MinigamePage'
+import { MinigameTestsPage } from './pages/MinigameTestsPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { PondPage } from './pages/PondPage'
 import { PracticePage } from './pages/PracticePage'
@@ -44,6 +46,8 @@ export function AppRoutes() {
       <Route path="/arena/super-bullet/you/:seriesId" element={<YouPlaySeriesPage />} />
       <Route path="/arena/custom/:matchId?" element={<ArenaPage />} />
       <Route path="/arena/:matchId" element={<OldArenaLink />} />
+      <Route path="/minigame-tests" element={<MinigameTestsPage />} />
+      <Route path="/minigame-tests/:kind" element={<MinigamePage />} />
       <Route path="/lab" element={<LabLayout />}>
         <Route index element={<Navigate to="ducks" replace />} />
         <Route path="ducks" element={<DucksPage />} />

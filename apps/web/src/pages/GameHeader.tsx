@@ -12,6 +12,9 @@ export function GameHeader({ back }: { back?: { to: string; label: string } }) {
           ← {back.label}
         </Link>
       )}
+      <Link to="/minigame-tests" className="gear">
+        Minigame tests
+      </Link>
       <Link to="/lab" className="gear" aria-label="Lab: ducks, matches and engines" title="Lab">
         ⚙
       </Link>
