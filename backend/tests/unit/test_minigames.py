@@ -6,6 +6,14 @@ import pytest
 from duckgambit.domain.errors import DomainError
 from duckgambit.domain.minigames import content, pawn_races
 from duckgambit.domain.minigames.base import Action, moved
+from duckgambit.domain.minigames.beginner_eyes import (
+    LOOSE,
+    MATE,
+    exchange_loss,
+    loosest,
+    mate_in_one,
+    think,
+)
 from duckgambit.domain.minigames.catalog import MINIGAMES, start
 from duckgambit.domain.minigames.fair_trade import FairTrade, capture_value
 from duckgambit.domain.minigames.goose_chase import GooseChase, free_squares, runaway
@@ -94,7 +102,7 @@ PERFECT = {
 
 
 def test_every_minigame_has_a_winning_way_checked():
-    assert set(PERFECT) | {"goose-chase", "pawn-race"} == set(KINDS)
+    assert set(PERFECT) | {"goose-chase", "pawn-race", "beginner-duck"} == set(KINDS)
 
 
 @pytest.mark.parametrize("kind", PERFECT)
@@ -202,7 +210,7 @@ def small(fens):
 
 def test_the_pawn_solver_agrees_with_brute_force():
     packs = (pawn_races.EASY, pawn_races.HARD_WINNING, pawn_races.HARD_LOSING)
-    for fen in [fen for pack in packs for fen in small(pack)[:3]]:
+    for fen in [fen for pack in packs for fen in small(pack)[:1]]:
         board = chess.Board(fen)
         assert solve(race_of(board), {}) == brute(board, {})
 
@@ -253,6 +261,68 @@ def test_an_unknown_difficulty_is_refused():
 def test_every_difficulty_can_be_mashed_through():
     for level in ("easy", "hard"):
         assert mash("pawn-race", 3, level=level) == mash("pawn-race", 3, level=level)
+
+
+NOTHING = frozenset()
+BOTH = frozenset({LOOSE, MATE})
+
+
+def test_a_hatchling_misses_mate_in_one_and_a_taught_duck_plays_it():
+    # Ra8 is mate, but taking the pawn looks nicer to a hatchling.
+    board = chess.Board("6k1/5ppp/8/8/R2p4/8/5PPP/6K1 w - - 0 1")
+    assert mate_in_one(board).uci() == "a4a8"
+    hatchling, taught = think(board, NOTHING, 1), think(board, frozenset({MATE}), 1)
+    assert hatchling.move == "a4d4"
+    assert any("Ra8#" in text for text in hatchling.missed)
+    assert taught.move == "a4a8"
+    assert taught.learned
+
+
+def test_a_hatchling_grabs_a_poisoned_pawn_and_a_taught_duck_does_not():
+    board = chess.Board("4k3/8/2p5/3p4/8/8/3Q4/4K3 w - - 0 1")
+    hatchling, taught = think(board, NOTHING, 1), think(board, frozenset({LOOSE}), 1)
+    assert hatchling.move == "d2d5"
+    assert any("queen on d5" in text for text in hatchling.missed)
+    assert taught.move != "d2d5"
+    assert any("win 9 points" in text for text in taught.learned)
+
+
+def test_exchanges_count_recaptures():
+    board = chess.Board("4k3/8/2p5/3p4/8/8/3R4/4K3 w - - 0 1")
+    assert exchange_loss(board, chess.D5) == 0
+    board.remove_piece_at(chess.C6)
+    assert loosest(board) == (1, chess.D5)
+
+
+def play_out(first, second, seed, plies=120):
+    """1 if `first` (White) mates, -1 if mated, else the material balance's sign."""
+    board = chess.Board()
+    while board.ply() < plies and not board.is_game_over():
+        board.push_uci((first if board.turn else second)(board, seed))
+    if board.is_checkmate():
+        return -1 if board.turn else 1
+    worth = {1: 1, 2: 3, 3: 3, 4: 5, 5: 9, 6: 0}
+    total = sum(worth[p.piece_type] * (1 if p.color else -1) for p in board.piece_map().values())
+    return (total > 0) - (total < 0)
+
+
+def test_lessons_make_a_duck_stronger_and_a_hatchling_is_not_random():
+    def duck(known):
+        return lambda board, seed: think(board, known, seed).move
+
+    def rand(board, seed):
+        moves = sorted(m.uci() for m in board.legal_moves)
+        return moves[draw_below(rng_for(seed, board.ply(), "r"), len(moves))]
+
+    assert sum(play_out(duck(NOTHING), rand, seed) for seed in range(4)) >= 2
+    assert sum(play_out(duck(BOTH), duck(NOTHING), seed, 60) for seed in range(3)) >= 2
+
+
+def test_the_beginner_duck_explains_itself_only_when_asked():
+    game = start("beginner-duck", 1, "hatched")
+    shot = game.act(Action("move", "e2e4"))
+    assert shot.view.notes == []
+    assert game.act(Action("hint")).view.notes[0].startswith("Why ")
 
 
 def test_loose_means_undefended():

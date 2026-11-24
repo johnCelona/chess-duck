@@ -1,6 +1,6 @@
 # Design 06 · The beginner duck, the starting point, and later scope
 
-*2026-11-24 · §1, §4 and §5 record John's direction. §2 is what the code does today. §3 is Claude's proposal, not decided. Nothing here is built.*
+*2026-11-24 · §1, §4 and §5 record John's direction. §2 is what the code does today. §3 is Claude's proposal, not decided. The first experiment is built (§3.1).*
 
 ## 1. Direction (John)
 
@@ -51,9 +51,30 @@ Each concept the story teaches is something the duck cannot see yet. Its mistake
 
 **Costs:** each concept needs its own detector and tests, and existing ducks need a migration (give them every concept, so none gets weaker). This needs an ADR before code.
 
-**Cheapest first experiment:** items 1 and 2 plus two concepts (loose pieces, mate in one), in Practice Pond only. That is enough to judge whether it feels like a beginner.
+### 3.1 The first experiment (built 2026-11-24)
+
+**The Beginner Duck**, a minigame test (`domain/minigames/beginner_eyes.py`): a full untimed game against a duck with two blind spots, loose pieces and mate in one, at four stages (nothing learned, either, both). It scores every legal move with simple habits plus what it has learned; there is no engine and nothing is saved.
+
+- It is not in the Practice Pond yet. That needs a new database column, and an older build cannot open a newer database, so a player switching branches would lose access to their ducks.
+- Measured (games capped at 160 half-moves; small samples, so only a rough guide). "=" counts draws and unfinished games:
+
+| Match | Result |
+| --- | --- |
+| Just hatched v random mover | +9 =11 -0, ahead by 3 or more points in all 11 unfinished |
+| Loose pieces v just hatched | +12 =8 -0, ahead in all 8 |
+| Mate in one v just hatched | +2 =17 -1: little strength by itself |
+| Both v just hatched | +19 =1 -0 |
+| Both v loose pieces only | +8 =7 -5 |
+| Both v Stockfish at UCI_Elo 1320, 0.03 s a move | +1 =0 -9 |
+| Just hatched v the same | +0 =0 -10 |
+
+- It looks one move ahead only. It does not fade into the engine (item 5), and real ducks are unchanged.
 
 ## 4. Starting point: Beginner or Experienced (under consideration)
+
+**John (2026-11-24):** the choice is made **when starting the story mode**.
+- **Beginner** is for people who have never played chess. It is how John means to teach the people in his life who have never played.
+- **Experienced** exists so nobody has to sit through the baby steps, which would be boring for them.
 
 | | Beginner | Experienced |
 | --- | --- | --- |
@@ -62,10 +83,9 @@ Each concept the story teaches is something the duck cannot see yet. Its mistake
 | Story training | Played in order | Can be skipped |
 
 Open:
-1. Is it chosen per player or per egg?
-2. Can an Experienced player still play the story?
-3. Do skipped lessons give their rewards, or only the knowledge?
-4. Does a Beginner get a way to skip ahead later?
+1. Does Experienced skip whole chapters or only shorten their lessons?
+2. Do skipped lessons give their rewards, or only the knowledge?
+3. Does a Beginner get a way to skip ahead later?
 
 ## 5. Later scope (not a focus any time soon)
 

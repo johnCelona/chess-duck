@@ -4,7 +4,7 @@
 
 A separate page (`#/minigame-tests`) holds rough minigames. They change no duck and save nothing (ADR-0017). John plays them, says what to keep, and official versions are designed afterwards.
 
-## The sixteen
+## The games
 
 | Minigame | The player does | Teaches | Comes from |
 | --- | --- | --- | --- |
@@ -24,6 +24,7 @@ A separate page (`#/minigame-tests`) holds rough minigames. They change no duck 
 | Square Dash | Taps the named square on an unlabelled board, 45 seconds | Square names, both sides | Research |
 | Pond Memory | Remembers where the pieces stood | Board memory | Research |
 | Stuck or Mated? | Sorts checkmate, stalemate, check and neither, 60 seconds | Checkmate against stalemate | The basics |
+| The Beginner Duck | Plays a whole game against a duck with blind spots | Nothing: an experiment | Design 06 |
 
 ## Tricks worth keeping
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from duckgambit.domain.errors import DomainError
 from duckgambit.domain.minigames.base import Minigame
+from duckgambit.domain.minigames.beginner_duck import BeginnerDuck
 from duckgambit.domain.minigames.candidate_showdown import CandidateShowdown
 from duckgambit.domain.minigames.crack_the_shell import CrackTheShell
 from duckgambit.domain.minigames.fair_trade import FairTrade
@@ -38,6 +39,7 @@ MINIGAMES: tuple[type[Minigame], ...] = (
     SquareDash,
     PondMemory,
     StuckOrMated,
+    BeginnerDuck,
 )
 
 
