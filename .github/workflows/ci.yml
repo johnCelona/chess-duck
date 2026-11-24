@@ -31,7 +31,7 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
 
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v10.4.0 # no moving v10 tag exists
         with:
           python-version: '3.12'
           enable-cache: true
