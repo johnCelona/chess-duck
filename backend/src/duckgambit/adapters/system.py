@@ -28,6 +28,10 @@ class UnsafePathError(ValueError):
 
 def safe_child(root: Path, *parts: str) -> Path:
     """Join `parts` under `root` and refuse anything that would land outside it (ADR-0011)."""
+    # Windows reads a backslash as a separator and other systems as part of a name: refuse it
+    # everywhere, so a path means the same thing on every computer.
+    if any("\\" in part for part in parts):
+        raise UnsafePathError("Path contains a backslash")
     resolved_root = root.resolve()
     candidate = resolved_root.joinpath(*parts).resolve()
     if candidate != resolved_root and resolved_root not in candidate.parents:
