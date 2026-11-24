@@ -13,7 +13,7 @@ DOMAIN_FORBIDDEN_STDLIB = {
     "subprocess", "threading", "time", "urllib", "uuid",
 }  # fmt: skip
 STDLIB_ALLOWED = {
-    "__future__", "collections", "collections.abc", "dataclasses", "enum", "fractions",
+    "__future__", "abc", "collections", "collections.abc", "dataclasses", "enum", "fractions",
     "hashlib", "json", "math", "random", "re", "typing",
 }  # fmt: skip
 

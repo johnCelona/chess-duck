@@ -429,6 +429,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/minigame-runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start Minigame
+         * @description Start a run. The same seed deals the same run.
+         */
+        post: operations["startMinigame"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/minigame-runs/{run_id}/actions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Play Minigame
+         * @description One thing the player did: a move, a choice, a hint, or going on to the next round.
+         */
+        post: operations["playMinigame"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/minigames": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Minigames
+         * @description Every minigame test. Nothing in here changes a duck.
+         */
+        get: operations["listMinigames"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/profile": {
         parameters: {
             query?: never;
@@ -1571,6 +1631,155 @@ export interface components {
              */
             type: "MatchStarted";
         };
+        /** MinigameActionIn */
+        MinigameActionIn: {
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "move" | "choice" | "next" | "hint" | "timeout";
+            /**
+             * Value
+             * @default
+             */
+            value?: string;
+        };
+        /** MinigameArrowOut */
+        MinigameArrowOut: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "good" | "bad" | "info";
+            /** Origin */
+            origin: string;
+            /** Target */
+            target: string;
+        };
+        /** MinigameBoardOut */
+        MinigameBoardOut: {
+            /** Check */
+            check: boolean;
+            /** Fen */
+            fen: string;
+            lastMove: components["schemas"]["MinigameSquares"] | null;
+            /**
+             * Orientation
+             * @enum {string}
+             */
+            orientation: "white" | "black";
+        };
+        /** MinigameChoiceOut */
+        MinigameChoiceOut: {
+            /** Detail */
+            detail: string;
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+        };
+        /** MinigameFeedbackOut */
+        MinigameFeedbackOut: {
+            /** Text */
+            text: string;
+            /**
+             * Tone
+             * @enum {string}
+             */
+            tone: "good" | "bad" | "info";
+        };
+        /** MinigameFrameOut */
+        MinigameFrameOut: {
+            /** Caption */
+            caption: string;
+            /** Fen */
+            fen: string;
+            lastMove: components["schemas"]["MinigameSquares"] | null;
+        };
+        /** MinigameInfoOut */
+        MinigameInfoOut: {
+            /** Blurb */
+            blurb: string;
+            /** Howto */
+            howTo: string;
+            /** Id */
+            id: string;
+            /** Teaches */
+            teaches: string;
+            /** Title */
+            title: string;
+        };
+        /** MinigameMarkOut */
+        MinigameMarkOut: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "crumb" | "pad" | "danger" | "good" | "bad" | "hint" | "target";
+            /** Square */
+            square: string;
+        };
+        /** MinigameRunOut */
+        MinigameRunOut: {
+            /** Arrows */
+            arrows: components["schemas"]["MinigameArrowOut"][];
+            board: components["schemas"]["MinigameBoardOut"];
+            /** Canhint */
+            canHint: boolean;
+            /** Choices */
+            choices: components["schemas"]["MinigameChoiceOut"][];
+            feedback: components["schemas"]["MinigameFeedbackOut"] | null;
+            /**
+             * Frames
+             * @description Play these before showing the board
+             */
+            frames: components["schemas"]["MinigameFrameOut"][];
+            /** Hearts */
+            hearts: number | null;
+            /** Id */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Marks */
+            marks: components["schemas"]["MinigameMarkOut"][];
+            /**
+             * Moves
+             * @description Moves the player may try (UCI)
+             */
+            moves: string[];
+            /** Notes */
+            notes: string[];
+            /**
+             * Phase
+             * @description play: input is open; review: send `next`; done: run over
+             * @enum {string}
+             */
+            phase: "play" | "review" | "done";
+            /** Prompt */
+            prompt: string;
+            /** Remainingms */
+            remainingMs: number | null;
+            /** Round */
+            round: number;
+            /** Rounds */
+            rounds: number;
+            /** Score */
+            score: number;
+            /** Seed */
+            seed: number;
+            /**
+             * Version
+             * @description Grows with every action
+             */
+            version: number;
+        };
+        /** MinigameSquares */
+        MinigameSquares: {
+            /** Origin */
+            origin: string;
+            /** Target */
+            target: string;
+        };
         /** MoveChosenData */
         MoveChosenData: {
             /** Candidates */
@@ -2167,6 +2376,13 @@ export interface components {
              * @enum {string}
              */
             type: "SparringSeriesUpdated";
+        };
+        /** StartMinigameRequest */
+        StartMinigameRequest: {
+            /** Kind */
+            kind: string;
+            /** Seed */
+            seed?: number | null;
         };
         /** StartSeriesRequest */
         StartSeriesRequest: {
@@ -3112,6 +3328,103 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MatchOut"];
+                };
+            };
+            /** @description Any error, as an RFC 9457 problem document */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    startMinigame: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StartMinigameRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MinigameRunOut"];
+                };
+            };
+            /** @description Any error, as an RFC 9457 problem document */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    playMinigame: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MinigameActionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MinigameRunOut"];
+                };
+            };
+            /** @description Any error, as an RFC 9457 problem document */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    listMinigames: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MinigameInfoOut"][];
                 };
             };
             /** @description Any error, as an RFC 9457 problem document */

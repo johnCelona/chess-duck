@@ -14,7 +14,7 @@ from duckgambit import __version__
 from duckgambit.api.container import Container, build_container
 from duckgambit.api.deps import Services
 from duckgambit.api.errors import PROBLEM_RESPONSES, install_error_handlers
-from duckgambit.api.routers import ducks, engines, events, matches, sparring
+from duckgambit.api.routers import ducks, engines, events, matches, minigames, sparring
 from duckgambit.api.schemas.matches import HealthOut
 from duckgambit.api.security import LOOPBACK_HOSTS, BoundaryMiddleware
 from duckgambit.logging_setup import configure_logging
@@ -84,6 +84,8 @@ def create_app(settings: Settings | None = None, container: Container | None = N
     v1.include_router(matches.jobs)
     v1.include_router(sparring.games)
     v1.include_router(sparring.series)
+    v1.include_router(minigames.minigames)
+    v1.include_router(minigames.runs)
     v1.include_router(events.router)
     app.include_router(v1)
 

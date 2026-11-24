@@ -2364,6 +2364,406 @@
         "title": "MatchStartedEvent",
         "type": "object"
       },
+      "MinigameActionIn": {
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "enum": [
+              "move",
+              "choice",
+              "next",
+              "hint",
+              "timeout"
+            ],
+            "title": "Type",
+            "type": "string"
+          },
+          "value": {
+            "default": "",
+            "maxLength": 32,
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "title": "MinigameActionIn",
+        "type": "object"
+      },
+      "MinigameArrowOut": {
+        "properties": {
+          "kind": {
+            "enum": [
+              "good",
+              "bad",
+              "info"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "origin": {
+            "title": "Origin",
+            "type": "string"
+          },
+          "target": {
+            "title": "Target",
+            "type": "string"
+          }
+        },
+        "required": [
+          "origin",
+          "target",
+          "kind"
+        ],
+        "title": "MinigameArrowOut",
+        "type": "object"
+      },
+      "MinigameBoardOut": {
+        "properties": {
+          "check": {
+            "title": "Check",
+            "type": "boolean"
+          },
+          "fen": {
+            "title": "Fen",
+            "type": "string"
+          },
+          "lastMove": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MinigameSquares"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "orientation": {
+            "enum": [
+              "white",
+              "black"
+            ],
+            "title": "Orientation",
+            "type": "string"
+          }
+        },
+        "required": [
+          "fen",
+          "orientation",
+          "check",
+          "lastMove"
+        ],
+        "title": "MinigameBoardOut",
+        "type": "object"
+      },
+      "MinigameChoiceOut": {
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "detail"
+        ],
+        "title": "MinigameChoiceOut",
+        "type": "object"
+      },
+      "MinigameFeedbackOut": {
+        "properties": {
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "tone": {
+            "enum": [
+              "good",
+              "bad",
+              "info"
+            ],
+            "title": "Tone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tone",
+          "text"
+        ],
+        "title": "MinigameFeedbackOut",
+        "type": "object"
+      },
+      "MinigameFrameOut": {
+        "properties": {
+          "caption": {
+            "title": "Caption",
+            "type": "string"
+          },
+          "fen": {
+            "title": "Fen",
+            "type": "string"
+          },
+          "lastMove": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MinigameSquares"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "fen",
+          "lastMove",
+          "caption"
+        ],
+        "title": "MinigameFrameOut",
+        "type": "object"
+      },
+      "MinigameInfoOut": {
+        "properties": {
+          "blurb": {
+            "title": "Blurb",
+            "type": "string"
+          },
+          "howTo": {
+            "title": "Howto",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "teaches": {
+            "title": "Teaches",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "blurb",
+          "teaches",
+          "howTo"
+        ],
+        "title": "MinigameInfoOut",
+        "type": "object"
+      },
+      "MinigameMarkOut": {
+        "properties": {
+          "kind": {
+            "enum": [
+              "crumb",
+              "pad",
+              "danger",
+              "good",
+              "bad",
+              "hint",
+              "target"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "square": {
+            "title": "Square",
+            "type": "string"
+          }
+        },
+        "required": [
+          "square",
+          "kind"
+        ],
+        "title": "MinigameMarkOut",
+        "type": "object"
+      },
+      "MinigameRunOut": {
+        "properties": {
+          "arrows": {
+            "items": {
+              "$ref": "#/components/schemas/MinigameArrowOut"
+            },
+            "title": "Arrows",
+            "type": "array"
+          },
+          "board": {
+            "$ref": "#/components/schemas/MinigameBoardOut"
+          },
+          "canHint": {
+            "title": "Canhint",
+            "type": "boolean"
+          },
+          "choices": {
+            "items": {
+              "$ref": "#/components/schemas/MinigameChoiceOut"
+            },
+            "title": "Choices",
+            "type": "array"
+          },
+          "feedback": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MinigameFeedbackOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "frames": {
+            "description": "Play these before showing the board",
+            "items": {
+              "$ref": "#/components/schemas/MinigameFrameOut"
+            },
+            "title": "Frames",
+            "type": "array"
+          },
+          "hearts": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hearts"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "marks": {
+            "items": {
+              "$ref": "#/components/schemas/MinigameMarkOut"
+            },
+            "title": "Marks",
+            "type": "array"
+          },
+          "moves": {
+            "description": "Moves the player may try (UCI)",
+            "items": {
+              "type": "string"
+            },
+            "title": "Moves",
+            "type": "array"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Notes",
+            "type": "array"
+          },
+          "phase": {
+            "description": "play: input is open; review: send `next`; done: run over",
+            "enum": [
+              "play",
+              "review",
+              "done"
+            ],
+            "title": "Phase",
+            "type": "string"
+          },
+          "prompt": {
+            "title": "Prompt",
+            "type": "string"
+          },
+          "remainingMs": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remainingms"
+          },
+          "round": {
+            "title": "Round",
+            "type": "integer"
+          },
+          "rounds": {
+            "title": "Rounds",
+            "type": "integer"
+          },
+          "score": {
+            "title": "Score",
+            "type": "integer"
+          },
+          "seed": {
+            "title": "Seed",
+            "type": "integer"
+          },
+          "version": {
+            "description": "Grows with every action",
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "seed",
+          "version",
+          "phase",
+          "round",
+          "rounds",
+          "score",
+          "hearts",
+          "remainingMs",
+          "feedback",
+          "frames",
+          "prompt",
+          "board",
+          "moves",
+          "marks",
+          "arrows",
+          "choices",
+          "notes",
+          "canHint"
+        ],
+        "title": "MinigameRunOut",
+        "type": "object"
+      },
+      "MinigameSquares": {
+        "properties": {
+          "origin": {
+            "title": "Origin",
+            "type": "string"
+          },
+          "target": {
+            "title": "Target",
+            "type": "string"
+          }
+        },
+        "required": [
+          "origin",
+          "target"
+        ],
+        "title": "MinigameSquares",
+        "type": "object"
+      },
       "MoveChosenData": {
         "properties": {
           "candidates": {
@@ -3861,6 +4261,34 @@
           "data"
         ],
         "title": "SparringSeriesUpdatedEvent",
+        "type": "object"
+      },
+      "StartMinigameRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+            "title": "Kind",
+            "type": "string"
+          },
+          "seed": {
+            "anyOf": [
+              {
+                "maximum": 9007199254740991.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seed"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "title": "StartMinigameRequest",
         "type": "object"
       },
       "StartSeriesRequest": {
@@ -5368,6 +5796,138 @@
         "summary": "Resume Match",
         "tags": [
           "matches"
+        ]
+      }
+    },
+    "/api/v1/minigame-runs": {
+      "post": {
+        "description": "Start a run. The same seed deals the same run.",
+        "operationId": "startMinigame",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartMinigameRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MinigameRunOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Start Minigame",
+        "tags": [
+          "minigames (experimental)"
+        ]
+      }
+    },
+    "/api/v1/minigame-runs/{run_id}/actions": {
+      "post": {
+        "description": "One thing the player did: a move, a choice, a hint, or going on to the next round.",
+        "operationId": "playMinigame",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MinigameActionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MinigameRunOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Play Minigame",
+        "tags": [
+          "minigames (experimental)"
+        ]
+      }
+    },
+    "/api/v1/minigames": {
+      "get": {
+        "description": "Every minigame test. Nothing in here changes a duck.",
+        "operationId": "listMinigames",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MinigameInfoOut"
+                  },
+                  "title": "Response Listminigames",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "List Minigames",
+        "tags": [
+          "minigames (experimental)"
         ]
       }
     },
