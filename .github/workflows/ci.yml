@@ -1,0 +1,50 @@
+# Every gate in `npm run check`, on Linux, Windows and macOS (ADR-0012).
+# No job downloads or runs a real engine: tests use the fake UCI engine, and the
+# real-Stockfish tests in backend/tests/real skip themselves when none is installed.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: check (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - uses: astral-sh/setup-uv@v10
+        with:
+          python-version: '3.12'
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - name: Install web and contract tooling
+        run: npm ci
+
+      - name: Install backend
+        run: uv sync --project backend --locked
+
+      - name: Run every check
+        run: node scripts/check.mjs
+        env:
+          # Keep any stray data out of the workspace; no engine is ever installed here.
+          DG_DATA_DIR: ${{ runner.temp }}/duckgambit-data

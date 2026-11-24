@@ -1,0 +1,24 @@
+{
+  "format": "duck-gambit.puzzle-pack",
+  "schemaVersion": 1,
+  "id": "sample-hand-made",
+  "title": "Hand-made sample (tests only)",
+  "license": "GPL-3.0-or-later",
+  "source": { "name": "Duck Gambit authors", "note": "Positions composed for tests. Answer keys are added by the tests, not by a real Judge." },
+  "puzzles": [
+    {
+      "id": "sample:back-rank",
+      "fen": "6k1/5ppp/8/8/8/8/5PPP/3R2K1 w - - 0 1",
+      "goal": { "type": "find-best" },
+      "themes": ["mateIn1", "backRankMate"],
+      "rating": 600
+    },
+    {
+      "id": "sample:fork",
+      "fen": "q3k3/8/8/3N4/8/8/5PPP/6K1 w - - 0 1",
+      "goal": { "type": "find-best" },
+      "themes": ["fork"],
+      "rating": 900
+    }
+  ]
+}

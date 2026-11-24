@@ -1,0 +1,5 @@
+# One line-ending everywhere, so golden files and hashes match on every OS.
+* text=auto eol=lf
+*.png binary
+*.ico binary
+*.nnue binary

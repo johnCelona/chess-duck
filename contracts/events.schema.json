@@ -1,0 +1,2086 @@
+{
+  "$defs": {
+    "AdjustmentModel": {
+      "properties": {
+        "deltaCp": {
+          "title": "Deltacp",
+          "type": "integer"
+        },
+        "kind": {
+          "enum": [
+            "aggression",
+            "solidity",
+            "principle",
+            "motif"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "ruleId": {
+          "title": "Ruleid",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ruleId",
+        "kind",
+        "deltaCp",
+        "label"
+      ],
+      "title": "AdjustmentModel",
+      "type": "object"
+    },
+    "CandidateModel": {
+      "properties": {
+        "adjustments": {
+          "items": {
+            "$ref": "#/$defs/AdjustmentModel"
+          },
+          "title": "Adjustments",
+          "type": "array"
+        },
+        "baseScore": {
+          "title": "Basescore",
+          "type": "integer"
+        },
+        "cp": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Centipawns from the mover's side; null when it is a mate",
+          "title": "Cp"
+        },
+        "filtered": {
+          "description": "Ruled out by the duck's blunder tolerance",
+          "title": "Filtered",
+          "type": "boolean"
+        },
+        "finalScore": {
+          "title": "Finalscore",
+          "type": "integer"
+        },
+        "mate": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Mate"
+        },
+        "move": {
+          "title": "Move",
+          "type": "string"
+        },
+        "probabilityPpm": {
+          "description": "Chance this move was played, parts per million",
+          "title": "Probabilityppm",
+          "type": "integer"
+        },
+        "pv": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Pv",
+          "type": "array"
+        },
+        "rank": {
+          "description": "The engine's own order; 1 is its favourite",
+          "title": "Rank",
+          "type": "integer"
+        },
+        "san": {
+          "title": "San",
+          "type": "string"
+        },
+        "wdl": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Wdl"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "move",
+        "san",
+        "rank",
+        "cp",
+        "mate",
+        "wdl",
+        "baseScore",
+        "adjustments",
+        "finalScore",
+        "filtered",
+        "probabilityPpm",
+        "pv"
+      ],
+      "title": "CandidateModel",
+      "type": "object"
+    },
+    "DuckHatchedData": {
+      "properties": {
+        "duckId": {
+          "title": "Duckid",
+          "type": "string"
+        },
+        "eggSeed": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Eggseed"
+        },
+        "level": {
+          "title": "Level",
+          "type": "integer"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "species": {
+          "title": "Species",
+          "type": "string"
+        },
+        "stage": {
+          "title": "Stage",
+          "type": "string"
+        },
+        "stats": {
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "title": "Stats",
+          "type": "object"
+        }
+      },
+      "required": [
+        "duckId",
+        "name",
+        "species",
+        "stage",
+        "level",
+        "stats"
+      ],
+      "title": "DuckHatchedData",
+      "type": "object"
+    },
+    "DuckHatchedEvent": {
+      "properties": {
+        "cursor": {
+          "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+          "title": "Cursor",
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/$defs/DuckHatchedData"
+        },
+        "recordedAt": {
+          "title": "Recordedat",
+          "type": "string"
+        },
+        "seq": {
+          "description": "Position within the stream, starting at 1",
+          "title": "Seq",
+          "type": "integer"
+        },
+        "stream": {
+          "title": "Stream",
+          "type": "string"
+        },
+        "type": {
+          "const": "DuckHatched",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cursor",
+        "stream",
+        "seq",
+        "recordedAt",
+        "type",
+        "data"
+      ],
+      "title": "DuckHatchedEvent",
+      "type": "object"
+    },
+    "DuckLeveledUpData": {
+      "properties": {
+        "duckId": {
+          "title": "Duckid",
+          "type": "string"
+        },
+        "level": {
+          "title": "Level",
+          "type": "integer"
+        },
+        "stage": {
+          "title": "Stage",
+          "type": "string"
+        },
+        "stageAdvanced": {
+          "title": "Stageadvanced",
+          "type": "boolean"
+        },
+        "statBudget": {
+          "title": "Statbudget",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "duckId",
+        "level",
+        "stage",
+        "statBudget",
+        "stageAdvanced"
+      ],
+      "title": "DuckLeveledUpData",
+      "type": "object"
+    },
+    "DuckLeveledUpEvent": {
+      "properties": {
+        "cursor": {
+          "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+          "title": "Cursor",
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/$defs/DuckLeveledUpData"
+        },
+        "recordedAt": {
+          "title": "Recordedat",
+          "type": "string"
+        },
+        "seq": {
+          "description": "Position within the stream, starting at 1",
+          "title": "Seq",
+          "type": "integer"
+        },
+        "stream": {
+          "title": "Stream",
+          "type": "string"
+        },
+        "type": {
+          "const": "DuckLeveledUp",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cursor",
+        "stream",
+        "seq",
+        "recordedAt",
+        "type",
+        "data"
+      ],
+      "title": "DuckLeveledUpEvent",
+      "type": "object"
+    },
+    "DuckScoreData": {
+      "properties": {
+        "duckId": {
+          "title": "Duckid",
+          "type": "string"
+        },
+        "points": {
+          "title": "Points",
+          "type": "number"
+        }
+      },
+      "required": [
+        "duckId",
+        "points"
+      ],
+      "title": "DuckScoreData",
+      "type": "object"
+    },
+    "GameFinishedData": {
+      "properties": {
+        "gameId": {
+          "title": "Gameid",
+          "type": "string"
+        },
+        "matchId": {
+          "title": "Matchid",
+          "type": "string"
+        },
+        "plies": {
+          "title": "Plies",
+          "type": "integer"
+        },
+        "result": {
+          "enum": [
+            "1-0",
+            "0-1",
+            "1/2-1/2"
+          ],
+          "title": "Result",
+          "type": "string"
+        },
+        "termination": {
+          "title": "Termination",
+          "type": "string"
+        },
+        "winnerDuckId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Winnerduckid"
+        }
+      },
+      "required": [
+        "matchId",
+        "gameId",
+        "result",
+        "termination",
+        "winnerDuckId",
+        "plies"
+      ],
+      "title": "GameFinishedData",
+      "type": "object"
+    },
+    "GameFinishedEvent": {
+      "properties": {
+        "cursor": {
+          "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+          "title": "Cursor",
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/$defs/GameFinishedData"
+        },
+        "recordedAt": {
+          "title": "Recordedat",
+          "type": "string"
+        },
+        "seq": {
+          "description": "Position within the stream, starting at 1",
+          "title": "Seq",
+          "type": "integer"
+        },
+        "stream": {
+          "title": "Stream",
+          "type": "string"
+        },
+        "type": {
+          "const": "GameFinished",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cursor",
+        "stream",
+        "seq",
+        "recordedAt",
+        "type",
+        "data"
+      ],
+      "title": "GameFinishedEvent",
+      "type": "object"
+    },
+    "GameStartedData": {
+      "properties": {
+        "blackClockMs": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Blackclockms"
+        },
+        "blackDuckId": {
+          "title": "Blackduckid",
+          "type": "string"
+        },
+        "gameId": {
+          "title": "Gameid",
+          "type": "string"
+        },
+        "index": {
+          "title": "Index",
+          "type": "integer"
+        },
+        "initialFen": {
+          "title": "Initialfen",
+          "type": "string"
+        },
+        "matchId": {
+          "title": "Matchid",
+          "type": "string"
+        },
+        "whiteClockMs": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Whiteclockms"
+        },
+        "whiteDuckId": {
+          "title": "Whiteduckid",
+          "type": "string"
+        }
+      },
+      "required": [
+        "matchId",
+        "gameId",
+        "index",
+        "whiteDuckId",
+        "blackDuckId",
+        "initialFen",
+        "whiteClockMs",
+        "blackClockMs"
+      ],
+      "title": "GameStartedData",
+      "type": "object"
+    },
+    "GameStartedEvent": {
+      "properties": {
+        "cursor": {
+          "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+          "title": "Cursor",
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/$defs/GameStartedData"
+        },
+        "recordedAt": {
+          "title": "Recordedat",
+          "type": "string"
+        },
+        "seq": {
+          "description": "Position within the stream, starting at 1",
+          "title": "Seq",
+          "type": "integer"
+        },
+        "stream": {
+          "title": "Stream",
+          "type": "string"
+        },
+        "type": {
+          "const": "GameStarted",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cursor",
+        "stream",
+        "seq",
+        "recordedAt",
+        "type",
+        "data"
+      ],
+      "title": "GameStartedEvent",
+      "type": "object"
+    },
+    "JobFinishedData": {
+      "properties": {
+        "errorCode": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Errorcode"
+        },
+        "jobId": {
+          "title": "Jobid",
+          "type": "string"
+        },
+        "state": {
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "jobId",
+        "state",
+        "errorCode"
+      ],
+      "title": "JobFinishedData",
+      "type": "object"
+    },
+    "JobFinishedEvent": {
+      "properties": {
+        "cursor": {
+          "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+          "title": "Cursor",
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/$defs/JobFinishedData"
+        },
+        "recordedAt": {
+          "title": "Recordedat",
+          "type": "string"
+        },
+        "seq": {
+          "description": "Position within the stream, starting at 1",
+          "title": "Seq",
+          "type": "integer"
+        },
+        "stream": {
+          "title": "Stream",
+          "type": "string"
+        },
+        "type": {
+          "const": "JobFinished",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cursor",
+        "stream",
+        "seq",
+        "recordedAt",
+        "type",
+        "data"
+      ],
+      "title": "JobFinishedEvent",
+      "type": "object"
+    },
+    "JobProgressedData": {
+      "properties": {
+        "done": {
+          "title": "Done",
+          "type": "integer"
+        },
+        "jobId": {
+          "title": "Jobid",
+          "type": "string"
+        },
+        "state": {
+          "title": "State",
+          "type": "string"
+        },
+        "total": {
+          "title": "Total",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "jobId",
+        "state",
+        "done",
+        "total"
+      ],
+      "title": "JobProgressedData",
+      "type": "object"
+    },
+    "JobProgressedEvent": {
+      "properties": {
+        "cursor": {
+          "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+          "title": "Cursor",
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/$defs/JobProgressedData"
+        },
+        "recordedAt": {
+          "title": "Recordedat",
+          "type": "string"
+        },
+        "seq": {
+          "description": "Position within the stream, starting at 1",
+          "title": "Seq",
+          "type": "integer"
+        },
+        "stream": {
+          "title": "Stream",
+          "type": "string"
+        },
+        "type": {
+          "const": "JobProgressed",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cursor",
+        "stream",
+        "seq",
+        "recordedAt",
+        "type",
+        "data"
+      ],
+      "title": "JobProgressedEvent",
+      "type": "object"
+    },
+    "KnowledgeAddedData": {
+      "properties": {
+        "duckId": {
+          "title": "Duckid",
+          "type": "string"
+        },
+        "entries": {
+          "title": "Entries",
+          "type": "integer"
+        },
+        "lessonId": {
+          "title": "Lessonid",
+          "type": "string"
+        },
+        "target": {
+          "enum": [
+            "repertoire",
+            "puzzle_memory"
+          ],
+          "title": "Target",
+          "type": "string"
+        }
+      },
+      "required": [
+        "duckId",
+        "lessonId",
+        "target",
+        "entries"
+      ],
+      "title": "KnowledgeAddedData",
+      "type": "object"
+    },
+    "KnowledgeAddedEvent": {
+      "properties": {
+        "cursor": {
+          "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+          "title": "Cursor",
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/$defs/KnowledgeAddedData"
+        },
+        "recordedAt": {
+          "title": "Recordedat",
+          "type": "string"
+        },
+        "seq": {
+          "description": "Position within the stream, starting at 1",
+          "title": "Seq",
+          "type": "integer"
+        },
+        "stream": {
+          "title": "Stream",
+          "type": "string"
+        },
+        "type": {
+          "const": "KnowledgeAdded",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cursor",
+        "stream",
+        "seq",
+        "recordedAt",
+        "type",
+        "data"
+      ],
+      "title": "KnowledgeAddedEvent",
+      "type": "object"
+    },
+    "LessonCompletedData": {
+      "properties": {
+        "duckId": {
+          "title": "Duckid",
+          "type": "string"
+        },
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        },
+        "lessonId": {
+          "title": "Lessonid",
+          "type": "string"
+        },
+        "xp": {
+          "title": "Xp",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "duckId",
+        "lessonId",
+        "kind",
+        "xp"
+      ],
+      "title": "LessonCompletedData",
+      "type": "object"
+    },
+    "LessonCompletedEvent": {
+      "properties": {
+        "cursor": {
+          "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+          "title": "Cursor",
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/$defs/LessonCompletedData"
+        },
+        "recordedAt": {
+          "title": "Recordedat",
+          "type": "string"
+        },
+        "seq": {
+          "description": "Position within the stream, starting at 1",
+          "title": "Seq",
+          "type": "integer"
+        },
+        "stream": {
+          "title": "Stream",
+          "type": "string"
+        },
+        "type": {
+          "const": "LessonCompleted",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cursor",
+        "stream",
+        "seq",
+        "recordedAt",
+        "type",
+        "data"
+      ],
+      "title": "LessonCompletedEvent",
+      "type": "object"
+    },
+    "MatchCreatedData": {
+      "properties": {
+        "duckIds": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Duckids",
+          "type": "array"
+        },
+        "games": {
+          "title": "Games",
+          "type": "integer"
+        },
+        "matchId": {
+          "title": "Matchid",
+          "type": "string"
+        },
+        "mode": {
+          "title": "Mode",
+          "type": "string"
+        },
+        "rated": {
+          "title": "Rated",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "matchId",
+        "duckIds",
+        "games",
+        "mode",
+        "rated"
+      ],
+      "title": "MatchCreatedData",
+      "type": "object"
+    },
+    "MatchCreatedEvent": {
+      "properties": {
+        "cursor": {
+          "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+          "title": "Cursor",
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/$defs/MatchCreatedData"
+        },
+        "recordedAt": {
+          "title": "Recordedat",
+          "type": "string"
+        },
+        "seq": {
+          "description": "Position within the stream, starting at 1",
+          "title": "Seq",
+          "type": "integer"
+        },
+        "stream": {
+          "title": "Stream",
+          "type": "string"
+        },
+        "type": {
+          "const": "MatchCreated",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cursor",
+        "stream",
+        "seq",
+        "recordedAt",
+        "type",
+        "data"
+      ],
+      "title": "MatchCreatedEvent",
+      "type": "object"
+    },
+    "MatchFinishedData": {
+      "properties": {
+        "matchId": {
+          "title": "Matchid",
+          "type": "string"
+        },
+        "scores": {
+          "items": {
+            "$ref": "#/$defs/DuckScoreData"
+          },
+          "title": "Scores",
+          "type": "array"
+        },
+        "winnerDuckId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Winnerduckid"
+        }
+      },
+      "required": [
+        "matchId",
+        "scores",
+        "winnerDuckId"
+      ],
+      "title": "MatchFinishedData",
+      "type": "object"
+    },
+    "MatchFinishedEvent": {
+      "properties": {
+        "cursor": {
+          "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+          "title": "Cursor",
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/$defs/MatchFinishedData"
+        },
+        "recordedAt": {
+          "title": "Recordedat",
+          "type": "string"
+        },
+        "seq": {
+          "description": "Position within the stream, starting at 1",
+          "title": "Seq",
+          "type": "integer"
+        },
+        "stream": {
+          "title": "Stream",
+          "type": "string"
+        },
+        "type": {
+          "const": "MatchFinished",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cursor",
+        "stream",
+        "seq",
+        "recordedAt",
+        "type",
+        "data"
+      ],
+      "title": "MatchFinishedEvent",
+      "type": "object"
+    },
+    "MatchStartedData": {
+      "properties": {
+        "matchId": {
+          "title": "Matchid",
+          "type": "string"
+        }
+      },
+      "required": [
+        "matchId"
+      ],
+      "title": "MatchStartedData",
+      "type": "object"
+    },
+    "MatchStartedEvent": {
+      "properties": {
+        "cursor": {
+          "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+          "title": "Cursor",
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/$defs/MatchStartedData"
+        },
+        "recordedAt": {
+          "title": "Recordedat",
+          "type": "string"
+        },
+        "seq": {
+          "description": "Position within the stream, starting at 1",
+          "title": "Seq",
+          "type": "integer"
+        },
+        "stream": {
+          "title": "Stream",
+          "type": "string"
+        },
+        "type": {
+          "const": "MatchStarted",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cursor",
+        "stream",
+        "seq",
+        "recordedAt",
+        "type",
+        "data"
+      ],
+      "title": "MatchStartedEvent",
+      "type": "object"
+    },
+    "MoveChosenData": {
+      "properties": {
+        "candidates": {
+          "items": {
+            "$ref": "#/$defs/CandidateModel"
+          },
+          "title": "Candidates",
+          "type": "array"
+        },
+        "color": {
+          "enum": [
+            "white",
+            "black"
+          ],
+          "title": "Color",
+          "type": "string"
+        },
+        "depth": {
+          "title": "Depth",
+          "type": "integer"
+        },
+        "duckId": {
+          "title": "Duckid",
+          "type": "string"
+        },
+        "fenBefore": {
+          "title": "Fenbefore",
+          "type": "string"
+        },
+        "gameId": {
+          "title": "Gameid",
+          "type": "string"
+        },
+        "move": {
+          "title": "Move",
+          "type": "string"
+        },
+        "nodes": {
+          "title": "Nodes",
+          "type": "integer"
+        },
+        "nodesBudget": {
+          "title": "Nodesbudget",
+          "type": "integer"
+        },
+        "ply": {
+          "title": "Ply",
+          "type": "integer"
+        },
+        "reasons": {
+          "items": {
+            "$ref": "#/$defs/ReasonModel"
+          },
+          "title": "Reasons",
+          "type": "array"
+        },
+        "san": {
+          "title": "San",
+          "type": "string"
+        },
+        "source": {
+          "enum": [
+            "memory",
+            "book",
+            "forced",
+            "engine"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "thinkMs": {
+          "description": "Virtual think time; pace playback with this",
+          "title": "Thinkms",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "gameId",
+        "ply",
+        "duckId",
+        "color",
+        "fenBefore",
+        "move",
+        "san",
+        "source",
+        "candidates",
+        "reasons",
+        "thinkMs",
+        "nodesBudget",
+        "nodes",
+        "depth"
+      ],
+      "title": "MoveChosenData",
+      "type": "object"
+    },
+    "MoveChosenEvent": {
+      "properties": {
+        "cursor": {
+          "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+          "title": "Cursor",
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/$defs/MoveChosenData"
+        },
+        "recordedAt": {
+          "title": "Recordedat",
+          "type": "string"
+        },
+        "seq": {
+          "description": "Position within the stream, starting at 1",
+          "title": "Seq",
+          "type": "integer"
+        },
+        "stream": {
+          "title": "Stream",
+          "type": "string"
+        },
+        "type": {
+          "const": "MoveChosen",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cursor",
+        "stream",
+        "seq",
+        "recordedAt",
+        "type",
+        "data"
+      ],
+      "title": "MoveChosenEvent",
+      "type": "object"
+    },
+    "MoveMadeData": {
+      "properties": {
+        "blackClockMs": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Blackclockms"
+        },
+        "by": {
+          "enum": [
+            "duck",
+            "human"
+          ],
+          "title": "By",
+          "type": "string"
+        },
+        "capture": {
+          "title": "Capture",
+          "type": "boolean"
+        },
+        "castle": {
+          "anyOf": [
+            {
+              "enum": [
+                "kingside",
+                "queenside"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Castle"
+        },
+        "check": {
+          "title": "Check",
+          "type": "boolean"
+        },
+        "checkmate": {
+          "title": "Checkmate",
+          "type": "boolean"
+        },
+        "color": {
+          "enum": [
+            "white",
+            "black"
+          ],
+          "title": "Color",
+          "type": "string"
+        },
+        "duckId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Duckid"
+        },
+        "enPassant": {
+          "title": "Enpassant",
+          "type": "boolean"
+        },
+        "fenAfter": {
+          "title": "Fenafter",
+          "type": "string"
+        },
+        "gameId": {
+          "title": "Gameid",
+          "type": "string"
+        },
+        "ply": {
+          "title": "Ply",
+          "type": "integer"
+        },
+        "promotion": {
+          "anyOf": [
+            {
+              "enum": [
+                "q",
+                "r",
+                "b",
+                "n"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Promotion"
+        },
+        "san": {
+          "title": "San",
+          "type": "string"
+        },
+        "thinkMs": {
+          "title": "Thinkms",
+          "type": "integer"
+        },
+        "uci": {
+          "title": "Uci",
+          "type": "string"
+        },
+        "whiteClockMs": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Whiteclockms"
+        }
+      },
+      "required": [
+        "gameId",
+        "ply",
+        "color",
+        "by",
+        "duckId",
+        "uci",
+        "san",
+        "fenAfter",
+        "capture",
+        "enPassant",
+        "check",
+        "checkmate",
+        "castle",
+        "promotion",
+        "thinkMs",
+        "whiteClockMs",
+        "blackClockMs"
+      ],
+      "title": "MoveMadeData",
+      "type": "object"
+    },
+    "MoveMadeEvent": {
+      "properties": {
+        "cursor": {
+          "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+          "title": "Cursor",
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/$defs/MoveMadeData"
+        },
+        "recordedAt": {
+          "title": "Recordedat",
+          "type": "string"
+        },
+        "seq": {
+          "description": "Position within the stream, starting at 1",
+          "title": "Seq",
+          "type": "integer"
+        },
+        "stream": {
+          "title": "Stream",
+          "type": "string"
+        },
+        "type": {
+          "const": "MoveMade",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cursor",
+        "stream",
+        "seq",
+        "recordedAt",
+        "type",
+        "data"
+      ],
+      "title": "MoveMadeEvent",
+      "type": "object"
+    },
+    "RatingUpdatedData": {
+      "properties": {
+        "after": {
+          "title": "After",
+          "type": "number"
+        },
+        "before": {
+          "title": "Before",
+          "type": "number"
+        },
+        "contextId": {
+          "title": "Contextid",
+          "type": "string"
+        },
+        "deviation": {
+          "title": "Deviation",
+          "type": "number"
+        },
+        "duckId": {
+          "title": "Duckid",
+          "type": "string"
+        },
+        "games": {
+          "title": "Games",
+          "type": "integer"
+        },
+        "kind": {
+          "enum": [
+            "game",
+            "puzzle"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "provisional": {
+          "title": "Provisional",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "duckId",
+        "contextId",
+        "kind",
+        "before",
+        "after",
+        "deviation",
+        "games",
+        "provisional"
+      ],
+      "title": "RatingUpdatedData",
+      "type": "object"
+    },
+    "RatingUpdatedEvent": {
+      "properties": {
+        "cursor": {
+          "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+          "title": "Cursor",
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/$defs/RatingUpdatedData"
+        },
+        "recordedAt": {
+          "title": "Recordedat",
+          "type": "string"
+        },
+        "seq": {
+          "description": "Position within the stream, starting at 1",
+          "title": "Seq",
+          "type": "integer"
+        },
+        "stream": {
+          "title": "Stream",
+          "type": "string"
+        },
+        "type": {
+          "const": "RatingUpdated",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cursor",
+        "stream",
+        "seq",
+        "recordedAt",
+        "type",
+        "data"
+      ],
+      "title": "RatingUpdatedEvent",
+      "type": "object"
+    },
+    "ReasonModel": {
+      "properties": {
+        "code": {
+          "description": "Stable identifier; render your own copy from it if you like",
+          "title": "Code",
+          "type": "string"
+        },
+        "params": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ]
+          },
+          "title": "Params",
+          "type": "object"
+        },
+        "text": {
+          "description": "Default English sentence",
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "text",
+        "params"
+      ],
+      "title": "ReasonModel",
+      "type": "object"
+    },
+    "SeriesUpdatedData": {
+      "properties": {
+        "armageddonWhiteDuckId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Who has White in the Armageddon game (a draw there wins for Black)",
+          "title": "Armageddonwhiteduckid"
+        },
+        "bestOf": {
+          "title": "Bestof",
+          "type": "integer"
+        },
+        "decidedBy": {
+          "anyOf": [
+            {
+              "enum": [
+                "games",
+                "armageddon"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Decidedby"
+        },
+        "gamesPlayed": {
+          "title": "Gamesplayed",
+          "type": "integer"
+        },
+        "matchId": {
+          "title": "Matchid",
+          "type": "string"
+        },
+        "scores": {
+          "items": {
+            "$ref": "#/$defs/DuckScoreData"
+          },
+          "title": "Scores",
+          "type": "array"
+        },
+        "state": {
+          "enum": [
+            "playing",
+            "armageddon",
+            "decided"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "winnerDuckId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Winnerduckid"
+        }
+      },
+      "required": [
+        "matchId",
+        "bestOf",
+        "scores",
+        "gamesPlayed",
+        "state",
+        "winnerDuckId",
+        "decidedBy",
+        "armageddonWhiteDuckId"
+      ],
+      "title": "SeriesUpdatedData",
+      "type": "object"
+    },
+    "SeriesUpdatedEvent": {
+      "properties": {
+        "cursor": {
+          "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+          "title": "Cursor",
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/$defs/SeriesUpdatedData"
+        },
+        "recordedAt": {
+          "title": "Recordedat",
+          "type": "string"
+        },
+        "seq": {
+          "description": "Position within the stream, starting at 1",
+          "title": "Seq",
+          "type": "integer"
+        },
+        "stream": {
+          "title": "Stream",
+          "type": "string"
+        },
+        "type": {
+          "const": "SeriesUpdated",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cursor",
+        "stream",
+        "seq",
+        "recordedAt",
+        "type",
+        "data"
+      ],
+      "title": "SeriesUpdatedEvent",
+      "type": "object"
+    },
+    "SparringGameFinishedData": {
+      "properties": {
+        "gameId": {
+          "title": "Gameid",
+          "type": "string"
+        },
+        "plies": {
+          "title": "Plies",
+          "type": "integer"
+        },
+        "result": {
+          "enum": [
+            "1-0",
+            "0-1",
+            "1/2-1/2"
+          ],
+          "title": "Result",
+          "type": "string"
+        },
+        "termination": {
+          "title": "Termination",
+          "type": "string"
+        },
+        "winner": {
+          "anyOf": [
+            {
+              "enum": [
+                "human",
+                "duck"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Winner"
+        }
+      },
+      "required": [
+        "gameId",
+        "result",
+        "termination",
+        "winner",
+        "plies"
+      ],
+      "title": "SparringGameFinishedData",
+      "type": "object"
+    },
+    "SparringGameFinishedEvent": {
+      "properties": {
+        "cursor": {
+          "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+          "title": "Cursor",
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/$defs/SparringGameFinishedData"
+        },
+        "recordedAt": {
+          "title": "Recordedat",
+          "type": "string"
+        },
+        "seq": {
+          "description": "Position within the stream, starting at 1",
+          "title": "Seq",
+          "type": "integer"
+        },
+        "stream": {
+          "title": "Stream",
+          "type": "string"
+        },
+        "type": {
+          "const": "SparringGameFinished",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cursor",
+        "stream",
+        "seq",
+        "recordedAt",
+        "type",
+        "data"
+      ],
+      "title": "SparringGameFinishedEvent",
+      "type": "object"
+    },
+    "SparringGameStartedData": {
+      "properties": {
+        "blackClockMs": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Blackclockms"
+        },
+        "duckId": {
+          "title": "Duckid",
+          "type": "string"
+        },
+        "gameId": {
+          "title": "Gameid",
+          "type": "string"
+        },
+        "humanColor": {
+          "enum": [
+            "white",
+            "black"
+          ],
+          "title": "Humancolor",
+          "type": "string"
+        },
+        "initialFen": {
+          "title": "Initialfen",
+          "type": "string"
+        },
+        "seriesId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Seriesid"
+        },
+        "whiteClockMs": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Whiteclockms"
+        }
+      },
+      "required": [
+        "gameId",
+        "duckId",
+        "humanColor",
+        "initialFen",
+        "whiteClockMs",
+        "blackClockMs",
+        "seriesId"
+      ],
+      "title": "SparringGameStartedData",
+      "type": "object"
+    },
+    "SparringGameStartedEvent": {
+      "properties": {
+        "cursor": {
+          "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+          "title": "Cursor",
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/$defs/SparringGameStartedData"
+        },
+        "recordedAt": {
+          "title": "Recordedat",
+          "type": "string"
+        },
+        "seq": {
+          "description": "Position within the stream, starting at 1",
+          "title": "Seq",
+          "type": "integer"
+        },
+        "stream": {
+          "title": "Stream",
+          "type": "string"
+        },
+        "type": {
+          "const": "SparringGameStarted",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cursor",
+        "stream",
+        "seq",
+        "recordedAt",
+        "type",
+        "data"
+      ],
+      "title": "SparringGameStartedEvent",
+      "type": "object"
+    },
+    "SparringSeriesUpdatedData": {
+      "properties": {
+        "armageddonHumanColor": {
+          "anyOf": [
+            {
+              "enum": [
+                "white",
+                "black"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Armageddonhumancolor"
+        },
+        "bestOf": {
+          "title": "Bestof",
+          "type": "integer"
+        },
+        "decidedBy": {
+          "anyOf": [
+            {
+              "enum": [
+                "games",
+                "armageddon"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Decidedby"
+        },
+        "duckPoints": {
+          "title": "Duckpoints",
+          "type": "number"
+        },
+        "gamesPlayed": {
+          "title": "Gamesplayed",
+          "type": "integer"
+        },
+        "humanPoints": {
+          "title": "Humanpoints",
+          "type": "number"
+        },
+        "seriesId": {
+          "title": "Seriesid",
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "playing",
+            "armageddon",
+            "decided"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "winner": {
+          "anyOf": [
+            {
+              "enum": [
+                "human",
+                "duck"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Winner"
+        }
+      },
+      "required": [
+        "seriesId",
+        "bestOf",
+        "humanPoints",
+        "duckPoints",
+        "gamesPlayed",
+        "state",
+        "winner",
+        "decidedBy",
+        "armageddonHumanColor"
+      ],
+      "title": "SparringSeriesUpdatedData",
+      "type": "object"
+    },
+    "SparringSeriesUpdatedEvent": {
+      "properties": {
+        "cursor": {
+          "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+          "title": "Cursor",
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/$defs/SparringSeriesUpdatedData"
+        },
+        "recordedAt": {
+          "title": "Recordedat",
+          "type": "string"
+        },
+        "seq": {
+          "description": "Position within the stream, starting at 1",
+          "title": "Seq",
+          "type": "integer"
+        },
+        "stream": {
+          "title": "Stream",
+          "type": "string"
+        },
+        "type": {
+          "const": "SparringSeriesUpdated",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cursor",
+        "stream",
+        "seq",
+        "recordedAt",
+        "type",
+        "data"
+      ],
+      "title": "SparringSeriesUpdatedEvent",
+      "type": "object"
+    },
+    "Wdl": {
+      "description": "Win, draw and loss chances per mille, from the mover's point of view.",
+      "properties": {
+        "draw": {
+          "title": "Draw",
+          "type": "integer"
+        },
+        "loss": {
+          "title": "Loss",
+          "type": "integer"
+        },
+        "win": {
+          "title": "Win",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "win",
+        "draw",
+        "loss"
+      ],
+      "title": "Wdl",
+      "type": "object"
+    },
+    "XpGainedData": {
+      "properties": {
+        "amount": {
+          "title": "Amount",
+          "type": "integer"
+        },
+        "duckId": {
+          "title": "Duckid",
+          "type": "string"
+        },
+        "level": {
+          "title": "Level",
+          "type": "integer"
+        },
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "xpAfter": {
+          "title": "Xpafter",
+          "type": "integer"
+        },
+        "xpForNextLevel": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Xpfornextlevel"
+        }
+      },
+      "required": [
+        "duckId",
+        "amount",
+        "source",
+        "xpAfter",
+        "level",
+        "xpForNextLevel"
+      ],
+      "title": "XpGainedData",
+      "type": "object"
+    },
+    "XpGainedEvent": {
+      "properties": {
+        "cursor": {
+          "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+          "title": "Cursor",
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/$defs/XpGainedData"
+        },
+        "recordedAt": {
+          "title": "Recordedat",
+          "type": "string"
+        },
+        "seq": {
+          "description": "Position within the stream, starting at 1",
+          "title": "Seq",
+          "type": "integer"
+        },
+        "stream": {
+          "title": "Stream",
+          "type": "string"
+        },
+        "type": {
+          "const": "XpGained",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cursor",
+        "stream",
+        "seq",
+        "recordedAt",
+        "type",
+        "data"
+      ],
+      "title": "XpGainedEvent",
+      "type": "object"
+    }
+  },
+  "$id": "https://duckgambit.example/contracts/events.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "One event as delivered by /api/v1/events and /api/v1/events/stream.",
+  "discriminator": {
+    "mapping": {
+      "DuckHatched": "#/$defs/DuckHatchedEvent",
+      "DuckLeveledUp": "#/$defs/DuckLeveledUpEvent",
+      "GameFinished": "#/$defs/GameFinishedEvent",
+      "GameStarted": "#/$defs/GameStartedEvent",
+      "JobFinished": "#/$defs/JobFinishedEvent",
+      "JobProgressed": "#/$defs/JobProgressedEvent",
+      "KnowledgeAdded": "#/$defs/KnowledgeAddedEvent",
+      "LessonCompleted": "#/$defs/LessonCompletedEvent",
+      "MatchCreated": "#/$defs/MatchCreatedEvent",
+      "MatchFinished": "#/$defs/MatchFinishedEvent",
+      "MatchStarted": "#/$defs/MatchStartedEvent",
+      "MoveChosen": "#/$defs/MoveChosenEvent",
+      "MoveMade": "#/$defs/MoveMadeEvent",
+      "RatingUpdated": "#/$defs/RatingUpdatedEvent",
+      "SeriesUpdated": "#/$defs/SeriesUpdatedEvent",
+      "SparringGameFinished": "#/$defs/SparringGameFinishedEvent",
+      "SparringGameStarted": "#/$defs/SparringGameStartedEvent",
+      "SparringSeriesUpdated": "#/$defs/SparringSeriesUpdatedEvent",
+      "XpGained": "#/$defs/XpGainedEvent"
+    },
+    "propertyName": "type"
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/DuckHatchedEvent"
+    },
+    {
+      "$ref": "#/$defs/MatchCreatedEvent"
+    },
+    {
+      "$ref": "#/$defs/MatchStartedEvent"
+    },
+    {
+      "$ref": "#/$defs/GameStartedEvent"
+    },
+    {
+      "$ref": "#/$defs/MoveChosenEvent"
+    },
+    {
+      "$ref": "#/$defs/MoveMadeEvent"
+    },
+    {
+      "$ref": "#/$defs/GameFinishedEvent"
+    },
+    {
+      "$ref": "#/$defs/MatchFinishedEvent"
+    },
+    {
+      "$ref": "#/$defs/SeriesUpdatedEvent"
+    },
+    {
+      "$ref": "#/$defs/RatingUpdatedEvent"
+    },
+    {
+      "$ref": "#/$defs/JobProgressedEvent"
+    },
+    {
+      "$ref": "#/$defs/JobFinishedEvent"
+    },
+    {
+      "$ref": "#/$defs/LessonCompletedEvent"
+    },
+    {
+      "$ref": "#/$defs/KnowledgeAddedEvent"
+    },
+    {
+      "$ref": "#/$defs/XpGainedEvent"
+    },
+    {
+      "$ref": "#/$defs/DuckLeveledUpEvent"
+    },
+    {
+      "$ref": "#/$defs/SparringGameStartedEvent"
+    },
+    {
+      "$ref": "#/$defs/SparringGameFinishedEvent"
+    },
+    {
+      "$ref": "#/$defs/SparringSeriesUpdatedEvent"
+    }
+  ],
+  "title": "Duck Gambit event envelope"
+}

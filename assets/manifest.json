@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "assets": [],
+  "skins": [
+    { "id": "classic", "label": "Classic", "placeholder": true },
+    { "id": "graph-paper", "label": "Graph paper", "placeholder": true },
+    { "id": "blueprint", "label": "Blueprint", "placeholder": true },
+    { "id": "terminal", "label": "Terminal", "placeholder": true },
+    { "id": "chalkboard", "label": "Chalkboard", "placeholder": true }
+  ]
+}

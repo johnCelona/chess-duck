@@ -1,0 +1,6471 @@
+{
+  "components": {
+    "schemas": {
+      "ActiveDuckIn": {
+        "additionalProperties": false,
+        "properties": {
+          "duckId": {
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+            "title": "Duckid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "duckId"
+        ],
+        "title": "ActiveDuckIn",
+        "type": "object"
+      },
+      "AdjustmentModel": {
+        "properties": {
+          "deltaCp": {
+            "title": "Deltacp",
+            "type": "integer"
+          },
+          "kind": {
+            "enum": [
+              "aggression",
+              "solidity",
+              "principle",
+              "motif"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "ruleId": {
+            "title": "Ruleid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ruleId",
+          "kind",
+          "deltaCp",
+          "label"
+        ],
+        "title": "AdjustmentModel",
+        "type": "object"
+      },
+      "AnalysisLineOut": {
+        "properties": {
+          "cp": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cp"
+          },
+          "mate": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mate"
+          },
+          "move": {
+            "title": "Move",
+            "type": "string"
+          },
+          "pv": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Pv",
+            "type": "array"
+          },
+          "san": {
+            "title": "San",
+            "type": "string"
+          },
+          "wdl": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Wdl"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "move",
+          "san",
+          "cp",
+          "mate",
+          "wdl",
+          "pv"
+        ],
+        "title": "AnalysisLineOut",
+        "type": "object"
+      },
+      "AnalysisOut": {
+        "properties": {
+          "depth": {
+            "title": "Depth",
+            "type": "integer"
+          },
+          "engineName": {
+            "title": "Enginename",
+            "type": "string"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/AnalysisLineOut"
+            },
+            "title": "Lines",
+            "type": "array"
+          },
+          "nodes": {
+            "title": "Nodes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "engineName",
+          "depth",
+          "nodes",
+          "lines"
+        ],
+        "title": "AnalysisOut",
+        "type": "object"
+      },
+      "AnalysisRequest": {
+        "additionalProperties": false,
+        "description": "A diagnostic search. Node-limited only: wall-clock limits are not reproducible.",
+        "properties": {
+          "fen": {
+            "default": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+            "maxLength": 100,
+            "title": "Fen",
+            "type": "string"
+          },
+          "hashMb": {
+            "default": 16,
+            "maximum": 1024.0,
+            "minimum": 1.0,
+            "title": "Hashmb",
+            "type": "integer"
+          },
+          "multiPV": {
+            "default": 3,
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Multipv",
+            "type": "integer"
+          },
+          "nodes": {
+            "default": 100000,
+            "maximum": 5000000.0,
+            "minimum": 1.0,
+            "title": "Nodes",
+            "type": "integer"
+          }
+        },
+        "title": "AnalysisRequest",
+        "type": "object"
+      },
+      "ArenaEngine": {
+        "additionalProperties": false,
+        "properties": {
+          "hashMb": {
+            "default": 16,
+            "maximum": 256.0,
+            "minimum": 1.0,
+            "title": "Hashmb",
+            "type": "integer"
+          },
+          "id": {
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+            "title": "Id",
+            "type": "string"
+          },
+          "threads": {
+            "const": 1,
+            "default": 1,
+            "description": "Always 1: multi-threaded search is not reproducible",
+            "title": "Threads",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "ArenaEngine",
+        "type": "object"
+      },
+      "ArenaModel": {
+        "additionalProperties": false,
+        "description": "Match conditions shared by every duck (spec 7.1).",
+        "properties": {
+          "engine": {
+            "$ref": "#/components/schemas/ArenaEngine"
+          },
+          "equalEngine": {
+            "default": false,
+            "description": "Ignore the calculation stat: every duck gets the same nodes",
+            "title": "Equalengine",
+            "type": "boolean"
+          },
+          "games": {
+            "default": 1,
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Games",
+            "type": "integer"
+          },
+          "initialFen": {
+            "default": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+            "maxLength": 100,
+            "title": "Initialfen",
+            "type": "string"
+          },
+          "limit": {
+            "discriminator": {
+              "mapping": {
+                "nodes": "#/components/schemas/NodesLimitModel",
+                "virtual-clock": "#/components/schemas/VirtualClockLimitModel"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/NodesLimitModel"
+              },
+              {
+                "$ref": "#/components/schemas/VirtualClockLimitModel"
+              }
+            ],
+            "title": "Limit"
+          },
+          "maxPlies": {
+            "default": 400,
+            "maximum": 1000.0,
+            "minimum": 2.0,
+            "title": "Maxplies",
+            "type": "integer"
+          },
+          "multiPV": {
+            "default": 5,
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Multipv",
+            "type": "integer"
+          },
+          "seed": {
+            "description": "Same seed, same ducks, same games",
+            "maximum": 9007199254740991.0,
+            "minimum": 0.0,
+            "title": "Seed",
+            "type": "integer"
+          },
+          "swapColors": {
+            "default": true,
+            "title": "Swapcolors",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "engine",
+          "limit",
+          "seed"
+        ],
+        "title": "ArenaModel",
+        "type": "object"
+      },
+      "AvatarModel": {
+        "additionalProperties": false,
+        "properties": {
+          "accessories": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 8,
+            "title": "Accessories",
+            "type": "array"
+          },
+          "skin": {
+            "default": "default",
+            "maxLength": 32,
+            "title": "Skin",
+            "type": "string"
+          },
+          "species": {
+            "default": "mallard",
+            "maxLength": 32,
+            "title": "Species",
+            "type": "string"
+          }
+        },
+        "title": "AvatarModel",
+        "type": "object"
+      },
+      "CandidateModel": {
+        "properties": {
+          "adjustments": {
+            "items": {
+              "$ref": "#/components/schemas/AdjustmentModel"
+            },
+            "title": "Adjustments",
+            "type": "array"
+          },
+          "baseScore": {
+            "title": "Basescore",
+            "type": "integer"
+          },
+          "cp": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Centipawns from the mover's side; null when it is a mate",
+            "title": "Cp"
+          },
+          "filtered": {
+            "description": "Ruled out by the duck's blunder tolerance",
+            "title": "Filtered",
+            "type": "boolean"
+          },
+          "finalScore": {
+            "title": "Finalscore",
+            "type": "integer"
+          },
+          "mate": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mate"
+          },
+          "move": {
+            "title": "Move",
+            "type": "string"
+          },
+          "probabilityPpm": {
+            "description": "Chance this move was played, parts per million",
+            "title": "Probabilityppm",
+            "type": "integer"
+          },
+          "pv": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Pv",
+            "type": "array"
+          },
+          "rank": {
+            "description": "The engine's own order; 1 is its favourite",
+            "title": "Rank",
+            "type": "integer"
+          },
+          "san": {
+            "title": "San",
+            "type": "string"
+          },
+          "wdl": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Wdl"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "move",
+          "san",
+          "rank",
+          "cp",
+          "mate",
+          "wdl",
+          "baseScore",
+          "adjustments",
+          "finalScore",
+          "filtered",
+          "probabilityPpm",
+          "pv"
+        ],
+        "title": "CandidateModel",
+        "type": "object"
+      },
+      "CareOut": {
+        "properties": {
+          "energy": {
+            "title": "Energy",
+            "type": "number"
+          },
+          "hunger": {
+            "title": "Hunger",
+            "type": "number"
+          },
+          "lastFedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lastfedat"
+          },
+          "mood": {
+            "title": "Mood",
+            "type": "number"
+          }
+        },
+        "required": [
+          "hunger",
+          "energy",
+          "mood",
+          "lastFedAt"
+        ],
+        "title": "CareOut",
+        "type": "object"
+      },
+      "ChallengerOut": {
+        "description": "A house duck to challenge in Super Bullet Arena.",
+        "properties": {
+          "blurb": {
+            "title": "Blurb",
+            "type": "string"
+          },
+          "difficulty": {
+            "description": "1 is the easiest",
+            "title": "Difficulty",
+            "type": "integer"
+          },
+          "duck": {
+            "$ref": "#/components/schemas/DuckOut"
+          }
+        },
+        "required": [
+          "duck",
+          "blurb",
+          "difficulty"
+        ],
+        "title": "ChallengerOut",
+        "type": "object"
+      },
+      "CreateMatchRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "arena": {
+            "$ref": "#/components/schemas/ArenaModel"
+          },
+          "duckIds": {
+            "description": "First duck has White in the first game",
+            "items": {
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "type": "string"
+            },
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "Duckids",
+            "type": "array"
+          },
+          "rated": {
+            "default": true,
+            "title": "Rated",
+            "type": "boolean"
+          },
+          "series": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SeriesModel"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Play a best-of series instead of `arena.games` games"
+          }
+        },
+        "required": [
+          "duckIds",
+          "arena"
+        ],
+        "title": "CreateMatchRequest",
+        "type": "object"
+      },
+      "DuckFile": {
+        "description": "A portable duck export (ADR-0004). The `duck` body is validated by the domain on import.",
+        "properties": {
+          "duck": {
+            "additionalProperties": true,
+            "title": "Duck",
+            "type": "object"
+          },
+          "exportedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exportedat"
+          },
+          "exportedBy": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exportedby"
+          },
+          "format": {
+            "title": "Format",
+            "type": "string"
+          },
+          "schemaVersion": {
+            "title": "Schemaversion",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "format",
+          "schemaVersion",
+          "duck"
+        ],
+        "title": "DuckFile",
+        "type": "object"
+      },
+      "DuckHatchedData": {
+        "properties": {
+          "duckId": {
+            "title": "Duckid",
+            "type": "string"
+          },
+          "eggSeed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Eggseed"
+          },
+          "level": {
+            "title": "Level",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "species": {
+            "title": "Species",
+            "type": "string"
+          },
+          "stage": {
+            "title": "Stage",
+            "type": "string"
+          },
+          "stats": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Stats",
+            "type": "object"
+          }
+        },
+        "required": [
+          "duckId",
+          "name",
+          "species",
+          "stage",
+          "level",
+          "stats"
+        ],
+        "title": "DuckHatchedData",
+        "type": "object"
+      },
+      "DuckHatchedEvent": {
+        "properties": {
+          "cursor": {
+            "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+            "title": "Cursor",
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/DuckHatchedData"
+          },
+          "recordedAt": {
+            "title": "Recordedat",
+            "type": "string"
+          },
+          "seq": {
+            "description": "Position within the stream, starting at 1",
+            "title": "Seq",
+            "type": "integer"
+          },
+          "stream": {
+            "title": "Stream",
+            "type": "string"
+          },
+          "type": {
+            "const": "DuckHatched",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cursor",
+          "stream",
+          "seq",
+          "recordedAt",
+          "type",
+          "data"
+        ],
+        "title": "DuckHatchedEvent",
+        "type": "object"
+      },
+      "DuckLeveledUpData": {
+        "properties": {
+          "duckId": {
+            "title": "Duckid",
+            "type": "string"
+          },
+          "level": {
+            "title": "Level",
+            "type": "integer"
+          },
+          "stage": {
+            "title": "Stage",
+            "type": "string"
+          },
+          "stageAdvanced": {
+            "title": "Stageadvanced",
+            "type": "boolean"
+          },
+          "statBudget": {
+            "title": "Statbudget",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "duckId",
+          "level",
+          "stage",
+          "statBudget",
+          "stageAdvanced"
+        ],
+        "title": "DuckLeveledUpData",
+        "type": "object"
+      },
+      "DuckLeveledUpEvent": {
+        "properties": {
+          "cursor": {
+            "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+            "title": "Cursor",
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/DuckLeveledUpData"
+          },
+          "recordedAt": {
+            "title": "Recordedat",
+            "type": "string"
+          },
+          "seq": {
+            "description": "Position within the stream, starting at 1",
+            "title": "Seq",
+            "type": "integer"
+          },
+          "stream": {
+            "title": "Stream",
+            "type": "string"
+          },
+          "type": {
+            "const": "DuckLeveledUp",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cursor",
+          "stream",
+          "seq",
+          "recordedAt",
+          "type",
+          "data"
+        ],
+        "title": "DuckLeveledUpEvent",
+        "type": "object"
+      },
+      "DuckOut": {
+        "properties": {
+          "avatar": {
+            "$ref": "#/components/schemas/AvatarModel"
+          },
+          "care": {
+            "$ref": "#/components/schemas/CareOut"
+          },
+          "createdAt": {
+            "title": "Createdat",
+            "type": "string"
+          },
+          "eggSeed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The egg it hatched from; null if hatched without one",
+            "title": "Eggseed"
+          },
+          "growth": {
+            "$ref": "#/components/schemas/GrowthOut"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "knowledge": {
+            "$ref": "#/components/schemas/KnowledgeSummaryOut"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "origin": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Origin"
+          },
+          "rating": {
+            "$ref": "#/components/schemas/HeadlineRatingOut"
+          },
+          "stats": {
+            "$ref": "#/components/schemas/StatsModel"
+          },
+          "stream": {
+            "description": "Event stream for this duck",
+            "title": "Stream",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "avatar",
+          "growth",
+          "stats",
+          "care",
+          "knowledge",
+          "rating",
+          "createdAt",
+          "origin",
+          "eggSeed",
+          "stream"
+        ],
+        "title": "DuckOut",
+        "type": "object"
+      },
+      "DuckScoreData": {
+        "properties": {
+          "duckId": {
+            "title": "Duckid",
+            "type": "string"
+          },
+          "points": {
+            "title": "Points",
+            "type": "number"
+          }
+        },
+        "required": [
+          "duckId",
+          "points"
+        ],
+        "title": "DuckScoreData",
+        "type": "object"
+      },
+      "DuckScoreOut": {
+        "properties": {
+          "duckId": {
+            "title": "Duckid",
+            "type": "string"
+          },
+          "points": {
+            "title": "Points",
+            "type": "number"
+          }
+        },
+        "required": [
+          "duckId",
+          "points"
+        ],
+        "title": "DuckScoreOut",
+        "type": "object"
+      },
+      "EngineOptionOut": {
+        "properties": {
+          "choices": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Choices",
+            "type": "array"
+          },
+          "default": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default"
+          },
+          "max": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max"
+          },
+          "min": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          },
+          "userSettable": {
+            "title": "Usersettable",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "type",
+          "default",
+          "min",
+          "max",
+          "choices",
+          "userSettable"
+        ],
+        "title": "EngineOptionOut",
+        "type": "object"
+      },
+      "EngineOut": {
+        "properties": {
+          "fingerprint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Start of the installed binary's sha256",
+            "title": "Fingerprint"
+          },
+          "homepage": {
+            "title": "Homepage",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "license": {
+            "title": "License",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "sourceUrl": {
+            "title": "Sourceurl",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "installed",
+              "not_installed",
+              "installing",
+              "unavailable"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "version",
+          "license",
+          "homepage",
+          "sourceUrl",
+          "status",
+          "fingerprint"
+        ],
+        "title": "EngineOut",
+        "type": "object"
+      },
+      "EngineProfileBody": {
+        "additionalProperties": false,
+        "properties": {
+          "hashMb": {
+            "maximum": 1024.0,
+            "minimum": 1.0,
+            "title": "Hashmb",
+            "type": "integer"
+          },
+          "multiPV": {
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Multipv",
+            "type": "integer"
+          },
+          "name": {
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "nodes": {
+            "maximum": 5000000.0,
+            "minimum": 1.0,
+            "title": "Nodes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "nodes",
+          "multiPV",
+          "hashMb"
+        ],
+        "title": "EngineProfileBody",
+        "type": "object"
+      },
+      "EngineProfileOut": {
+        "properties": {
+          "hashMb": {
+            "title": "Hashmb",
+            "type": "integer"
+          },
+          "multiPV": {
+            "title": "Multipv",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "nodes": {
+            "title": "Nodes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "nodes",
+          "multiPV",
+          "hashMb"
+        ],
+        "title": "EngineProfileOut",
+        "type": "object"
+      },
+      "EventPage": {
+        "properties": {
+          "events": {
+            "items": {
+              "discriminator": {
+                "mapping": {
+                  "DuckHatched": "#/components/schemas/DuckHatchedEvent",
+                  "DuckLeveledUp": "#/components/schemas/DuckLeveledUpEvent",
+                  "GameFinished": "#/components/schemas/GameFinishedEvent",
+                  "GameStarted": "#/components/schemas/GameStartedEvent",
+                  "JobFinished": "#/components/schemas/JobFinishedEvent",
+                  "JobProgressed": "#/components/schemas/JobProgressedEvent",
+                  "KnowledgeAdded": "#/components/schemas/KnowledgeAddedEvent",
+                  "LessonCompleted": "#/components/schemas/LessonCompletedEvent",
+                  "MatchCreated": "#/components/schemas/MatchCreatedEvent",
+                  "MatchFinished": "#/components/schemas/MatchFinishedEvent",
+                  "MatchStarted": "#/components/schemas/MatchStartedEvent",
+                  "MoveChosen": "#/components/schemas/MoveChosenEvent",
+                  "MoveMade": "#/components/schemas/MoveMadeEvent",
+                  "RatingUpdated": "#/components/schemas/RatingUpdatedEvent",
+                  "SeriesUpdated": "#/components/schemas/SeriesUpdatedEvent",
+                  "SparringGameFinished": "#/components/schemas/SparringGameFinishedEvent",
+                  "SparringGameStarted": "#/components/schemas/SparringGameStartedEvent",
+                  "SparringSeriesUpdated": "#/components/schemas/SparringSeriesUpdatedEvent",
+                  "XpGained": "#/components/schemas/XpGainedEvent"
+                },
+                "propertyName": "type"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/DuckHatchedEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/MatchCreatedEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/MatchStartedEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/GameStartedEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/MoveChosenEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/MoveMadeEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/GameFinishedEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/MatchFinishedEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/SeriesUpdatedEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/RatingUpdatedEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/JobProgressedEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/JobFinishedEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/LessonCompletedEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/KnowledgeAddedEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/XpGainedEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/DuckLeveledUpEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/SparringGameStartedEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/SparringGameFinishedEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/SparringSeriesUpdatedEvent"
+                }
+              ]
+            },
+            "title": "Events",
+            "type": "array"
+          },
+          "nextCursor": {
+            "description": "Pass as `after` to continue",
+            "title": "Nextcursor",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "events",
+          "nextCursor"
+        ],
+        "title": "EventPage",
+        "type": "object"
+      },
+      "FieldError": {
+        "properties": {
+          "location": {
+            "title": "Location",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "location",
+          "message"
+        ],
+        "title": "FieldError",
+        "type": "object"
+      },
+      "GameFinishedData": {
+        "properties": {
+          "gameId": {
+            "title": "Gameid",
+            "type": "string"
+          },
+          "matchId": {
+            "title": "Matchid",
+            "type": "string"
+          },
+          "plies": {
+            "title": "Plies",
+            "type": "integer"
+          },
+          "result": {
+            "enum": [
+              "1-0",
+              "0-1",
+              "1/2-1/2"
+            ],
+            "title": "Result",
+            "type": "string"
+          },
+          "termination": {
+            "title": "Termination",
+            "type": "string"
+          },
+          "winnerDuckId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Winnerduckid"
+          }
+        },
+        "required": [
+          "matchId",
+          "gameId",
+          "result",
+          "termination",
+          "winnerDuckId",
+          "plies"
+        ],
+        "title": "GameFinishedData",
+        "type": "object"
+      },
+      "GameFinishedEvent": {
+        "properties": {
+          "cursor": {
+            "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+            "title": "Cursor",
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/GameFinishedData"
+          },
+          "recordedAt": {
+            "title": "Recordedat",
+            "type": "string"
+          },
+          "seq": {
+            "description": "Position within the stream, starting at 1",
+            "title": "Seq",
+            "type": "integer"
+          },
+          "stream": {
+            "title": "Stream",
+            "type": "string"
+          },
+          "type": {
+            "const": "GameFinished",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cursor",
+          "stream",
+          "seq",
+          "recordedAt",
+          "type",
+          "data"
+        ],
+        "title": "GameFinishedEvent",
+        "type": "object"
+      },
+      "GameOut": {
+        "properties": {
+          "blackClockMs": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blackclockms"
+          },
+          "blackDuckId": {
+            "title": "Blackduckid",
+            "type": "string"
+          },
+          "finishedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finishedat"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "index": {
+            "title": "Index",
+            "type": "integer"
+          },
+          "initialFen": {
+            "title": "Initialfen",
+            "type": "string"
+          },
+          "matchId": {
+            "title": "Matchid",
+            "type": "string"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          },
+          "seed": {
+            "title": "Seed",
+            "type": "integer"
+          },
+          "startedAt": {
+            "title": "Startedat",
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "running",
+              "finished"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "termination": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Termination"
+          },
+          "whiteClockMs": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Whiteclockms"
+          },
+          "whiteDuckId": {
+            "title": "Whiteduckid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "matchId",
+          "index",
+          "whiteDuckId",
+          "blackDuckId",
+          "seed",
+          "initialFen",
+          "state",
+          "result",
+          "termination",
+          "whiteClockMs",
+          "blackClockMs",
+          "startedAt",
+          "finishedAt"
+        ],
+        "title": "GameOut",
+        "type": "object"
+      },
+      "GameStartedData": {
+        "properties": {
+          "blackClockMs": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blackclockms"
+          },
+          "blackDuckId": {
+            "title": "Blackduckid",
+            "type": "string"
+          },
+          "gameId": {
+            "title": "Gameid",
+            "type": "string"
+          },
+          "index": {
+            "title": "Index",
+            "type": "integer"
+          },
+          "initialFen": {
+            "title": "Initialfen",
+            "type": "string"
+          },
+          "matchId": {
+            "title": "Matchid",
+            "type": "string"
+          },
+          "whiteClockMs": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Whiteclockms"
+          },
+          "whiteDuckId": {
+            "title": "Whiteduckid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "matchId",
+          "gameId",
+          "index",
+          "whiteDuckId",
+          "blackDuckId",
+          "initialFen",
+          "whiteClockMs",
+          "blackClockMs"
+        ],
+        "title": "GameStartedData",
+        "type": "object"
+      },
+      "GameStartedEvent": {
+        "properties": {
+          "cursor": {
+            "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+            "title": "Cursor",
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/GameStartedData"
+          },
+          "recordedAt": {
+            "title": "Recordedat",
+            "type": "string"
+          },
+          "seq": {
+            "description": "Position within the stream, starting at 1",
+            "title": "Seq",
+            "type": "integer"
+          },
+          "stream": {
+            "title": "Stream",
+            "type": "string"
+          },
+          "type": {
+            "const": "GameStarted",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cursor",
+          "stream",
+          "seq",
+          "recordedAt",
+          "type",
+          "data"
+        ],
+        "title": "GameStartedEvent",
+        "type": "object"
+      },
+      "GrowthOut": {
+        "properties": {
+          "level": {
+            "title": "Level",
+            "type": "integer"
+          },
+          "stage": {
+            "title": "Stage",
+            "type": "string"
+          },
+          "statBudget": {
+            "title": "Statbudget",
+            "type": "integer"
+          },
+          "statCap": {
+            "title": "Statcap",
+            "type": "integer"
+          },
+          "xp": {
+            "title": "Xp",
+            "type": "integer"
+          },
+          "xpForNextLevel": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Cumulative XP at which the next level starts; null at the maximum level",
+            "title": "Xpfornextlevel"
+          }
+        },
+        "required": [
+          "stage",
+          "level",
+          "xp",
+          "xpForNextLevel",
+          "statBudget",
+          "statCap"
+        ],
+        "title": "GrowthOut",
+        "type": "object"
+      },
+      "HatchRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "avatar": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AvatarModel"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "eggSeed": {
+            "anyOf": [
+              {
+                "maximum": 9007199254740991.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The egg this duck hatches from. Its starting stats are derived from it, so the same egg always hatches the same stats. Cannot be combined with `stats`.",
+            "title": "Eggseed"
+          },
+          "name": {
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "stats": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StatsModel"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Omit for the default spread. Must fit the level-1 stat budget."
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "HatchRequest",
+        "type": "object"
+      },
+      "HeadlineRatingOut": {
+        "description": "The rating shown beside a duck. Provisional until enough rated games are played.",
+        "properties": {
+          "contextId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Rating context this number belongs to; null for the pre-game placeholder",
+            "title": "Contextid"
+          },
+          "deviation": {
+            "title": "Deviation",
+            "type": "number"
+          },
+          "games": {
+            "title": "Games",
+            "type": "integer"
+          },
+          "provisional": {
+            "title": "Provisional",
+            "type": "boolean"
+          },
+          "value": {
+            "title": "Value",
+            "type": "number"
+          }
+        },
+        "required": [
+          "value",
+          "deviation",
+          "games",
+          "provisional",
+          "contextId"
+        ],
+        "title": "HeadlineRatingOut",
+        "type": "object"
+      },
+      "HealthOut": {
+        "properties": {
+          "apiVersion": {
+            "const": "v1",
+            "title": "Apiversion",
+            "type": "string"
+          },
+          "engineBudget": {
+            "title": "Enginebudget",
+            "type": "integer"
+          },
+          "fakeEngine": {
+            "title": "Fakeengine",
+            "type": "boolean"
+          },
+          "lichessEnabled": {
+            "title": "Lichessenabled",
+            "type": "boolean"
+          },
+          "schemaVersion": {
+            "title": "Schemaversion",
+            "type": "integer"
+          },
+          "status": {
+            "const": "ok",
+            "title": "Status",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "version",
+          "apiVersion",
+          "schemaVersion",
+          "engineBudget",
+          "fakeEngine",
+          "lichessEnabled"
+        ],
+        "title": "HealthOut",
+        "type": "object"
+      },
+      "JobFinishedData": {
+        "properties": {
+          "errorCode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Errorcode"
+          },
+          "jobId": {
+            "title": "Jobid",
+            "type": "string"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "jobId",
+          "state",
+          "errorCode"
+        ],
+        "title": "JobFinishedData",
+        "type": "object"
+      },
+      "JobFinishedEvent": {
+        "properties": {
+          "cursor": {
+            "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+            "title": "Cursor",
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/JobFinishedData"
+          },
+          "recordedAt": {
+            "title": "Recordedat",
+            "type": "string"
+          },
+          "seq": {
+            "description": "Position within the stream, starting at 1",
+            "title": "Seq",
+            "type": "integer"
+          },
+          "stream": {
+            "title": "Stream",
+            "type": "string"
+          },
+          "type": {
+            "const": "JobFinished",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cursor",
+          "stream",
+          "seq",
+          "recordedAt",
+          "type",
+          "data"
+        ],
+        "title": "JobFinishedEvent",
+        "type": "object"
+      },
+      "JobOut": {
+        "properties": {
+          "createdAt": {
+            "title": "Createdat",
+            "type": "string"
+          },
+          "done": {
+            "title": "Done",
+            "type": "integer"
+          },
+          "errorCode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Errorcode"
+          },
+          "errorDetail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Errordetail"
+          },
+          "finishedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finishedat"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "startedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Startedat"
+          },
+          "state": {
+            "enum": [
+              "queued",
+              "running",
+              "succeeded",
+              "failed",
+              "cancelled",
+              "interrupted"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "stream": {
+            "title": "Stream",
+            "type": "string"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "state",
+          "done",
+          "total",
+          "errorCode",
+          "errorDetail",
+          "createdAt",
+          "startedAt",
+          "finishedAt",
+          "stream"
+        ],
+        "title": "JobOut",
+        "type": "object"
+      },
+      "JobProgressedData": {
+        "properties": {
+          "done": {
+            "title": "Done",
+            "type": "integer"
+          },
+          "jobId": {
+            "title": "Jobid",
+            "type": "string"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "jobId",
+          "state",
+          "done",
+          "total"
+        ],
+        "title": "JobProgressedData",
+        "type": "object"
+      },
+      "JobProgressedEvent": {
+        "properties": {
+          "cursor": {
+            "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+            "title": "Cursor",
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/JobProgressedData"
+          },
+          "recordedAt": {
+            "title": "Recordedat",
+            "type": "string"
+          },
+          "seq": {
+            "description": "Position within the stream, starting at 1",
+            "title": "Seq",
+            "type": "integer"
+          },
+          "stream": {
+            "title": "Stream",
+            "type": "string"
+          },
+          "type": {
+            "const": "JobProgressed",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cursor",
+          "stream",
+          "seq",
+          "recordedAt",
+          "type",
+          "data"
+        ],
+        "title": "JobProgressedEvent",
+        "type": "object"
+      },
+      "KnowledgeAddedData": {
+        "properties": {
+          "duckId": {
+            "title": "Duckid",
+            "type": "string"
+          },
+          "entries": {
+            "title": "Entries",
+            "type": "integer"
+          },
+          "lessonId": {
+            "title": "Lessonid",
+            "type": "string"
+          },
+          "target": {
+            "enum": [
+              "repertoire",
+              "puzzle_memory"
+            ],
+            "title": "Target",
+            "type": "string"
+          }
+        },
+        "required": [
+          "duckId",
+          "lessonId",
+          "target",
+          "entries"
+        ],
+        "title": "KnowledgeAddedData",
+        "type": "object"
+      },
+      "KnowledgeAddedEvent": {
+        "properties": {
+          "cursor": {
+            "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+            "title": "Cursor",
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/KnowledgeAddedData"
+          },
+          "recordedAt": {
+            "title": "Recordedat",
+            "type": "string"
+          },
+          "seq": {
+            "description": "Position within the stream, starting at 1",
+            "title": "Seq",
+            "type": "integer"
+          },
+          "stream": {
+            "title": "Stream",
+            "type": "string"
+          },
+          "type": {
+            "const": "KnowledgeAdded",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cursor",
+          "stream",
+          "seq",
+          "recordedAt",
+          "type",
+          "data"
+        ],
+        "title": "KnowledgeAddedEvent",
+        "type": "object"
+      },
+      "KnowledgeSummaryOut": {
+        "properties": {
+          "motifs": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Motifs",
+            "type": "object"
+          },
+          "principles": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Principles",
+            "type": "array"
+          },
+          "puzzleMemorySize": {
+            "title": "Puzzlememorysize",
+            "type": "integer"
+          },
+          "repertoireSize": {
+            "title": "Repertoiresize",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "repertoireSize",
+          "puzzleMemorySize",
+          "principles",
+          "motifs"
+        ],
+        "title": "KnowledgeSummaryOut",
+        "type": "object"
+      },
+      "LessonCompletedData": {
+        "properties": {
+          "duckId": {
+            "title": "Duckid",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "lessonId": {
+            "title": "Lessonid",
+            "type": "string"
+          },
+          "xp": {
+            "title": "Xp",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "duckId",
+          "lessonId",
+          "kind",
+          "xp"
+        ],
+        "title": "LessonCompletedData",
+        "type": "object"
+      },
+      "LessonCompletedEvent": {
+        "properties": {
+          "cursor": {
+            "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+            "title": "Cursor",
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/LessonCompletedData"
+          },
+          "recordedAt": {
+            "title": "Recordedat",
+            "type": "string"
+          },
+          "seq": {
+            "description": "Position within the stream, starting at 1",
+            "title": "Seq",
+            "type": "integer"
+          },
+          "stream": {
+            "title": "Stream",
+            "type": "string"
+          },
+          "type": {
+            "const": "LessonCompleted",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cursor",
+          "stream",
+          "seq",
+          "recordedAt",
+          "type",
+          "data"
+        ],
+        "title": "LessonCompletedEvent",
+        "type": "object"
+      },
+      "MatchCreatedData": {
+        "properties": {
+          "duckIds": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Duckids",
+            "type": "array"
+          },
+          "games": {
+            "title": "Games",
+            "type": "integer"
+          },
+          "matchId": {
+            "title": "Matchid",
+            "type": "string"
+          },
+          "mode": {
+            "title": "Mode",
+            "type": "string"
+          },
+          "rated": {
+            "title": "Rated",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "matchId",
+          "duckIds",
+          "games",
+          "mode",
+          "rated"
+        ],
+        "title": "MatchCreatedData",
+        "type": "object"
+      },
+      "MatchCreatedEvent": {
+        "properties": {
+          "cursor": {
+            "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+            "title": "Cursor",
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/MatchCreatedData"
+          },
+          "recordedAt": {
+            "title": "Recordedat",
+            "type": "string"
+          },
+          "seq": {
+            "description": "Position within the stream, starting at 1",
+            "title": "Seq",
+            "type": "integer"
+          },
+          "stream": {
+            "title": "Stream",
+            "type": "string"
+          },
+          "type": {
+            "const": "MatchCreated",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cursor",
+          "stream",
+          "seq",
+          "recordedAt",
+          "type",
+          "data"
+        ],
+        "title": "MatchCreatedEvent",
+        "type": "object"
+      },
+      "MatchFinishedData": {
+        "properties": {
+          "matchId": {
+            "title": "Matchid",
+            "type": "string"
+          },
+          "scores": {
+            "items": {
+              "$ref": "#/components/schemas/DuckScoreData"
+            },
+            "title": "Scores",
+            "type": "array"
+          },
+          "winnerDuckId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Winnerduckid"
+          }
+        },
+        "required": [
+          "matchId",
+          "scores",
+          "winnerDuckId"
+        ],
+        "title": "MatchFinishedData",
+        "type": "object"
+      },
+      "MatchFinishedEvent": {
+        "properties": {
+          "cursor": {
+            "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+            "title": "Cursor",
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/MatchFinishedData"
+          },
+          "recordedAt": {
+            "title": "Recordedat",
+            "type": "string"
+          },
+          "seq": {
+            "description": "Position within the stream, starting at 1",
+            "title": "Seq",
+            "type": "integer"
+          },
+          "stream": {
+            "title": "Stream",
+            "type": "string"
+          },
+          "type": {
+            "const": "MatchFinished",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cursor",
+          "stream",
+          "seq",
+          "recordedAt",
+          "type",
+          "data"
+        ],
+        "title": "MatchFinishedEvent",
+        "type": "object"
+      },
+      "MatchOut": {
+        "properties": {
+          "arena": {
+            "$ref": "#/components/schemas/ArenaModel"
+          },
+          "contextId": {
+            "title": "Contextid",
+            "type": "string"
+          },
+          "createdAt": {
+            "title": "Createdat",
+            "type": "string"
+          },
+          "duckIds": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Duckids",
+            "type": "array"
+          },
+          "finishedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finishedat"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "jobId": {
+            "title": "Jobid",
+            "type": "string"
+          },
+          "mode": {
+            "title": "Mode",
+            "type": "string"
+          },
+          "rated": {
+            "title": "Rated",
+            "type": "boolean"
+          },
+          "scores": {
+            "items": {
+              "$ref": "#/components/schemas/DuckScoreOut"
+            },
+            "title": "Scores",
+            "type": "array"
+          },
+          "series": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SeriesModel"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "state": {
+            "enum": [
+              "created",
+              "running",
+              "finished",
+              "cancelled",
+              "failed"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "stream": {
+            "description": "Event stream to follow this match live or replay it",
+            "title": "Stream",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "duckIds",
+          "arena",
+          "mode",
+          "rated",
+          "state",
+          "contextId",
+          "jobId",
+          "scores",
+          "createdAt",
+          "finishedAt",
+          "series",
+          "stream"
+        ],
+        "title": "MatchOut",
+        "type": "object"
+      },
+      "MatchStartedData": {
+        "properties": {
+          "matchId": {
+            "title": "Matchid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "matchId"
+        ],
+        "title": "MatchStartedData",
+        "type": "object"
+      },
+      "MatchStartedEvent": {
+        "properties": {
+          "cursor": {
+            "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+            "title": "Cursor",
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/MatchStartedData"
+          },
+          "recordedAt": {
+            "title": "Recordedat",
+            "type": "string"
+          },
+          "seq": {
+            "description": "Position within the stream, starting at 1",
+            "title": "Seq",
+            "type": "integer"
+          },
+          "stream": {
+            "title": "Stream",
+            "type": "string"
+          },
+          "type": {
+            "const": "MatchStarted",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cursor",
+          "stream",
+          "seq",
+          "recordedAt",
+          "type",
+          "data"
+        ],
+        "title": "MatchStartedEvent",
+        "type": "object"
+      },
+      "MinigameActionIn": {
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "enum": [
+              "move",
+              "square",
+              "choice",
+              "next",
+              "hint",
+              "timeout"
+            ],
+            "title": "Type",
+            "type": "string"
+          },
+          "value": {
+            "default": "",
+            "maxLength": 32,
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "title": "MinigameActionIn",
+        "type": "object"
+      },
+      "MinigameArrowOut": {
+        "properties": {
+          "kind": {
+            "enum": [
+              "good",
+              "bad",
+              "info"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "origin": {
+            "title": "Origin",
+            "type": "string"
+          },
+          "target": {
+            "title": "Target",
+            "type": "string"
+          }
+        },
+        "required": [
+          "origin",
+          "target",
+          "kind"
+        ],
+        "title": "MinigameArrowOut",
+        "type": "object"
+      },
+      "MinigameBoardOut": {
+        "properties": {
+          "check": {
+            "title": "Check",
+            "type": "boolean"
+          },
+          "coordinates": {
+            "title": "Coordinates",
+            "type": "boolean"
+          },
+          "fen": {
+            "title": "Fen",
+            "type": "string"
+          },
+          "lastMove": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MinigameSquares"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "orientation": {
+            "enum": [
+              "white",
+              "black"
+            ],
+            "title": "Orientation",
+            "type": "string"
+          }
+        },
+        "required": [
+          "fen",
+          "orientation",
+          "check",
+          "lastMove",
+          "coordinates"
+        ],
+        "title": "MinigameBoardOut",
+        "type": "object"
+      },
+      "MinigameChoiceOut": {
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "detail"
+        ],
+        "title": "MinigameChoiceOut",
+        "type": "object"
+      },
+      "MinigameFeedbackOut": {
+        "properties": {
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "tone": {
+            "enum": [
+              "good",
+              "bad",
+              "info"
+            ],
+            "title": "Tone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tone",
+          "text"
+        ],
+        "title": "MinigameFeedbackOut",
+        "type": "object"
+      },
+      "MinigameFrameOut": {
+        "properties": {
+          "caption": {
+            "title": "Caption",
+            "type": "string"
+          },
+          "fen": {
+            "title": "Fen",
+            "type": "string"
+          },
+          "lastMove": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MinigameSquares"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "fen",
+          "lastMove",
+          "caption"
+        ],
+        "title": "MinigameFrameOut",
+        "type": "object"
+      },
+      "MinigameInfoOut": {
+        "properties": {
+          "blurb": {
+            "title": "Blurb",
+            "type": "string"
+          },
+          "howTo": {
+            "title": "Howto",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "levels": {
+            "description": "Difficulties; empty when there is one",
+            "items": {
+              "$ref": "#/components/schemas/MinigameLevelOut"
+            },
+            "title": "Levels",
+            "type": "array"
+          },
+          "teaches": {
+            "title": "Teaches",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "blurb",
+          "teaches",
+          "howTo",
+          "levels"
+        ],
+        "title": "MinigameInfoOut",
+        "type": "object"
+      },
+      "MinigameLevelOut": {
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "detail"
+        ],
+        "title": "MinigameLevelOut",
+        "type": "object"
+      },
+      "MinigameMarkOut": {
+        "properties": {
+          "kind": {
+            "enum": [
+              "crumb",
+              "pad",
+              "danger",
+              "good",
+              "bad",
+              "hint",
+              "target"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "square": {
+            "title": "Square",
+            "type": "string"
+          }
+        },
+        "required": [
+          "square",
+          "kind"
+        ],
+        "title": "MinigameMarkOut",
+        "type": "object"
+      },
+      "MinigameRunOut": {
+        "properties": {
+          "arrows": {
+            "items": {
+              "$ref": "#/components/schemas/MinigameArrowOut"
+            },
+            "title": "Arrows",
+            "type": "array"
+          },
+          "board": {
+            "$ref": "#/components/schemas/MinigameBoardOut"
+          },
+          "canHint": {
+            "title": "Canhint",
+            "type": "boolean"
+          },
+          "choices": {
+            "items": {
+              "$ref": "#/components/schemas/MinigameChoiceOut"
+            },
+            "title": "Choices",
+            "type": "array"
+          },
+          "feedback": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MinigameFeedbackOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "frames": {
+            "description": "Play these before showing the board",
+            "items": {
+              "$ref": "#/components/schemas/MinigameFrameOut"
+            },
+            "title": "Frames",
+            "type": "array"
+          },
+          "hearts": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hearts"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "level": {
+            "title": "Level",
+            "type": "string"
+          },
+          "marks": {
+            "items": {
+              "$ref": "#/components/schemas/MinigameMarkOut"
+            },
+            "title": "Marks",
+            "type": "array"
+          },
+          "moves": {
+            "description": "Moves the player may try (UCI)",
+            "items": {
+              "type": "string"
+            },
+            "title": "Moves",
+            "type": "array"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Notes",
+            "type": "array"
+          },
+          "phase": {
+            "description": "play: input is open; review: send `next`; done: run over",
+            "enum": [
+              "play",
+              "review",
+              "done"
+            ],
+            "title": "Phase",
+            "type": "string"
+          },
+          "prompt": {
+            "title": "Prompt",
+            "type": "string"
+          },
+          "remainingMs": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remainingms"
+          },
+          "round": {
+            "title": "Round",
+            "type": "integer"
+          },
+          "rounds": {
+            "title": "Rounds",
+            "type": "integer"
+          },
+          "score": {
+            "title": "Score",
+            "type": "integer"
+          },
+          "seed": {
+            "title": "Seed",
+            "type": "integer"
+          },
+          "squares": {
+            "description": "Squares the player may tap",
+            "items": {
+              "type": "string"
+            },
+            "title": "Squares",
+            "type": "array"
+          },
+          "version": {
+            "description": "Grows with every action",
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "seed",
+          "level",
+          "version",
+          "phase",
+          "round",
+          "rounds",
+          "score",
+          "hearts",
+          "remainingMs",
+          "feedback",
+          "frames",
+          "prompt",
+          "board",
+          "moves",
+          "squares",
+          "marks",
+          "arrows",
+          "choices",
+          "notes",
+          "canHint"
+        ],
+        "title": "MinigameRunOut",
+        "type": "object"
+      },
+      "MinigameSquares": {
+        "properties": {
+          "origin": {
+            "title": "Origin",
+            "type": "string"
+          },
+          "target": {
+            "title": "Target",
+            "type": "string"
+          }
+        },
+        "required": [
+          "origin",
+          "target"
+        ],
+        "title": "MinigameSquares",
+        "type": "object"
+      },
+      "MoveChosenData": {
+        "properties": {
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/CandidateModel"
+            },
+            "title": "Candidates",
+            "type": "array"
+          },
+          "color": {
+            "enum": [
+              "white",
+              "black"
+            ],
+            "title": "Color",
+            "type": "string"
+          },
+          "depth": {
+            "title": "Depth",
+            "type": "integer"
+          },
+          "duckId": {
+            "title": "Duckid",
+            "type": "string"
+          },
+          "fenBefore": {
+            "title": "Fenbefore",
+            "type": "string"
+          },
+          "gameId": {
+            "title": "Gameid",
+            "type": "string"
+          },
+          "move": {
+            "title": "Move",
+            "type": "string"
+          },
+          "nodes": {
+            "title": "Nodes",
+            "type": "integer"
+          },
+          "nodesBudget": {
+            "title": "Nodesbudget",
+            "type": "integer"
+          },
+          "ply": {
+            "title": "Ply",
+            "type": "integer"
+          },
+          "reasons": {
+            "items": {
+              "$ref": "#/components/schemas/ReasonModel"
+            },
+            "title": "Reasons",
+            "type": "array"
+          },
+          "san": {
+            "title": "San",
+            "type": "string"
+          },
+          "source": {
+            "enum": [
+              "memory",
+              "book",
+              "forced",
+              "engine"
+            ],
+            "title": "Source",
+            "type": "string"
+          },
+          "thinkMs": {
+            "description": "Virtual think time; pace playback with this",
+            "title": "Thinkms",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "gameId",
+          "ply",
+          "duckId",
+          "color",
+          "fenBefore",
+          "move",
+          "san",
+          "source",
+          "candidates",
+          "reasons",
+          "thinkMs",
+          "nodesBudget",
+          "nodes",
+          "depth"
+        ],
+        "title": "MoveChosenData",
+        "type": "object"
+      },
+      "MoveChosenEvent": {
+        "properties": {
+          "cursor": {
+            "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+            "title": "Cursor",
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/MoveChosenData"
+          },
+          "recordedAt": {
+            "title": "Recordedat",
+            "type": "string"
+          },
+          "seq": {
+            "description": "Position within the stream, starting at 1",
+            "title": "Seq",
+            "type": "integer"
+          },
+          "stream": {
+            "title": "Stream",
+            "type": "string"
+          },
+          "type": {
+            "const": "MoveChosen",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cursor",
+          "stream",
+          "seq",
+          "recordedAt",
+          "type",
+          "data"
+        ],
+        "title": "MoveChosenEvent",
+        "type": "object"
+      },
+      "MoveMadeData": {
+        "properties": {
+          "blackClockMs": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blackclockms"
+          },
+          "by": {
+            "enum": [
+              "duck",
+              "human"
+            ],
+            "title": "By",
+            "type": "string"
+          },
+          "capture": {
+            "title": "Capture",
+            "type": "boolean"
+          },
+          "castle": {
+            "anyOf": [
+              {
+                "enum": [
+                  "kingside",
+                  "queenside"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Castle"
+          },
+          "check": {
+            "title": "Check",
+            "type": "boolean"
+          },
+          "checkmate": {
+            "title": "Checkmate",
+            "type": "boolean"
+          },
+          "color": {
+            "enum": [
+              "white",
+              "black"
+            ],
+            "title": "Color",
+            "type": "string"
+          },
+          "duckId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duckid"
+          },
+          "enPassant": {
+            "title": "Enpassant",
+            "type": "boolean"
+          },
+          "fenAfter": {
+            "title": "Fenafter",
+            "type": "string"
+          },
+          "gameId": {
+            "title": "Gameid",
+            "type": "string"
+          },
+          "ply": {
+            "title": "Ply",
+            "type": "integer"
+          },
+          "promotion": {
+            "anyOf": [
+              {
+                "enum": [
+                  "q",
+                  "r",
+                  "b",
+                  "n"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Promotion"
+          },
+          "san": {
+            "title": "San",
+            "type": "string"
+          },
+          "thinkMs": {
+            "title": "Thinkms",
+            "type": "integer"
+          },
+          "uci": {
+            "title": "Uci",
+            "type": "string"
+          },
+          "whiteClockMs": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Whiteclockms"
+          }
+        },
+        "required": [
+          "gameId",
+          "ply",
+          "color",
+          "by",
+          "duckId",
+          "uci",
+          "san",
+          "fenAfter",
+          "capture",
+          "enPassant",
+          "check",
+          "checkmate",
+          "castle",
+          "promotion",
+          "thinkMs",
+          "whiteClockMs",
+          "blackClockMs"
+        ],
+        "title": "MoveMadeData",
+        "type": "object"
+      },
+      "MoveMadeEvent": {
+        "properties": {
+          "cursor": {
+            "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+            "title": "Cursor",
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/MoveMadeData"
+          },
+          "recordedAt": {
+            "title": "Recordedat",
+            "type": "string"
+          },
+          "seq": {
+            "description": "Position within the stream, starting at 1",
+            "title": "Seq",
+            "type": "integer"
+          },
+          "stream": {
+            "title": "Stream",
+            "type": "string"
+          },
+          "type": {
+            "const": "MoveMade",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cursor",
+          "stream",
+          "seq",
+          "recordedAt",
+          "type",
+          "data"
+        ],
+        "title": "MoveMadeEvent",
+        "type": "object"
+      },
+      "MoveOut": {
+        "properties": {
+          "clockMs": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Clockms"
+          },
+          "color": {
+            "enum": [
+              "white",
+              "black"
+            ],
+            "title": "Color",
+            "type": "string"
+          },
+          "cp": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cp"
+          },
+          "depth": {
+            "title": "Depth",
+            "type": "integer"
+          },
+          "fenAfter": {
+            "title": "Fenafter",
+            "type": "string"
+          },
+          "mate": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mate"
+          },
+          "nodes": {
+            "title": "Nodes",
+            "type": "integer"
+          },
+          "ply": {
+            "title": "Ply",
+            "type": "integer"
+          },
+          "san": {
+            "title": "San",
+            "type": "string"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "thinkMs": {
+            "title": "Thinkms",
+            "type": "integer"
+          },
+          "uci": {
+            "title": "Uci",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ply",
+          "color",
+          "uci",
+          "san",
+          "source",
+          "cp",
+          "mate",
+          "nodes",
+          "depth",
+          "thinkMs",
+          "clockMs",
+          "fenAfter"
+        ],
+        "title": "MoveOut",
+        "type": "object"
+      },
+      "NodesLimitModel": {
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "const": "nodes",
+            "title": "Type",
+            "type": "string"
+          },
+          "value": {
+            "description": "Nodes per move before the duck's multiplier",
+            "maximum": 5000000.0,
+            "minimum": 1.0,
+            "title": "Value",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "type",
+          "value"
+        ],
+        "title": "NodesLimitModel",
+        "type": "object"
+      },
+      "Problem": {
+        "description": "RFC 9457 problem document with a stable machine-readable `code`.",
+        "properties": {
+          "code": {
+            "description": "Stable identifier clients can switch on, e.g. engine.not_installed",
+            "title": "Code",
+            "type": "string"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "title": "Errors",
+            "type": "array"
+          },
+          "status": {
+            "title": "Status",
+            "type": "integer"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "type": {
+            "default": "about:blank",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "status",
+          "code"
+        ],
+        "title": "Problem",
+        "type": "object"
+      },
+      "ProfileOut": {
+        "description": "The local player. The hub shows the active duck.",
+        "properties": {
+          "activeDuckId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The duck the hub shows: the last one chosen, else the oldest; null with no ducks",
+            "title": "Activeduckid"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "activeDuckId"
+        ],
+        "title": "ProfileOut",
+        "type": "object"
+      },
+      "RatingUpdatedData": {
+        "properties": {
+          "after": {
+            "title": "After",
+            "type": "number"
+          },
+          "before": {
+            "title": "Before",
+            "type": "number"
+          },
+          "contextId": {
+            "title": "Contextid",
+            "type": "string"
+          },
+          "deviation": {
+            "title": "Deviation",
+            "type": "number"
+          },
+          "duckId": {
+            "title": "Duckid",
+            "type": "string"
+          },
+          "games": {
+            "title": "Games",
+            "type": "integer"
+          },
+          "kind": {
+            "enum": [
+              "game",
+              "puzzle"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "provisional": {
+            "title": "Provisional",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "duckId",
+          "contextId",
+          "kind",
+          "before",
+          "after",
+          "deviation",
+          "games",
+          "provisional"
+        ],
+        "title": "RatingUpdatedData",
+        "type": "object"
+      },
+      "RatingUpdatedEvent": {
+        "properties": {
+          "cursor": {
+            "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+            "title": "Cursor",
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/RatingUpdatedData"
+          },
+          "recordedAt": {
+            "title": "Recordedat",
+            "type": "string"
+          },
+          "seq": {
+            "description": "Position within the stream, starting at 1",
+            "title": "Seq",
+            "type": "integer"
+          },
+          "stream": {
+            "title": "Stream",
+            "type": "string"
+          },
+          "type": {
+            "const": "RatingUpdated",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cursor",
+          "stream",
+          "seq",
+          "recordedAt",
+          "type",
+          "data"
+        ],
+        "title": "RatingUpdatedEvent",
+        "type": "object"
+      },
+      "ReasonModel": {
+        "properties": {
+          "code": {
+            "description": "Stable identifier; render your own copy from it if you like",
+            "title": "Code",
+            "type": "string"
+          },
+          "params": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Params",
+            "type": "object"
+          },
+          "text": {
+            "description": "Default English sentence",
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "text",
+          "params"
+        ],
+        "title": "ReasonModel",
+        "type": "object"
+      },
+      "SeriesModel": {
+        "additionalProperties": false,
+        "description": "A best-of series: it stops once decided; a tie after every game goes to one\nArmageddon game, where a draw counts as a win for Black.",
+        "properties": {
+          "bestOf": {
+            "description": "One of 3, 5, 7, 15",
+            "title": "Bestof",
+            "type": "integer"
+          },
+          "type": {
+            "const": "best-of",
+            "default": "best-of",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "bestOf"
+        ],
+        "title": "SeriesModel",
+        "type": "object"
+      },
+      "SeriesUpdatedData": {
+        "properties": {
+          "armageddonWhiteDuckId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Who has White in the Armageddon game (a draw there wins for Black)",
+            "title": "Armageddonwhiteduckid"
+          },
+          "bestOf": {
+            "title": "Bestof",
+            "type": "integer"
+          },
+          "decidedBy": {
+            "anyOf": [
+              {
+                "enum": [
+                  "games",
+                  "armageddon"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decidedby"
+          },
+          "gamesPlayed": {
+            "title": "Gamesplayed",
+            "type": "integer"
+          },
+          "matchId": {
+            "title": "Matchid",
+            "type": "string"
+          },
+          "scores": {
+            "items": {
+              "$ref": "#/components/schemas/DuckScoreData"
+            },
+            "title": "Scores",
+            "type": "array"
+          },
+          "state": {
+            "enum": [
+              "playing",
+              "armageddon",
+              "decided"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "winnerDuckId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Winnerduckid"
+          }
+        },
+        "required": [
+          "matchId",
+          "bestOf",
+          "scores",
+          "gamesPlayed",
+          "state",
+          "winnerDuckId",
+          "decidedBy",
+          "armageddonWhiteDuckId"
+        ],
+        "title": "SeriesUpdatedData",
+        "type": "object"
+      },
+      "SeriesUpdatedEvent": {
+        "properties": {
+          "cursor": {
+            "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+            "title": "Cursor",
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SeriesUpdatedData"
+          },
+          "recordedAt": {
+            "title": "Recordedat",
+            "type": "string"
+          },
+          "seq": {
+            "description": "Position within the stream, starting at 1",
+            "title": "Seq",
+            "type": "integer"
+          },
+          "stream": {
+            "title": "Stream",
+            "type": "string"
+          },
+          "type": {
+            "const": "SeriesUpdated",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cursor",
+          "stream",
+          "seq",
+          "recordedAt",
+          "type",
+          "data"
+        ],
+        "title": "SeriesUpdatedEvent",
+        "type": "object"
+      },
+      "SparringGameFinishedData": {
+        "properties": {
+          "gameId": {
+            "title": "Gameid",
+            "type": "string"
+          },
+          "plies": {
+            "title": "Plies",
+            "type": "integer"
+          },
+          "result": {
+            "enum": [
+              "1-0",
+              "0-1",
+              "1/2-1/2"
+            ],
+            "title": "Result",
+            "type": "string"
+          },
+          "termination": {
+            "title": "Termination",
+            "type": "string"
+          },
+          "winner": {
+            "anyOf": [
+              {
+                "enum": [
+                  "human",
+                  "duck"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Winner"
+          }
+        },
+        "required": [
+          "gameId",
+          "result",
+          "termination",
+          "winner",
+          "plies"
+        ],
+        "title": "SparringGameFinishedData",
+        "type": "object"
+      },
+      "SparringGameFinishedEvent": {
+        "properties": {
+          "cursor": {
+            "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+            "title": "Cursor",
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SparringGameFinishedData"
+          },
+          "recordedAt": {
+            "title": "Recordedat",
+            "type": "string"
+          },
+          "seq": {
+            "description": "Position within the stream, starting at 1",
+            "title": "Seq",
+            "type": "integer"
+          },
+          "stream": {
+            "title": "Stream",
+            "type": "string"
+          },
+          "type": {
+            "const": "SparringGameFinished",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cursor",
+          "stream",
+          "seq",
+          "recordedAt",
+          "type",
+          "data"
+        ],
+        "title": "SparringGameFinishedEvent",
+        "type": "object"
+      },
+      "SparringGameOut": {
+        "description": "A game against your duck. Never rated.",
+        "properties": {
+          "blackClockMs": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blackclockms"
+          },
+          "check": {
+            "title": "Check",
+            "type": "boolean"
+          },
+          "createdAt": {
+            "title": "Createdat",
+            "type": "string"
+          },
+          "duckId": {
+            "title": "Duckid",
+            "type": "string"
+          },
+          "duckThinking": {
+            "title": "Duckthinking",
+            "type": "boolean"
+          },
+          "engineId": {
+            "title": "Engineid",
+            "type": "string"
+          },
+          "fen": {
+            "title": "Fen",
+            "type": "string"
+          },
+          "humanColor": {
+            "enum": [
+              "white",
+              "black"
+            ],
+            "title": "Humancolor",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "initialFen": {
+            "title": "Initialfen",
+            "type": "string"
+          },
+          "legalMoves": {
+            "description": "Your legal moves in UCI when it is your turn; empty otherwise",
+            "items": {
+              "type": "string"
+            },
+            "title": "Legalmoves",
+            "type": "array"
+          },
+          "moves": {
+            "items": {
+              "$ref": "#/components/schemas/SparringMoveOut"
+            },
+            "title": "Moves",
+            "type": "array"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "enum": [
+                  "1-0",
+                  "0-1",
+                  "1/2-1/2"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          },
+          "seriesId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seriesid"
+          },
+          "seriesIndex": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seriesindex"
+          },
+          "state": {
+            "enum": [
+              "running",
+              "finished"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "stream": {
+            "title": "Stream",
+            "type": "string"
+          },
+          "termination": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Termination"
+          },
+          "timeControl": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TimeControl"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "turn": {
+            "enum": [
+              "white",
+              "black"
+            ],
+            "title": "Turn",
+            "type": "string"
+          },
+          "whiteClockMs": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Time left now; null when untimed",
+            "title": "Whiteclockms"
+          },
+          "winner": {
+            "anyOf": [
+              {
+                "enum": [
+                  "human",
+                  "duck"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Winner"
+          }
+        },
+        "required": [
+          "id",
+          "duckId",
+          "engineId",
+          "humanColor",
+          "timeControl",
+          "state",
+          "result",
+          "termination",
+          "winner",
+          "initialFen",
+          "fen",
+          "turn",
+          "check",
+          "moves",
+          "legalMoves",
+          "duckThinking",
+          "whiteClockMs",
+          "blackClockMs",
+          "seriesId",
+          "seriesIndex",
+          "createdAt",
+          "stream"
+        ],
+        "title": "SparringGameOut",
+        "type": "object"
+      },
+      "SparringGameStartedData": {
+        "properties": {
+          "blackClockMs": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blackclockms"
+          },
+          "duckId": {
+            "title": "Duckid",
+            "type": "string"
+          },
+          "gameId": {
+            "title": "Gameid",
+            "type": "string"
+          },
+          "humanColor": {
+            "enum": [
+              "white",
+              "black"
+            ],
+            "title": "Humancolor",
+            "type": "string"
+          },
+          "initialFen": {
+            "title": "Initialfen",
+            "type": "string"
+          },
+          "seriesId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seriesid"
+          },
+          "whiteClockMs": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Whiteclockms"
+          }
+        },
+        "required": [
+          "gameId",
+          "duckId",
+          "humanColor",
+          "initialFen",
+          "whiteClockMs",
+          "blackClockMs",
+          "seriesId"
+        ],
+        "title": "SparringGameStartedData",
+        "type": "object"
+      },
+      "SparringGameStartedEvent": {
+        "properties": {
+          "cursor": {
+            "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+            "title": "Cursor",
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SparringGameStartedData"
+          },
+          "recordedAt": {
+            "title": "Recordedat",
+            "type": "string"
+          },
+          "seq": {
+            "description": "Position within the stream, starting at 1",
+            "title": "Seq",
+            "type": "integer"
+          },
+          "stream": {
+            "title": "Stream",
+            "type": "string"
+          },
+          "type": {
+            "const": "SparringGameStarted",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cursor",
+          "stream",
+          "seq",
+          "recordedAt",
+          "type",
+          "data"
+        ],
+        "title": "SparringGameStartedEvent",
+        "type": "object"
+      },
+      "SparringMoveIn": {
+        "additionalProperties": false,
+        "properties": {
+          "uci": {
+            "description": "Your move, e.g. e2e4 or e7e8q",
+            "pattern": "^[a-h][1-8][a-h][1-8][qrbn]?$",
+            "title": "Uci",
+            "type": "string"
+          }
+        },
+        "required": [
+          "uci"
+        ],
+        "title": "SparringMoveIn",
+        "type": "object"
+      },
+      "SparringMoveOut": {
+        "properties": {
+          "by": {
+            "enum": [
+              "human",
+              "duck"
+            ],
+            "title": "By",
+            "type": "string"
+          },
+          "color": {
+            "enum": [
+              "white",
+              "black"
+            ],
+            "title": "Color",
+            "type": "string"
+          },
+          "fenAfter": {
+            "title": "Fenafter",
+            "type": "string"
+          },
+          "ply": {
+            "title": "Ply",
+            "type": "integer"
+          },
+          "san": {
+            "title": "San",
+            "type": "string"
+          },
+          "uci": {
+            "title": "Uci",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ply",
+          "color",
+          "by",
+          "uci",
+          "san",
+          "fenAfter"
+        ],
+        "title": "SparringMoveOut",
+        "type": "object"
+      },
+      "SparringSeriesOut": {
+        "description": "A \"You play\" Super Bullet series: 30 seconds each, Armageddon if tied.",
+        "properties": {
+          "armageddonHumanColor": {
+            "anyOf": [
+              {
+                "enum": [
+                  "white",
+                  "black"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Armageddonhumancolor"
+          },
+          "bestOf": {
+            "title": "Bestof",
+            "type": "integer"
+          },
+          "currentGameId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The latest game, running or finished",
+            "title": "Currentgameid"
+          },
+          "decidedBy": {
+            "anyOf": [
+              {
+                "enum": [
+                  "games",
+                  "armageddon"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decidedby"
+          },
+          "duckId": {
+            "title": "Duckid",
+            "type": "string"
+          },
+          "duckPoints": {
+            "title": "Duckpoints",
+            "type": "number"
+          },
+          "gameIds": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Gameids",
+            "type": "array"
+          },
+          "humanPoints": {
+            "title": "Humanpoints",
+            "type": "number"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "playing",
+              "armageddon",
+              "decided"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "stream": {
+            "title": "Stream",
+            "type": "string"
+          },
+          "winner": {
+            "anyOf": [
+              {
+                "enum": [
+                  "human",
+                  "duck"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Winner"
+          }
+        },
+        "required": [
+          "id",
+          "duckId",
+          "bestOf",
+          "state",
+          "humanPoints",
+          "duckPoints",
+          "winner",
+          "decidedBy",
+          "armageddonHumanColor",
+          "gameIds",
+          "currentGameId",
+          "stream"
+        ],
+        "title": "SparringSeriesOut",
+        "type": "object"
+      },
+      "SparringSeriesUpdatedData": {
+        "properties": {
+          "armageddonHumanColor": {
+            "anyOf": [
+              {
+                "enum": [
+                  "white",
+                  "black"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Armageddonhumancolor"
+          },
+          "bestOf": {
+            "title": "Bestof",
+            "type": "integer"
+          },
+          "decidedBy": {
+            "anyOf": [
+              {
+                "enum": [
+                  "games",
+                  "armageddon"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decidedby"
+          },
+          "duckPoints": {
+            "title": "Duckpoints",
+            "type": "number"
+          },
+          "gamesPlayed": {
+            "title": "Gamesplayed",
+            "type": "integer"
+          },
+          "humanPoints": {
+            "title": "Humanpoints",
+            "type": "number"
+          },
+          "seriesId": {
+            "title": "Seriesid",
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "playing",
+              "armageddon",
+              "decided"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "winner": {
+            "anyOf": [
+              {
+                "enum": [
+                  "human",
+                  "duck"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Winner"
+          }
+        },
+        "required": [
+          "seriesId",
+          "bestOf",
+          "humanPoints",
+          "duckPoints",
+          "gamesPlayed",
+          "state",
+          "winner",
+          "decidedBy",
+          "armageddonHumanColor"
+        ],
+        "title": "SparringSeriesUpdatedData",
+        "type": "object"
+      },
+      "SparringSeriesUpdatedEvent": {
+        "properties": {
+          "cursor": {
+            "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+            "title": "Cursor",
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SparringSeriesUpdatedData"
+          },
+          "recordedAt": {
+            "title": "Recordedat",
+            "type": "string"
+          },
+          "seq": {
+            "description": "Position within the stream, starting at 1",
+            "title": "Seq",
+            "type": "integer"
+          },
+          "stream": {
+            "title": "Stream",
+            "type": "string"
+          },
+          "type": {
+            "const": "SparringSeriesUpdated",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cursor",
+          "stream",
+          "seq",
+          "recordedAt",
+          "type",
+          "data"
+        ],
+        "title": "SparringSeriesUpdatedEvent",
+        "type": "object"
+      },
+      "StartMinigameRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+            "title": "Kind",
+            "type": "string"
+          },
+          "level": {
+            "default": "",
+            "description": "Empty: the usual one",
+            "maxLength": 32,
+            "title": "Level",
+            "type": "string"
+          },
+          "seed": {
+            "anyOf": [
+              {
+                "maximum": 9007199254740991.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seed"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "title": "StartMinigameRequest",
+        "type": "object"
+      },
+      "StartSeriesRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "bestOf": {
+            "description": "3, 5, 7 or 15",
+            "title": "Bestof",
+            "type": "integer"
+          },
+          "duckId": {
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+            "title": "Duckid",
+            "type": "string"
+          },
+          "engineId": {
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+            "title": "Engineid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "duckId",
+          "engineId",
+          "bestOf"
+        ],
+        "title": "StartSeriesRequest",
+        "type": "object"
+      },
+      "StartSparringRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "duckId": {
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+            "title": "Duckid",
+            "type": "string"
+          },
+          "engineId": {
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+            "title": "Engineid",
+            "type": "string"
+          },
+          "humanColor": {
+            "default": "random",
+            "enum": [
+              "white",
+              "black",
+              "random"
+            ],
+            "title": "Humancolor",
+            "type": "string"
+          },
+          "timeControl": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TimeControl"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Your clock and the duck's; null (the default) is untimed"
+          }
+        },
+        "required": [
+          "duckId",
+          "engineId"
+        ],
+        "title": "StartSparringRequest",
+        "type": "object"
+      },
+      "StatsModel": {
+        "additionalProperties": false,
+        "properties": {
+          "aggression": {
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Aggression",
+            "type": "integer"
+          },
+          "calculation": {
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Calculation",
+            "type": "integer"
+          },
+          "creativity": {
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Creativity",
+            "type": "integer"
+          },
+          "memory": {
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Memory",
+            "type": "integer"
+          },
+          "solidity": {
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Solidity",
+            "type": "integer"
+          },
+          "speed": {
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Speed",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "calculation",
+          "memory",
+          "aggression",
+          "solidity",
+          "creativity",
+          "speed"
+        ],
+        "title": "StatsModel",
+        "type": "object"
+      },
+      "TimeControl": {
+        "additionalProperties": false,
+        "properties": {
+          "baseSeconds": {
+            "maximum": 3600.0,
+            "minimum": 1.0,
+            "title": "Baseseconds",
+            "type": "integer"
+          },
+          "incrementSeconds": {
+            "default": 0,
+            "maximum": 60.0,
+            "minimum": 0.0,
+            "title": "Incrementseconds",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "baseSeconds"
+        ],
+        "title": "TimeControl",
+        "type": "object"
+      },
+      "VirtualClockLimitModel": {
+        "additionalProperties": false,
+        "description": "A simulated clock: think time converts to nodes, so results do not depend on the machine.",
+        "properties": {
+          "timeControl": {
+            "$ref": "#/components/schemas/TimeControl"
+          },
+          "type": {
+            "const": "virtual-clock",
+            "title": "Type",
+            "type": "string"
+          },
+          "virtualNps": {
+            "default": 200000,
+            "maximum": 5000000.0,
+            "minimum": 1000.0,
+            "title": "Virtualnps",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "type",
+          "timeControl"
+        ],
+        "title": "VirtualClockLimitModel",
+        "type": "object"
+      },
+      "Wdl": {
+        "description": "Win, draw and loss chances per mille, from the mover's point of view.",
+        "properties": {
+          "draw": {
+            "title": "Draw",
+            "type": "integer"
+          },
+          "loss": {
+            "title": "Loss",
+            "type": "integer"
+          },
+          "win": {
+            "title": "Win",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "win",
+          "draw",
+          "loss"
+        ],
+        "title": "Wdl",
+        "type": "object"
+      },
+      "XpGainedData": {
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "integer"
+          },
+          "duckId": {
+            "title": "Duckid",
+            "type": "string"
+          },
+          "level": {
+            "title": "Level",
+            "type": "integer"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "xpAfter": {
+            "title": "Xpafter",
+            "type": "integer"
+          },
+          "xpForNextLevel": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Xpfornextlevel"
+          }
+        },
+        "required": [
+          "duckId",
+          "amount",
+          "source",
+          "xpAfter",
+          "level",
+          "xpForNextLevel"
+        ],
+        "title": "XpGainedData",
+        "type": "object"
+      },
+      "XpGainedEvent": {
+        "properties": {
+          "cursor": {
+            "description": "Global position; pass as `after` (or Last-Event-ID) to resume",
+            "title": "Cursor",
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/XpGainedData"
+          },
+          "recordedAt": {
+            "title": "Recordedat",
+            "type": "string"
+          },
+          "seq": {
+            "description": "Position within the stream, starting at 1",
+            "title": "Seq",
+            "type": "integer"
+          },
+          "stream": {
+            "title": "Stream",
+            "type": "string"
+          },
+          "type": {
+            "const": "XpGained",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cursor",
+          "stream",
+          "seq",
+          "recordedAt",
+          "type",
+          "data"
+        ],
+        "title": "XpGainedEvent",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "description": "Versioned API for every Duck Gambit client. Clients render events and call this API; they contain no chess rules, scoring or rating logic.",
+    "title": "Duck Gambit API",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/v1/challengers": {
+      "get": {
+        "description": "House ducks your duck can challenge, easiest first. They are not your ducks.",
+        "operationId": "listChallengers",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ChallengerOut"
+                  },
+                  "title": "Response Listchallengers",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "List Challengers",
+        "tags": [
+          "ducks"
+        ]
+      }
+    },
+    "/api/v1/ducks": {
+      "get": {
+        "operationId": "listDucks",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DuckOut"
+                  },
+                  "title": "Response Listducks",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "List Ducks",
+        "tags": [
+          "ducks"
+        ]
+      },
+      "post": {
+        "description": "Hatch a level-1 duck. Emits DuckHatched on the duck's stream.\n\nWith `eggSeed`, the starting stats are derived from the egg. Hatching never replaces a duck.",
+        "operationId": "hatchDuck",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HatchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DuckOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Hatch Duck",
+        "tags": [
+          "ducks"
+        ]
+      }
+    },
+    "/api/v1/ducks/imports": {
+      "post": {
+        "description": "Add a duck from a duck file. The file is validated; stats must fit the level's budget.",
+        "operationId": "importDuck",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DuckFile"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DuckOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Import Duck",
+        "tags": [
+          "ducks"
+        ]
+      }
+    },
+    "/api/v1/ducks/{duck_id}": {
+      "get": {
+        "operationId": "getDuck",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "duck_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "title": "Duck Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DuckOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Get Duck",
+        "tags": [
+          "ducks"
+        ]
+      }
+    },
+    "/api/v1/ducks/{duck_id}/export": {
+      "get": {
+        "description": "The duck as a portable, versioned duck file.",
+        "operationId": "exportDuck",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "duck_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "title": "Duck Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DuckFile"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Export Duck",
+        "tags": [
+          "ducks"
+        ]
+      }
+    },
+    "/api/v1/engines": {
+      "get": {
+        "operationId": "listEngines",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EngineOut"
+                  },
+                  "title": "Response Listengines",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "List Engines",
+        "tags": [
+          "engines"
+        ]
+      }
+    },
+    "/api/v1/engines/{engine_id}/analyses": {
+      "post": {
+        "description": "A diagnostic search (\"Test engine\"). Not used for anything that affects a result.",
+        "operationId": "analysePosition",
+        "parameters": [
+          {
+            "description": "An engine id from the manifest",
+            "in": "path",
+            "name": "engine_id",
+            "required": true,
+            "schema": {
+              "description": "An engine id from the manifest",
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "title": "Engine Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnalysisRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Analyse",
+        "tags": [
+          "engines"
+        ]
+      }
+    },
+    "/api/v1/engines/{engine_id}/installation": {
+      "delete": {
+        "operationId": "removeEngine",
+        "parameters": [
+          {
+            "description": "An engine id from the manifest",
+            "in": "path",
+            "name": "engine_id",
+            "required": true,
+            "schema": {
+              "description": "An engine id from the manifest",
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "title": "Engine Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EngineOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Remove Engine",
+        "tags": [
+          "engines"
+        ]
+      },
+      "put": {
+        "description": "Download the engine from the pinned manifest, verify it, smoke-test it, install it.",
+        "operationId": "installEngine",
+        "parameters": [
+          {
+            "description": "An engine id from the manifest",
+            "in": "path",
+            "name": "engine_id",
+            "required": true,
+            "schema": {
+              "description": "An engine id from the manifest",
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "title": "Engine Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EngineOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Install Engine",
+        "tags": [
+          "engines"
+        ]
+      }
+    },
+    "/api/v1/engines/{engine_id}/options": {
+      "get": {
+        "description": "What the engine advertises. Only options marked userSettable can be changed.",
+        "operationId": "listEngineOptions",
+        "parameters": [
+          {
+            "description": "An engine id from the manifest",
+            "in": "path",
+            "name": "engine_id",
+            "required": true,
+            "schema": {
+              "description": "An engine id from the manifest",
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "title": "Engine Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EngineOptionOut"
+                  },
+                  "title": "Response Listengineoptions",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Engine Options",
+        "tags": [
+          "engines"
+        ]
+      }
+    },
+    "/api/v1/engines/{engine_id}/profiles": {
+      "get": {
+        "operationId": "listEngineProfiles",
+        "parameters": [
+          {
+            "description": "An engine id from the manifest",
+            "in": "path",
+            "name": "engine_id",
+            "required": true,
+            "schema": {
+              "description": "An engine id from the manifest",
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "title": "Engine Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EngineProfileOut"
+                  },
+                  "title": "Response Listengineprofiles",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "List Profiles",
+        "tags": [
+          "engines"
+        ]
+      },
+      "put": {
+        "description": "Create or replace the profile with this name.",
+        "operationId": "saveEngineProfile",
+        "parameters": [
+          {
+            "description": "An engine id from the manifest",
+            "in": "path",
+            "name": "engine_id",
+            "required": true,
+            "schema": {
+              "description": "An engine id from the manifest",
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "title": "Engine Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EngineProfileBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EngineProfileOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Save Profile",
+        "tags": [
+          "engines"
+        ]
+      }
+    },
+    "/api/v1/events": {
+      "get": {
+        "description": "A page of events, oldest first. Works for replay and for clients that cannot stream.",
+        "operationId": "readEvents",
+        "parameters": [
+          {
+            "description": "e.g. match:mat_123",
+            "in": "query",
+            "name": "stream",
+            "required": true,
+            "schema": {
+              "description": "e.g. match:mat_123",
+              "items": {
+                "pattern": "^(match|duck|job|sparring|sparring-series):[a-z0-9][a-z0-9_-]{0,63}$",
+                "type": "string"
+              },
+              "maxItems": 20,
+              "minItems": 1,
+              "title": "Stream",
+              "type": "array"
+            }
+          },
+          {
+            "description": "Return events with a cursor above this",
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "description": "Return events with a cursor above this",
+              "minimum": 0,
+              "title": "After",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 200,
+              "maximum": 500,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Read Events",
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/api/v1/events/stream": {
+      "get": {
+        "description": "The same events as `readEvents`, pushed as they happen. Reconnecting resumes exactly.",
+        "operationId": "streamEvents",
+        "parameters": [
+          {
+            "description": "e.g. match:mat_123",
+            "in": "query",
+            "name": "stream",
+            "required": true,
+            "schema": {
+              "description": "e.g. match:mat_123",
+              "items": {
+                "pattern": "^(match|duck|job|sparring|sparring-series):[a-z0-9][a-z0-9_-]{0,63}$",
+                "type": "string"
+              },
+              "maxItems": 20,
+              "minItems": 1,
+              "title": "Stream",
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "After",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "false: send what exists and close; true: keep the stream open",
+            "in": "query",
+            "name": "follow",
+            "required": false,
+            "schema": {
+              "default": true,
+              "description": "false: send what exists and close; true: keep the stream open",
+              "title": "Follow",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "header",
+            "name": "last-event-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Last-Event-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Server-sent events. Each message has `id` (the cursor), `event` (the type) and `data` (one EventEnvelope as JSON)."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Stream Events",
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/api/v1/games/{game_id}": {
+      "get": {
+        "operationId": "getGame",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "game_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "title": "Game Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Get Game",
+        "tags": [
+          "matches"
+        ]
+      }
+    },
+    "/api/v1/games/{game_id}/moves": {
+      "get": {
+        "operationId": "listGameMoves",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "game_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "title": "Game Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MoveOut"
+                  },
+                  "title": "Response Listgamemoves",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "List Moves",
+        "tags": [
+          "matches"
+        ]
+      }
+    },
+    "/api/v1/games/{game_id}/pgn": {
+      "get": {
+        "description": "The finished game as PGN with evals, clocks and move sources in comments.",
+        "operationId": "getGamePgn",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "game_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "title": "Game Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/x-chess-pgn": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Get Pgn",
+        "tags": [
+          "matches"
+        ]
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "description": "Liveness and version check. A launcher waits for this before showing the game.",
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Health",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/api/v1/jobs/{job_id}": {
+      "get": {
+        "operationId": "getJob",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "title": "Job Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Get Job",
+        "tags": [
+          "jobs"
+        ]
+      }
+    },
+    "/api/v1/jobs/{job_id}/cancellation": {
+      "put": {
+        "description": "Ask a running job to stop. It stops at the next move boundary and can be resumed.",
+        "operationId": "cancelJob",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "title": "Job Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Cancel Job",
+        "tags": [
+          "jobs"
+        ]
+      }
+    },
+    "/api/v1/matches": {
+      "get": {
+        "operationId": "listMatches",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MatchOut"
+                  },
+                  "title": "Response Listmatches",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "List Matches",
+        "tags": [
+          "matches"
+        ]
+      },
+      "post": {
+        "description": "Start a duck-vs-duck match as a background job. Follow `stream` to watch it.",
+        "operationId": "createMatch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMatchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Create Match",
+        "tags": [
+          "matches"
+        ]
+      }
+    },
+    "/api/v1/matches/{match_id}": {
+      "get": {
+        "operationId": "getMatch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "match_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "title": "Match Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Get Match",
+        "tags": [
+          "matches"
+        ]
+      }
+    },
+    "/api/v1/matches/{match_id}/games": {
+      "get": {
+        "operationId": "listMatchGames",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "match_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "title": "Match Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/GameOut"
+                  },
+                  "title": "Response Listmatchgames",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "List Games",
+        "tags": [
+          "matches"
+        ]
+      }
+    },
+    "/api/v1/matches/{match_id}/resumption": {
+      "put": {
+        "description": "Continue a cancelled, failed or interrupted match from its last recorded move.",
+        "operationId": "resumeMatch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "match_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "title": "Match Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Resume Match",
+        "tags": [
+          "matches"
+        ]
+      }
+    },
+    "/api/v1/minigame-runs": {
+      "post": {
+        "description": "Start a run. The same seed deals the same run.",
+        "operationId": "startMinigame",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartMinigameRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MinigameRunOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Start Minigame",
+        "tags": [
+          "minigames (experimental)"
+        ]
+      }
+    },
+    "/api/v1/minigame-runs/{run_id}/actions": {
+      "post": {
+        "description": "One thing the player did: a move, a choice, a hint, or going on to the next round.",
+        "operationId": "playMinigame",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MinigameActionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MinigameRunOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Play Minigame",
+        "tags": [
+          "minigames (experimental)"
+        ]
+      }
+    },
+    "/api/v1/minigames": {
+      "get": {
+        "description": "Every minigame test. Nothing in here changes a duck.",
+        "operationId": "listMinigames",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MinigameInfoOut"
+                  },
+                  "title": "Response Listminigames",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "List Minigames",
+        "tags": [
+          "minigames (experimental)"
+        ]
+      }
+    },
+    "/api/v1/profile": {
+      "get": {
+        "description": "The local player and the duck the hub shows.",
+        "operationId": "getProfile",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Get Profile",
+        "tags": [
+          "profile"
+        ]
+      }
+    },
+    "/api/v1/profile/active-duck": {
+      "put": {
+        "description": "Choose the duck the hub shows. Saved, so it survives a restart and is shared by clients.",
+        "operationId": "setActiveDuck",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActiveDuckIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Set Active Duck",
+        "tags": [
+          "profile"
+        ]
+      }
+    },
+    "/api/v1/sparring": {
+      "get": {
+        "description": "Your recent games against your ducks, newest first (series games excluded).",
+        "operationId": "listSparring",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "maximum": 50,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SparringGameOut"
+                  },
+                  "title": "Response Listsparring",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "List Sparring",
+        "tags": [
+          "sparring"
+        ]
+      },
+      "post": {
+        "description": "Play one of your ducks. Untimed unless you give a time control. Never rated.",
+        "operationId": "startSparring",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartSparringRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SparringGameOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Start Sparring",
+        "tags": [
+          "sparring"
+        ]
+      }
+    },
+    "/api/v1/sparring-series": {
+      "post": {
+        "description": "You against your duck: best of N, 30 seconds each. The first game starts now.",
+        "operationId": "startSparringSeries",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartSeriesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SparringSeriesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Start Series",
+        "tags": [
+          "sparring"
+        ]
+      }
+    },
+    "/api/v1/sparring-series/{series_id}": {
+      "get": {
+        "operationId": "getSparringSeries",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "series_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "title": "Series Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SparringSeriesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Get Series",
+        "tags": [
+          "sparring"
+        ]
+      }
+    },
+    "/api/v1/sparring-series/{series_id}/games": {
+      "post": {
+        "description": "Start the next game of the series (an Armageddon game if it is tied).",
+        "operationId": "nextSparringSeriesGame",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "series_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "title": "Series Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SparringSeriesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Next Game",
+        "tags": [
+          "sparring"
+        ]
+      }
+    },
+    "/api/v1/sparring/{game_id}": {
+      "get": {
+        "operationId": "getSparring",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "game_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "title": "Game Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SparringGameOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Get Sparring",
+        "tags": [
+          "sparring"
+        ]
+      }
+    },
+    "/api/v1/sparring/{game_id}/moves": {
+      "post": {
+        "description": "Your move. The duck's reply follows on the game's stream.",
+        "operationId": "playSparringMove",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "game_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "title": "Game Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SparringMoveIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SparringGameOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Play Move",
+        "tags": [
+          "sparring"
+        ]
+      }
+    },
+    "/api/v1/sparring/{game_id}/resignation": {
+      "put": {
+        "operationId": "resignSparring",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "game_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "title": "Game Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SparringGameOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Resign",
+        "tags": [
+          "sparring"
+        ]
+      }
+    },
+    "/api/v1/sparring/{game_id}/timeout-claim": {
+      "put": {
+        "description": "Your clock reached zero on screen: the server checks and ends the game.",
+        "operationId": "claimSparringTimeout",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "game_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "title": "Game Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SparringGameOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Any error, as an RFC 9457 problem document"
+          }
+        },
+        "summary": "Claim Timeout",
+        "tags": [
+          "sparring"
+        ]
+      }
+    }
+  }
+}

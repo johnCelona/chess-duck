@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "engines": [
+    {
+      "id": "stockfish",
+      "name": "Stockfish",
+      "version": "19",
+      "license": "GPL-3.0",
+      "homepage": "https://stockfishchess.org/",
+      "sourceUrl": "https://github.com/official-stockfish/Stockfish/tree/sf_19",
+      "uciName": "Stockfish 19",
+      "platforms": {
+        "windows-x86_64": {
+          "url": "https://github.com/official-stockfish/Stockfish/releases/download/sf_19/stockfish-windows-x86-64-universal.zip",
+          "sha256": "3c8bf1f9ea66a09350a40df4f632288285ac206d99f33ab5842c408fc30b48a7",
+          "sizeBytes": 81431614,
+          "archive": "zip",
+          "binary": "stockfish/stockfish-windows-x86-64-universal.exe",
+          "keep": [
+            "stockfish/Copying.txt",
+            "stockfish/AUTHORS"
+          ]
+        },
+        "windows-arm64": {
+          "url": "https://github.com/official-stockfish/Stockfish/releases/download/sf_19/stockfish-windows-arm64-universal.zip",
+          "sha256": "8372ad3f0d7276deb2c70f801f541ec7db463219fc6d9c7592864e542aa4f401",
+          "sizeBytes": 80190536,
+          "archive": "zip",
+          "binary": "stockfish/stockfish-windows-arm64-universal.exe",
+          "keep": [
+            "stockfish/Copying.txt",
+            "stockfish/AUTHORS"
+          ]
+        },
+        "linux-x86_64": {
+          "url": "https://github.com/official-stockfish/Stockfish/releases/download/sf_19/stockfish-linux-x86-64-universal.tar.gz",
+          "sha256": "9defc0d4e55d49c65a6d042f3e571a39fcea499ade6dbe741b53b8c65e03611f",
+          "sizeBytes": 81388977,
+          "archive": "tar.gz",
+          "binary": "stockfish/stockfish-linux-x86-64-universal",
+          "keep": [
+            "stockfish/Copying.txt",
+            "stockfish/AUTHORS"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/official-stockfish/Stockfish/releases/download/sf_19/stockfish-linux-arm64-universal.tar.gz",
+          "sha256": "fe26cfd1d9db4c8af3d21e24d9ff34cacb31c1f940085a7583da11796f2bac01",
+          "sizeBytes": 80181250,
+          "archive": "tar.gz",
+          "binary": "stockfish/stockfish-linux-arm64-universal",
+          "keep": [
+            "stockfish/Copying.txt",
+            "stockfish/AUTHORS"
+          ]
+        },
+        "macos-universal": {
+          "url": "https://github.com/official-stockfish/Stockfish/releases/download/sf_19/stockfish-macos-universal.tar.gz",
+          "sha256": "a1f0e3bcc5a6927a11fe6fc8e54a779754645f3c2bae2cf13420fd1957adaa77",
+          "sizeBytes": 82323876,
+          "archive": "tar.gz",
+          "binary": "stockfish/stockfish-macos-universal",
+          "keep": [
+            "stockfish/Copying.txt",
+            "stockfish/AUTHORS"
+          ]
+        }
+      }
+    }
+  ]
+}

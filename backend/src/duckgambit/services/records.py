@@ -1,0 +1,189 @@
+"""Stored shapes that are not domain concepts: envelopes, matches, games, moves, jobs."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Any
+
+from duckgambit.domain.arena import Arena
+from duckgambit.domain.rating import Rating
+from duckgambit.domain.series import SeriesFormat
+
+
+@dataclass(frozen=True)
+class Envelope:
+    """An event as stored and streamed (ADR-0002). `data` is deterministic; the rest is not."""
+
+    cursor: int
+    stream: str
+    seq: int
+    type: str
+    recorded_at: str
+    data: dict[str, Any]
+
+
+@dataclass(frozen=True)
+class MatchRecord:
+    id: str
+    profile_id: str
+    duck_ids: tuple[str, ...]
+    arena: Arena
+    mode: str  # "duck-vs-duck" now; modes with a human participant come later
+    rated: bool
+    state: str  # created | running | finished | cancelled | failed
+    context_id: str
+    job_id: str
+    created_at: str
+    finished_at: str | None = None
+    scores: dict[str, float] = field(default_factory=dict)
+    series: SeriesFormat | None = None  # None: a plain match of `arena.games` games
+
+
+@dataclass(frozen=True)
+class GameRecord:
+    id: str
+    match_id: str
+    index: int
+    white_duck_id: str
+    black_duck_id: str
+    seed: int
+    initial_fen: str
+    state: str  # running | finished
+    white_clock_ms: int | None
+    black_clock_ms: int | None
+    started_at: str
+    result: str | None = None
+    termination: str | None = None
+    pgn: str | None = None
+    finished_at: str | None = None
+
+
+@dataclass(frozen=True)
+class MoveRecord:
+    game_id: str
+    ply: int
+    color: str
+    uci: str
+    san: str
+    source: str
+    cp: int | None
+    mate: int | None
+    nodes: int
+    depth: int
+    think_ms: int
+    clock_ms: int | None
+    fen_after: str
+    event_seq: int
+    # domain.chessutil.position_key of the board before this move. Required so every
+    # writer must think about it; None only for an old row whose game could not be
+    # replayed by the 0002 backfill.
+    position_key: str | None
+
+
+@dataclass(frozen=True)
+class PositionMove:
+    """One time a move was played from a given position, with the game it was played in."""
+
+    game_id: str
+    match_id: str
+    ply: int
+    color: str
+    duck_id: str  # the duck that played the move
+    uci: str
+    san: str
+    source: str
+    cp: int | None
+    mate: int | None
+    result: str | None  # the game's result ("1-0", "0-1", "1/2-1/2"); None while it runs
+
+
+@dataclass(frozen=True)
+class JobRecord:
+    id: str
+    kind: str
+    state: str  # queued | running | succeeded | failed | cancelled | interrupted
+    params: dict[str, Any]
+    done: int
+    total: int
+    created_at: str
+    started_at: str | None = None
+    finished_at: str | None = None
+    error_code: str | None = None
+    error_detail: str | None = None
+
+    @property
+    def finished(self) -> bool:
+        return self.state in {"succeeded", "failed", "cancelled", "interrupted"}
+
+    @property
+    def resumable(self) -> bool:
+        return self.state in {"failed", "cancelled", "interrupted"}
+
+
+@dataclass(frozen=True)
+class RatingRecord:
+    duck_id: str
+    context_id: str
+    kind: str  # "game" | "puzzle"
+    rating: Rating
+    updated_at: str
+
+
+@dataclass(frozen=True)
+class EngineProfile:
+    engine_id: str
+    name: str
+    nodes: int
+    multipv: int
+    hash_mb: int
+
+
+@dataclass(frozen=True)
+class SparringGame:
+    """A game between the player and one of their ducks (ADR-0015). Never rated."""
+
+    id: str
+    profile_id: str
+    duck_id: str
+    engine_id: str
+    human_color: str  # "white" | "black"
+    base_ms: int | None  # None: untimed
+    increment_ms: int
+    seed: int
+    initial_fen: str
+    state: str  # running | finished
+    white_clock_ms: int | None
+    black_clock_ms: int | None
+    turn_started_ms: int | None
+    created_at: str
+    series_id: str | None = None
+    series_index: int | None = None
+    result: str | None = None
+    termination: str | None = None
+    finished_at: str | None = None
+
+
+@dataclass(frozen=True)
+class SparringMove:
+    game_id: str
+    ply: int
+    color: str
+    by: str  # "human" | "duck"
+    uci: str
+    san: str
+    source: str | None
+    elapsed_ms: int
+    fen_after: str
+
+
+@dataclass(frozen=True)
+class SparringSeries:
+    id: str
+    profile_id: str
+    duck_id: str
+    engine_id: str
+    best_of: int
+    seed: int
+    state: str  # playing | decided
+    created_at: str
+    finished_at: str | None = None

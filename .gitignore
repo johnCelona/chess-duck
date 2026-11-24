@@ -9,16 +9,34 @@ lerna-debug.log*
 
 node_modules
 dist
-engines/installed/
-engines/.tmp/
-config/
-backend/engines/installed/
-backend/engines/.tmp/
+
+# Mutable state: database, installed engines, logs, exports (ADR-0014). Never commit.
+/data/
+.env
+# Pre-M0 locations of the same things.
+backend/engines/
 backend/config/
+
+# Python
 __pycache__/
 *.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 dist-ssr
 *.local
+
+# Local-only notes (never committed). See "Tracked vs local notes" in CLAUDE.md.
+# Investigation and working notes: audits, research dumps, scratch.
+docs/architecture/
+# John's private notebook: the story, future plans, ideas and memories.
+/vision/
+# Personal Claude context, at the root or in any folder.
+CLAUDE.local.md
+*.local.md
+.claude/settings.local.json
 
 # Editor directories and files
 .vscode/*

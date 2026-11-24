@@ -1,0 +1,35 @@
+# Optional local hooks (CI is the real gate). Enable with:
+#   uv tool install pre-commit && pre-commit install
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-format
+        name: ruff format (backend)
+        entry: uv run --project backend ruff format backend
+        language: system
+        files: ^backend/.*\.py$
+        pass_filenames: false
+      - id: ruff-check
+        name: ruff check (backend)
+        entry: uv run --project backend ruff check backend
+        language: system
+        files: ^backend/.*\.py$
+        pass_filenames: false
+      - id: web-format
+        name: prettier (web)
+        entry: npm run format:check -w apps/web
+        language: system
+        files: ^apps/web/src/
+        pass_filenames: false
+      - id: web-lint
+        name: oxlint (web)
+        entry: npm run lint -w apps/web
+        language: system
+        files: ^apps/web/src/
+        pass_filenames: false
+      - id: contracts
+        name: contracts up to date
+        entry: node scripts/gen.mjs --check
+        language: system
+        files: ^(backend/src/duckgambit/api/|contracts/)
+        pass_filenames: false

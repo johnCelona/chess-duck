@@ -1,0 +1,36 @@
+[Event "Chess Duck match"]
+[Site "Chess Duck"]
+[Date "2026.11.21"]
+[Round "1"]
+[White "Sir Quackalot"]
+[Black "Bill the Solid"]
+[Result "1/2-1/2"]
+[TimeControl "60+0"]
+[Termination "Adjudication"]
+[Annotator "Fake engine 1"]
+[Seed "1826739984564075"]
+[RatingContext "ctx_a30da7fbc5e57d1d"]
+
+1. g4 { [%eval 0.44] [%clk 0:00:58] } 1... f6 { [%eval -0.76] [%clk 0:00:59] }
+2. d4 { [%eval 0.80] [%clk 0:00:57] } 2... Kf7 { [%eval -0.97] [%clk 0:00:58] }
+3. Be3 { [%eval 0.94] [%clk 0:00:56] } 3... b6 { [%eval -0.89] [%clk 0:00:57] }
+4. f4 { [%eval 0.88] [%clk 0:00:55] } 4... d6 { [%eval -0.73] [%clk 0:00:56] }
+5. Qd3 { [%eval 0.78] [%clk 0:00:54] } 5... h6 { [%eval -0.99] [%clk 0:00:55] }
+6. Nh3 { [%eval 0.75] [%clk 0:00:53] } 6... Rh7
+{ [%eval -0.96] [%clk 0:00:54] } 7. Nc3 { [%eval 0.98] [%clk 0:00:52] } 7... h5
+{ [%eval -0.80] [%clk 0:00:53] } 8. Qg6+ { [%eval 0.65] [%clk 0:00:51] } 8...
+Ke6 { [%eval 0.71] [%clk 0:00:52] } 9. Nd5 { [%eval 0.94] [%clk 0:00:50] } 9...
+Na6 { [%eval -0.93] [%clk 0:00:51] } 10. Bg1 { [%eval 0.99] [%clk 0:00:49] }
+10... Nb8 { [%eval -0.91] [%clk 0:00:50] } 11. Qf5+
+{ [%eval 0.99] [%clk 0:00:48] } 11... Kf7 { [%clk 0:00:50] forced } 12. Be3
+{ [%eval 0.98] [%clk 0:00:47] } 12... Nd7 { [%eval -0.85] [%clk 0:00:49] } 13.
+Bc1 { [%eval 0.91] [%clk 0:00:46] } 13... g5 { [%eval -0.90] [%clk 0:00:48] }
+14. Bd2 { [%eval 0.86] [%clk 0:00:45] } 14... Ne5
+{ [%eval -0.87] [%clk 0:00:47] } 15. Nb4 { [%eval 0.99] [%clk 0:00:43] } 15...
+e6 { [%eval -0.98] [%clk 0:00:46] } 16. Nxg5+ { [%eval 0.77] [%clk 0:00:42] }
+16... Ke7 { [%eval -0.84] [%clk 0:00:45] } 17. a3
+{ [%eval 0.98] [%clk 0:00:41] } 17... Nh6 { [%eval -0.72] [%clk 0:00:44] } 18.
+h3 { [%eval 0.98] [%clk 0:00:40] } 18... Nexg4 { [%eval -0.87] [%clk 0:00:43] }
+19. Ra2 { [%eval 0.70] [%clk 0:00:39] } 19... a5
+{ [%eval -0.96] [%clk 0:00:42] } 20. Qxh7+ { [%eval 0.69] [%clk 0:00:38] }
+20... Ke8 { [%eval -0.18] [%clk 0:00:41] } 1/2-1/2
